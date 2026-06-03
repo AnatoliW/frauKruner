@@ -1,8 +1,12 @@
 @php
 $menus = menu('main', '_json');
-$paymentMethods = Cache::remember('payment_methods', 60, function () {
-return App\PaymentIcon::all();
-});
+$paymentMethods = Cache::get('payment_methods');
+
+if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMethods->contains(fn ($item) => !is_object($item))) {
+    Cache::forget('payment_methods');
+    $paymentMethods = App\PaymentIcon::all();
+    Cache::put('payment_methods', $paymentMethods, 60);
+}
 
 @endphp
 
@@ -672,7 +676,10 @@ return App\PaymentIcon::all();
             <div class="payment-methods">
 
                 @foreach ($paymentMethods as $data)
-                <img data-src="{{ media_url($data->logo) }}" class="lazy" alt="Bezahlmethode Logo">
+                @if (!is_object($data))
+                    @continue
+                @endif
+                <img data-src="{{ media_url(data_get($data, 'logo')) }}" class="lazy" alt="Bezahlmethode Logo">
                 @endforeach
                 <span>VORKASSE</span>
             </div>
