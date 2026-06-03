@@ -124,15 +124,17 @@
 
 
                             @php
-                        $time = $product->attributes->Tragedauer ? App\WearingTime::where('name', explode('-', $product->attributes->Tragedauer[0]))->first('days')->days : 1;
+                        $wearingTimeValue = data_get($product->attributes, 'Tragedauer.0');
+                        $wearingTimeName = $wearingTimeValue ? explode('-', $wearingTimeValue)[0] : null;
+                        $time = $wearingTimeName ? (App\WearingTime::where('name', $wearingTimeName)->value('days') ?? 1) : 1;
                         setlocale(LC_TIME, 'German');
 
                     @endphp
 
                     <!-- <div class="delivery-date-container">
                         <h3 class="small">Voraussichtlicher Liefertermin</h3>
-                        <p>{{ Carbon\Carbon::now()->addDay($time + 2)->formatLocalized('%a. %d.  %b.') }} -
-                            {{ Carbon\Carbon::now()->addDay($time + 4)->formatLocalized('%a. %d. %b ') }}</p>
+                        <p>{{ Carbon\Carbon::now()->locale('de')->addDay($time + 2)->translatedFormat('D. d. M.') }} -
+                            {{ Carbon\Carbon::now()->locale('de')->addDay($time + 4)->translatedFormat('D. d. M.') }}</p>
 
                     </div> -->
                     </div>
