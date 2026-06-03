@@ -104,6 +104,11 @@ class Cart
         return (float) static::getContent()->sum(fn ($item) => $item->price * $item->quantity);
     }
 
+    public static function getTotalQuantity(): int
+    {
+        return (int) static::getContent()->sum(fn ($item) => (int) $item->quantity);
+    }
+
     public static function getTotal(): float
     {
         $subtotal = static::getSubTotal();
