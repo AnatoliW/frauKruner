@@ -1,0 +1,30 @@
+<svg id="Gruppe_1592" data-name="Gruppe 1592" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="52.832" height="51.616" viewBox="0 0 52.832 51.616">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_761" data-name="Rechteck 761" width="52.832" height="51.616" fill="none" stroke="#122253" stroke-width="1"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1561" data-name="Gruppe 1561" transform="translate(0 0)">
+    <g id="Gruppe_1560" data-name="Gruppe 1560">
+      <g id="Gruppe_1557" data-name="Gruppe 1557" transform="translate(0 0)">
+        <g id="Gruppe_1556" data-name="Gruppe 1556" clip-path="url(#clip-path)">
+          <path id="Pfad_1590" data-name="Pfad 1590" d="M11.244,40.565H.218V.218H50.842V40.565H39.815" transform="translate(0.887 0.885)" fill="none" stroke="#122253" stroke-miterlimit="10" stroke-width="1"/>
+          <line id="Linie_218" data-name="Linie 218" x2="50.618" transform="translate(1.106 7.6)" fill="none" stroke="#122253" stroke-miterlimit="10" stroke-width="1"/>
+        </g>
+      </g>
+      <line id="Linie_219" data-name="Linie 219" x2="3.427" transform="translate(33.056 4.783)" fill="none" stroke="#122253" stroke-miterlimit="10" stroke-width="1"/>
+      <line id="Linie_220" data-name="Linie 220" x2="3.427" transform="translate(38.546 4.783)" fill="none" stroke="#122253" stroke-miterlimit="10" stroke-width="1"/>
+      <line id="Linie_221" data-name="Linie 221" x2="3.427" transform="translate(43.365 4.783)" fill="none" stroke="#122253" stroke-miterlimit="10" stroke-width="1"/>
+      <line id="Linie_222" data-name="Linie 222" y1="24.97" transform="translate(26.416 18.897)" fill="none" stroke="#122253" stroke-miterlimit="10" stroke-width="1"/>
+      <g id="Gruppe_1559" data-name="Gruppe 1559" transform="translate(19.454 40.231)">
+        <g id="Gruppe_1584" data-name="Gruppe 1584">
+          <path id="Pfad_1591" data-name="Pfad 1591" d="M17.764,7.943l-6.959,9.512L3.841,7.943" transform="translate(-3.841 -7.943)" fill="none" stroke="#122253" stroke-miterlimit="10" stroke-width="1"/>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g id="Gruppe_1578" data-name="Gruppe 1578" transform="translate(5.662 12.179)">
+    <line id="Linie_227" data-name="Linie 227" x2="7.824" y2="7.824" transform="translate(0 0.001)" fill="none" stroke="#de322f" stroke-width="1"/>
+    <line id="Linie_228" data-name="Linie 228" x1="7.824" y2="7.824" fill="none" stroke="#de322f" stroke-width="1"/>
+  </g>
+</svg>

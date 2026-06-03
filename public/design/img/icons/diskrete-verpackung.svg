@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="45.239" height="51.66" viewBox="0 0 45.239 51.66">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_589" data-name="Rechteck 589" width="45.239" height="51.66" transform="translate(0 0)" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1280" data-name="Gruppe 1280" transform="translate(-720 -884)">
+    <g id="Gruppe_1265" data-name="Gruppe 1265" transform="translate(22 -124)">
+      <g id="Gruppe_1272" data-name="Gruppe 1272" transform="translate(698 1008)">
+        <g id="Gruppe_1271" data-name="Gruppe 1271">
+          <g id="Gruppe_1270" data-name="Gruppe 1270" clip-path="url(#clip-path)">
+            <path id="Pfad_1308" data-name="Pfad 1308" d="M.943,13.606,22.619.583,44.3,13.606l-21.677,14.1Z" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <line id="Linie_129" data-name="Linie 129" y2="23.343" transform="translate(22.62 27.709)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <path id="Pfad_1309" data-name="Pfad 1309" d="M44.3,13.605V36.412L22.619,51.056.943,36.412V13.605" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+          </g>
+        </g>
+        <line id="Linie_130" data-name="Linie 130" x2="7.497" y2="12.999" transform="translate(7.195 25.501)" fill="none" stroke="#de322f" stroke-width="1"/>
+        <line id="Linie_131" data-name="Linie 131" x1="7.226" y2="2.989" transform="translate(7.508 30.646)" fill="none" stroke="#de322f" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+</svg>

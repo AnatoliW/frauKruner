@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="de">
+	 <head>
+	<meta charset="UTF-8">
+	<!-- No Index-->
+	<meta name="robots" content="noindex">
+	<meta name="googlebot" content="noindex">
+	<!-- No Index-->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	<link rel="stylesheet" href="css/style.min.css" defer>
+
+	<link rel="apple-touch-icon" sizes="57x57" href="./img/favicons/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="./img/favicons/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="./img/favicons/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="./img/favicons/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="./img/favicons/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="./img/favicons/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="./img/favicons/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./img/favicons/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./img/favicons/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="./img/favicons/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./img/favicons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="./img/favicons/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./img/favicons/favicon-16x16.png">
+	<link rel="manifest" href="./files/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="./img/favicons/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+
+
+	<script>
+		function headerMenuButtonFunction() { 
+		  var navBarLock = document.getElementById("navBarHeader");
+		  document.body.classList.toggle('lock-scroll');
+		  navBarLock.classList.toggle("overflowAuto");
+
+	  };
+	  function headerSearchFunctionHidden() { 
+		  var searchAppers = document.getElementById("searchSecondaryHidden");
+		  searchAppers.classList.toggle("activeSearch");
+	  };
+
+
+	  window.onscroll = function() {removeActiveSearch()};
+
+	  function removeActiveSearch() {
+			if (document.body.scrollTop > 1 || document.documentElement.scrollTop > 1) {
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "0px";
+			} 
+			else{
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "4.3rem";
+			}
+		}
+	  
+	</script>
+
+	<title>Frau Kruner Kasse</title>
+
+</head>
+	<body>
+		
+<header>
+
+<!--Desktop Information-->
+<div class="container-before-header">
+    <div class="container-xxl d-flex justify-content-center align-items-center">
+        Kostenlose Anmeldung - Kostenlose Lieferung - Diskret und Anonym
+    </div>
+</div>
+<!--Desktop Information-->
+
+<!--Navigation-->
+    <nav class="navbar navbar-expand-lg " id="navBarHeader">
+        <div class="container-xxl">
+          <a class="navbar-brand" href="/"><img src="img/icons/FxxK-Logo.svg" class="navbar-logo" alt="Frau Kruner Logo"></a>
+        <!--Secondary Menu with Search for Mobile devices-->
+          <span class="navbar-header-secondary-before">
+            <ul class="navbar-header-secondary-before__list">
+
+              <li class="navbar-header-secondary-before__list__item hidden-search"  id="searchSecondaryHidden">
+
+                <button class="search-button-secondary" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/search-icon.svg" class="lazy" alt="Suche Icon"></button>
+
+                <form role="search" method="get" class="search-form-hidden" id="searchSecondaryHiddenForm" action="">
+                  <label class="d-flex">
+                    <input type="search" class="search-field-hidden" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    
+                     <span class="close-button" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/close-icon.svg" class="lazy" alt="Suche Icon"></span>
+
+                  </label>
+                  <input type="submit" class="search-submit-hidden" value="Suchen" />
+                </form>
+
+              </li>
+
+                <li class="navbar-header-secondary-before__list__item visible-search">
+                  <form role="search" method="get" class="search-form" action="">
+                    <label>
+                      <input type="search" class="search-field" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    </label>
+                    <input type="submit" class="search-submit" value="Suchen" />
+                  </form>
+                </li>
+                
+                <li class="navbar-header-secondary-before__list__item">
+                    <a href="/login-templ.html">
+                      <img src="img/icons/profil-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Profil">
+                    </a> 
+                </li>
+
+                <li class="navbar-header-secondary-before__list__item">
+                  <span class="counter-cart">2</span>
+                    <a href="/warenkorb.html">
+                      <img src="img/icons/basket-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Warenkorb">
+                    </a> 
+                </li>
+            </ul>
+        </span>
+        <!--Secondary Menu with Search for Mobile devices-->
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" id="menuHeaderNavButton" onclick="headerMenuButtonFunction()">
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div>
+           </button>
+
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarMain">
+        <!--The Menu-->
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="/shop.html">Shop</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/bestseller.html">Bestseller</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/ueber-fk.html">About</a>
+              </li>
+              <li class="nav-item nav-item__item-primary">
+                <a class="nav-link" href="/seller-register-template.html">Unterwäsche verkaufen</a>
+              </li>
+            </ul>
+        <!--The Menu-->
+
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+              <span class="navbar-header-secondary">
+                  <ul class="navbar-header-secondary__list">
+                      <li class="navbar-header-secondary__list__item search-form">
+
+                        <form role="search" method="get" class="search-form" action="">
+                          <label>
+                            <input type="search" class="search-field" placeholder="Suche…" value="" name="suchfeld" title="Suchen" />
+                          </label>
+                          <input type="submit" class="search-submit" value="Suchen" />
+                        </form>
+
+                      </li>
+                      
+                      <li class="navbar-header-secondary__list__item">
+                          <a href="/login-templ.html">
+                            <img src="img/icons/profil-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Profil">
+                            <span>Profil</span>
+                          </a> 
+                      </li>
+
+                      <li class="navbar-header-secondary__list__item">
+                        <span class="counter-cart">2</span>
+                          <a href="/warenkorb.html">
+                            <img src="img/icons/basket-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Warenkorb">
+                            <span>Warenkorb</span>
+                          </a> 
+                      </li>
+                  </ul>
+              </span>
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+          </div>
+        </div>
+      </nav>
+<!--Navigation-->
+
+<!--Mobile Information-->
+      <div class="container-before-header__mobile">
+        <div class="container-xxl d-flex justify-content-center align-items-center">
+          Kostenlose Lieferung - Diskret und Anonym
+        </div>
+    </div>
+<!--Mobile Information-->
+
+</header>
+		<main>
+		<section class="container-cart mt-3 mb-3">
+			<h1 class="small">Kasse</h1>
+			<hr>
+		</section>
+
+		<section class="container-cart">
+			<div class="card-fields-shopping-kasse">
+				<div class="card-item">
+					<div class="card-item__main-info">
+						<div class="col-prod-text">
+							<div class="col-prod-text__prod-summary">
+								<p>Toller duftender Stringtanga mit Leomuster der heiß macht Toller duftender Stringtanga mit Leomuster der heiß macht</p>
+								<div class="tragedauer">
+									<span>Tragedauer</span><span> 3 Tage</span>
+								</div>
+							</div>
+
+						</div>
+						<div class="col-prod-price">
+							<span class="col-prod-price__price">39,00€</span>
+						</div>
+					</div>
+
+					<div class="col-prod-addons">
+					<!-- List of Addons to the Product-->
+						<div class="col-prod-addons__addons-list">
+						<!-- Single Addon-->
+							<div class="col-prod-addons__addons-list__single-addon">
+								<div class="col-prod-addons__addons-list__single-addon__details">
+									<p>Natursekt</p>
+								</div>
+
+							</div>
+						<!-- Single Addon-->
+
+						<!-- Single Addon-->
+						<div class="col-prod-addons__addons-list__single-addon">
+							<div class="col-prod-addons__addons-list__single-addon__details">
+								<p>Haare</p>
+							</div>
+
+						</div>
+						<!-- Single Addon-->
+						</div>
+
+					<!-- List of Addons to the Product-->
+					</div>
+
+				</div>
+				
+			</div>
+
+			<div class="delivery-date-container">
+				<h1 class="small">Voraussichtlicher Liefertermin</h1>
+				<p>ca. Mi. 22.02. - Fr. 25.02.2022</p>
+			</div>
+
+			<div class="message-to-the-vendor">
+				<h4 class="small"><details data-popover="up">
+					<summary>?</summary>
+					<div class="popoverBody">
+						Äußere Deine Sonderwünsche. Bitte sehe davon ab private Kontaktdaten o.ä. zu versenden.
+					</div>
+				</details>Mitteilung an die/den Verkäufer</h4>
+				<input type="text" id="mitteilungAnDenVendor" name="mitteilungAnDenVendor">
+				<!-- This field should be submitted with the buy and filter the contact information!!!-->
+			</div>
+
+			<div class="payment-methods-container">
+				<h1 class="small">Ich akzeptiere</h1>
+				<div class="payment-methods-container__cart">
+					<img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+					<img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+					<img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+					<img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+					<img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+					<img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+					<img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+					<img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+					<img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+					<img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+				</div>
+			</div>
+
+		</section>
+
+		<section class="bg-lightgrey">
+			<div class="container-cart-summary">
+				<div class="fullsumm-cost-cart">
+					<span class="fullsumm-cost-cart__heading">Gesamtsumme</span>
+					<span class="fullsumm-cost-cart__price">57,00€</span>
+				</div>
+
+				<div class="buttons-to-checkout-kasse">
+					<a href="/kasse.html" class="btn btn-primary-to-sec">Jetzt kaufen</a>
+				</div>
+				<!-- Voucher Code-->
+				<a href="/kasse.html">Gutschein hinzufügen (optional)</a>
+				<!-- Voucher Code-->
+			</div>
+		</section>
+
+		</main>
+		<footer class="f-cart">
+
+    <div class="bg-secondary">
+        <div class="container-xxl">
+            <div class="footer-headline">
+                <img data-src="img/icons/FxxK-Logo.svg" class="footer-logo lazy" alt="Frau Kruner Logo"> liebt es!
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-4 social-media-footer">
+                    <p>Folge mir auf</p>
+                    <a href="/"><img data-src="img/icons/Icon-instagram-primary.svg" class="lazy svg-up" alt="Instagram"></a>
+                    <a href="/"><img data-src="img/icons/Icon-facebook-primary.svg" class="lazy svg-up" alt="Facebook"></a>
+                </div>
+
+                <div class="col-12 col-md-4 help-footer">
+                    <p>Ich helfe gerne</p>
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/telefon-footer.svg" class="lazy svg-up" alt="Telefon"> <p>030 123 456 789</p>
+                    </a>
+
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/mail-footer.svg" class="lazy svg-up" alt="Telefon"> <p>hilfe@fraukruner.de</p>
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <p>Frau Kruner hilft dir dabei einfach vom heimischen Sofa aus gutes Geld zu verdienen.</p>
+                    <a href="/seller/registration" class="btn btn-primary">Verkäuferin werden</a>
+                </div>
+            </div>
+
+            <div class="collapsing-container-footer">
+                <div class="row">
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFrauKruner" aria-expanded="false" aria-controls="collapseFrauKruner">
+                        Frau Kruner <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseFrauKruner">
+                            <ul>
+                                <li><a href="/about">Über Frau Kruner</a></li>
+                                <li><a href="/shop">Zum Shop</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVerkauf" aria-expanded="false" aria-controls="collapseVerkauf">
+                            Verkauf <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseVerkauf">
+                            <ul>
+                                <li><a href="/seller/registration">Verkäufer/in werden</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHilfeundInfos" aria-expanded="false" aria-controls="collapseHilfeundInfos">
+                            Hilfe & Info <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseHilfeundInfos">
+                            <ul>
+                                <li><a href="/faq.html">FAQ - Hilfe</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRechtliches" aria-expanded="false" aria-controls="collapseRechtliches">
+                            Rechtliches <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseRechtliches">
+                            <ul>
+                                <li><a href="/impressum.html">Impressum</a></li>
+                                <li><a href="/page/datenschutz">Datenschutzhinweis</a></li>
+                                <li><a href="/allgemeine-geschaeftsbedingungen.html">Allgemeine Geschäftsbedingungen</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <script src="../files/jquery-3.6.0.min.js"></script>
+    <script src="js/app.min.js" async></script>
+</footer>
+	</body>
+</html>

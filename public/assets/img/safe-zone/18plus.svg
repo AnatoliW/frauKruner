@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Ebene_1" data-name="Ebene 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 83.08 53.53">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #de322f;
+        stroke-miterlimit: 4;
+        stroke-width: 1px;
+      }
+
+      .cls-2 {
+        isolation: isolate;
+      }
+
+      .cls-3 {
+        fill: #122253;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g id="Gruppe_1651" data-name="Gruppe 1651">
+    <g class="cls-2">
+      <path class="cls-3" d="m11.5,12.73v40.6h-1.1V13.83H0v-1.1h11.5Z"/>
+      <path class="cls-3" d="m52.2,42.43c0,6.8-5.6,11.1-15,11.1s-14.8-4.2-14.8-11.1c0-5.5,3.8-9.2,10.4-10.3-5.8-1.1-8.9-4.5-8.9-9.4,0-6.3,5.2-10.2,13.4-10.2s13.5,3.9,13.5,10.2c0,4.9-3.2,8.3-9,9.4,6.6,1.1,10.4,4.8,10.4,10.3Zm-1.1.1c0-6-5.1-9.8-13.8-9.8s-13.7,3.8-13.7,9.8,5,9.9,13.7,9.9,13.8-3.9,13.8-9.9Zm-13.8-10.9c7.8,0,12.4-3.5,12.4-8.9s-4.8-9-12.4-9-12.2,3.5-12.2,9c-.1,5.4,4.4,8.9,12.2,8.9Z"/>
+    </g>
+    <g id="Gruppe_1600" data-name="Gruppe 1600">
+      <line id="Linie_227" data-name="Linie 227" class="cls-1" x1="70.5" x2="70.5" y2="25.17"/>
+      <line id="Linie_228" data-name="Linie 228" class="cls-1" x1="83.08" y1="12.59" x2="57.91" y2="12.59"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="de">
+	 <head>
+	<meta charset="UTF-8">
+	<!-- No Index-->
+	<meta name="robots" content="noindex">
+	<meta name="googlebot" content="noindex">
+	<!-- No Index-->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	<link rel="stylesheet" href="css/style.min.css" defer>
+
+	<link rel="apple-touch-icon" sizes="57x57" href="./img/favicons/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="./img/favicons/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="./img/favicons/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="./img/favicons/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="./img/favicons/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="./img/favicons/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="./img/favicons/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./img/favicons/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./img/favicons/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="./img/favicons/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./img/favicons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="./img/favicons/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./img/favicons/favicon-16x16.png">
+	<link rel="manifest" href="./files/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="./img/favicons/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+
+
+	<script>
+		function headerMenuButtonFunction() { 
+		  var navBarLock = document.getElementById("navBarHeader");
+		  document.body.classList.toggle('lock-scroll');
+		  navBarLock.classList.toggle("overflowAuto");
+
+	  };
+	  function headerSearchFunctionHidden() { 
+		  var searchAppers = document.getElementById("searchSecondaryHidden");
+		  searchAppers.classList.toggle("activeSearch");
+	  };
+
+
+	  window.onscroll = function() {removeActiveSearch()};
+
+	  function removeActiveSearch() {
+			if (document.body.scrollTop > 1 || document.documentElement.scrollTop > 1) {
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "0px";
+			} 
+			else{
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "4.3rem";
+			}
+		}
+	  
+	</script>
+
+	<title>Frau Kruner Profil</title>
+
+</head>
+	<body>
+		
+<header>
+
+<!--Desktop Information-->
+<div class="container-before-header">
+    <div class="container-xxl d-flex justify-content-center align-items-center">
+        Kostenlose Anmeldung - Kostenlose Lieferung - Diskret und Anonym
+    </div>
+</div>
+<!--Desktop Information-->
+
+<!--Navigation-->
+    <nav class="navbar navbar-expand-lg " id="navBarHeader">
+        <div class="container-xxl">
+          <a class="navbar-brand" href="/"><img src="img/icons/FxxK-Logo.svg" class="navbar-logo" alt="Frau Kruner Logo"></a>
+        <!--Secondary Menu with Search for Mobile devices-->
+          <span class="navbar-header-secondary-before">
+            <ul class="navbar-header-secondary-before__list">
+
+              <li class="navbar-header-secondary-before__list__item hidden-search"  id="searchSecondaryHidden">
+
+                <button class="search-button-secondary" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/search-icon.svg" class="lazy" alt="Suche Icon"></button>
+
+                <form role="search" method="get" class="search-form-hidden" id="searchSecondaryHiddenForm" action="">
+                  <label class="d-flex">
+                    <input type="search" class="search-field-hidden" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    
+                     <span class="close-button" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/close-icon.svg" class="lazy" alt="Suche Icon"></span>
+
+                  </label>
+                  <input type="submit" class="search-submit-hidden" value="Suchen" />
+                </form>
+
+              </li>
+
+                <li class="navbar-header-secondary-before__list__item visible-search">
+                  <form role="search" method="get" class="search-form" action="">
+                    <label>
+                      <input type="search" class="search-field" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    </label>
+                    <input type="submit" class="search-submit" value="Suchen" />
+                  </form>
+                </li>
+                
+                <li class="navbar-header-secondary-before__list__item">
+                    <a href="/login-templ.html">
+                      <img src="img/icons/profil-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Profil">
+                    </a> 
+                </li>
+
+                <li class="navbar-header-secondary-before__list__item">
+                  <span class="counter-cart">2</span>
+                    <a href="/warenkorb.html">
+                      <img src="img/icons/basket-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Warenkorb">
+                    </a> 
+                </li>
+            </ul>
+        </span>
+        <!--Secondary Menu with Search for Mobile devices-->
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" id="menuHeaderNavButton" onclick="headerMenuButtonFunction()">
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div>
+           </button>
+
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarMain">
+        <!--The Menu-->
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="/shop.html">Shop</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/bestseller.html">Bestseller</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/ueber-fk.html">About</a>
+              </li>
+              <li class="nav-item nav-item__item-primary">
+                <a class="nav-link" href="/seller-register-template.html">Unterwäsche verkaufen</a>
+              </li>
+            </ul>
+        <!--The Menu-->
+
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+              <span class="navbar-header-secondary">
+                  <ul class="navbar-header-secondary__list">
+                      <li class="navbar-header-secondary__list__item search-form">
+
+                        <form role="search" method="get" class="search-form" action="">
+                          <label>
+                            <input type="search" class="search-field" placeholder="Suche…" value="" name="suchfeld" title="Suchen" />
+                          </label>
+                          <input type="submit" class="search-submit" value="Suchen" />
+                        </form>
+
+                      </li>
+                      
+                      <li class="navbar-header-secondary__list__item">
+                          <a href="/login-templ.html">
+                            <img src="img/icons/profil-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Profil">
+                            <span>Profil</span>
+                          </a> 
+                      </li>
+
+                      <li class="navbar-header-secondary__list__item">
+                        <span class="counter-cart">2</span>
+                          <a href="/warenkorb.html">
+                            <img src="img/icons/basket-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Warenkorb">
+                            <span>Warenkorb</span>
+                          </a> 
+                      </li>
+                  </ul>
+              </span>
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+          </div>
+        </div>
+      </nav>
+<!--Navigation-->
+
+<!--Mobile Information-->
+      <div class="container-before-header__mobile">
+        <div class="container-xxl d-flex justify-content-center align-items-center">
+          Kostenlose Lieferung - Diskret und Anonym
+        </div>
+    </div>
+<!--Mobile Information-->
+
+</header>
+        <div class="container-xxl profile-container">
+            <aside class="profile-aside panel">
+	<span id="profile-menu-scroll-point"></span>
+	 <a href="/" class="btn btn-primary-icon"><img data-src="img/icons/plus-btn.svg" class="lazy">Jetzt verkaufen</a>
+	<ul class="profile-menu">
+		<li class="profile-menu__head-item">
+			<a href="/userprofile/" class="to-content-btn"><span></span>Mein öffentliches Profil</a>
+		</li>
+
+		<li class="profile-menu__head-item">
+			<a href="/userprofile-verkaefe.html#profile-content-scroll-point" class="to-content-btn"><span>2</span>Verkäufe</a>
+		</li>
+		<li class="profile-menu__head-item">
+			<a href="/userprofile-produkte.html#profile-content-scroll-point" class="to-content-btn"><span>2</span>Produkte</a>
+			</li>
+			<li class="profile-menu__head-item">
+			<a href="/userprofile-nachrichten.html#profile-content-scroll-point" class="to-content-btn"><span>2</span>Nachrichten</a>
+			</li>
+			<li class="profile-menu__head-item">
+			<a href="/userprofile-zahlungen.html#profile-content-scroll-point" class="to-content-btn"><span>0</span>Zahlungen</a>
+			</li>
+			<li class="profile-menu__head-item">
+			<a href="/userprofile-bewertungen.html#profile-content-scroll-point" class="to-content-btn"><span>1</span>Bewertungen</a>
+			</li>
+			<li class="profile-menu__head-item">
+
+			<div class="menu-item-collapsing">
+				<button class="menu-item-collapsing-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProfil" aria-expanded="false" aria-controls="collapseProfil">
+					Profileinstellungen<span class="arrow"><span></span><span></span></span>
+				</button>
+
+				<div class="collapse collapse__userprofile" id="collapseProfil">
+					<ul>
+						<li><a href="/userprofile-nutzerdaten.html#profile-content-scroll-point" class="to-content-btn">Nutzerdaten</a></li>
+						<li><a href="/userprofile-adresse.html#profile-content-scroll-point" class="to-content-btn">Adresse</a></li>
+						<li><a href="/" class="to-content-btn">Urlaub</a></li>
+					</ul>
+				</div>
+			</div>
+
+			</li>
+
+			<li class="profile-menu__head-item">
+				<a href="" class="to-content-btn"><span></span>Logout</a>
+			</li>
+	</ul>
+</aside>
+            <main class="profile-content panel">
+                <span id="profile-content-scroll-point"></span>   
+                <ul class="breadcrumb-userprofile">
+                    <li><a href="/">Startseite</a></li>
+                    <li><a href="/shop.html">Shop</a></li>
+                    <li><a href="/userprofile-produkte.html#profile-content-scroll-point">Produkte</a></li>
+                    <li><a href="/userprofile-edit-product.html#profile-content-scroll-point">Slip</a></li>
+                </ul>
+                <div class="profle-content__the-content">
+                    <a href="#profile-menu-scroll-point" class="btn-back"><span class="arrow-back"><span></span><span></span></span></a>
+                    <h1>String - Bearbeiten</h1>
+                    <hr>
+                    <form>
+                    <div class="row">
+                        <div class="col-12 col-md-6 mt-4">
+                            <h5 class="small">
+                                <details data-popover="up">
+                                <summary>?</summary>
+                                    <div class="popoverBody">
+                                        Nenne hier kurz (oder: in einem Schlagwort) deinen Artikel. Bsp. String.
+                                    </div>
+                            </details>Produktname</h5>
+                            <input type="text" id="Produktname" name="Produktname" value="String"><!-- Value Only for Developer Purpose-->
+                        </div>
+
+                        <div class="col-12 col-md-6 mt-4">
+                            <h5 class="small">
+                                <details data-popover="up">
+                                <summary>?</summary>
+                                    <div class="popoverBody">
+                                        Kategorie des Produkts.
+                                    </div>
+                            </details>Kategorie</h5>
+                            <select name="kategorie" id="kategorie"  class="select-classic">
+                                <option value="slips">Slips</option>
+                                <option value="string">String</option>
+                                <option value="panties">Panties</option>
+                                <option value="bhdessous">Bh (Dessous)</option>
+                              </select>
+                        </div>
+
+
+                        <div class="col-12 col-md-6 mt-4">
+                            <h5 class="small">
+                                <details data-popover="up">
+                                <summary>?</summary>
+                                    <div class="popoverBody">
+                                        Hier kannst du deinen Artikel etwas genauer beschreiben, damit der Käufer sieht, was er von dir erhalten könnte. Bsp. schwarzer feuchter Spitzenstring.
+                                    </div>
+                            </details>Kurzbeschreibung</h5>
+                            <input type="text" id="Kurzbeschreibung" name="Kurzbeschreibung" value="Toller duftender Stringtanga mit Leomuster der heiß macht 🥰"><!-- Value Only for Developer Purpose-->
+                        </div>
+
+                        <div class="col-12 col-md-6 mt-4">
+                            <h5 class="small">
+                                <details data-popover="up">
+                                <summary>?</summary>
+                                    <div class="popoverBody">
+                                        Hier kannst du alle Schlagworte nennen, damit dein Produkt gefunden werden kann und Reichweite bekommt. Bitte verwende nur Tags, die auch wirklich zu deinem Artikel passen.
+(Verwende z.B. nicht den Hashtag Adidas um mehr Reichweite zu bekommen, wenn es keine Adidassocken Socken sind. Du könntest einen Käufer täuschen, der vielleicht das Original sucht).
+
+                                    </div>
+                            </details>Tags</h5>
+                            <input type="text" id="tags" name="tags" value="feucht anders"><!-- Here erasable Tags see Adobe XD-->
+                        </div>
+
+                        <div class="col-12 col-md-6 mt-4">
+                            <h5 class="small">
+                                <details data-popover="up">
+                                <summary>?</summary>
+                                    <div class="popoverBody">
+                                        Wenn das Interesse geweckt ist, kann sich der Käufer hier genau über deinen Artikel informieren. Du könntest in dem Bsp. String schreiben, wie lange du ihn tragen könntest, wie toll er sich auf deiner Haut anfühlt und du diesen auch in der Nacht trägst. Mach deinen Artikel interessant.
+                                    </div>
+                            </details>Beschreibung</h4>
+                            <textarea name="beschreibung" id="beschreibung"></textarea><!-- Value Only for Developer Purpose-->
+                        </div>
+
+                        <div class="col-12 col-md-6 mt-4">
+                            <h5 class="small">
+                                <details data-popover="up">
+                                <summary>?</summary>
+                                    <div class="popoverBody">
+                                        Achte bitte darauf, dass das Anzeigebild FSK 16 sein muss. Dies ist für alle sichtbar. Weitere Bilder zu einem Artikel können FSK 18 sein. Diese sind nur für altersgeprüfte User sichtbar. Wenn du es genauer wissen möchtest, lese bitte hier die Richtlinien LINK. Du möchtest Tipps zu guten Fotos? Dann schaue hier zu den Tipps von Frau Kruner LINK
+                                    </div>
+                            </details>Fotos hochladen</h5>
+                            <div class="image-upload">
+                                    <!-- Here drag and drop uploadable images with checkbox and posibility to erase-->
+                            </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 mt-4">
+                        <h5 class="small">
+                            <details data-popover="up">
+                            <summary>?</summary>
+                                <div class="popoverBody">
+                                    Wenn du zu deinem Artikel Foto- oder Bildmaterial senden möchtest, kannst du dies auswählen und den zusätzlich Preis in das Feld eintragen Bsp.: 30,-.
+                                 Bildmaterial wird ausschließlich verschlüsselt übermittelt und ist nur für dich und den Käufer sichtbar. Tipp von mir: Tragefotos sind wichtig, denn so sieht der Kunde, dass du echt bist und der Artikel wirklich benutzt wurde.
+
+                                </div>
+                        </details>Veredelungen </h4>
+                        <div class="border-profile">
+                            <div class="veredelungen-field">
+                                <ul>
+                                    <li><input id="menstruation" type="checkbox" /><label for="menstruation">Menstruation </label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                    <li><input id="kaviar" type="checkbox" /><label for="kaviar">Kaviar</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                    <li><input id="menstruation" type="checkbox" /><label for="menstruation">Menstruation </label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                    <li><input id="kaviar" type="checkbox" /><label for="kaviar">Kaviar</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                    <li><input id="menstruation" type="checkbox" /><label for="menstruation">Menstruation </label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                    <li><input id="kaviar" type="checkbox" /><label for="kaviar">Kaviar</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                    <li><input id="menstruation" type="checkbox" /><label for="menstruation">Menstruation </label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                    <li><input id="kaviar" type="checkbox" /><label for="kaviar">Kaviar</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+
+                                </ul>
+                            </div>
+                        </div>
+                </div>
+
+                <div class="col-12 col-md-6 mt-4">
+                    <h5 class="small">
+                        <details data-popover="up">
+                        <summary>?</summary>
+                            <div class="popoverBody">
+                                Wenn du zu deinem Artikel Foto- oder Bildmaterial senden möchtest, kannst du dies auswählen und den zusätzlich Preis in das Feld eintragen Bsp.: 30,-.
+                                 Bildmaterial wird ausschließlich verschlüsselt übermittelt und ist nur für dich und den Käufer sichtbar. Tipp von mir: Tragefotos sind wichtig, denn so sieht der Kunde, dass du echt bist und der Artikel wirklich benutzt wurde.
+                            </div>
+                    </details>Zusätze</h5>
+                    <div class="border-profile">
+                        <div class="veredelungen-field">
+                            <ul>
+                                <li><input id="video" type="checkbox" /><label for="video">Video</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                <li><input id="Foto" type="checkbox" /><label for="Foto">Foto</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h5 class="small mt-5">
+                        <details data-popover="up">
+                        <summary>?</summary>
+                            <div class="popoverBody">
+                                Trage ein, wie lange du bereit wärest, z.B. einen Slip zu tragen und lege den Preis fest. <br>
+                                Bsp. 3 Tage 20,-<br>
+                                2 Tage 10,-
+
+                            </div>
+                    </details>Tragedauer</h5>
+                    <div class="border-profile">
+                        <div class="veredelungen-field">
+                            <ul>
+                                <li><input id="1tag" type="checkbox" /><label for="1tag">1 Tag</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+                                <li><input id="2tage" type="checkbox" /><label for="2tage">2 Tage</label> <input type="text" class="price-info-veredelung"><span class="currency">€</span></li>
+    
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-12 col-md-6">
+
+                                <h5 class="small mt-5">
+                                    <details data-popover="up">
+                                    <summary>?</summary>
+                                        <div class="popoverBody">
+                                            Hier trägst du den Preis deines Artikels ohne Extras ein. Wenn ein Käufer Zusatzoptionen wählt, werden die automatisch summiert. 
+                                        </div>
+                                </details>Artikelpreis</h5>
+                                <div class="preis-angaben">
+                                    <span class="preis-angaben-produkt"><input type="text" id="artikelpreis" name="artikelpreis" value="125,99"><span class="currency">€</span></span>
+                                 </div>
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <h5 class="small mt-5">
+                                <details data-popover="up">
+                                <summary>?</summary>
+                                    <div class="popoverBody">
+                                        Tipp von mir: Lege diesen Preis pauschal in einer glatten Summe fest. Beispiel: 4,- Versandkosten für einen Slip. Darin enthalten ist das Porto, der Briefumschlag und der Vakuumierbeutel. 
+                                    </div>
+                            </details>Versandkosten</h5>
+                            <div class="preis-angaben">
+                                <span class="preis-angaben-produkt"><input type="text" id="versandkosten" name="versandkosten" ><span class="currency">€</span></span>
+                             </div>
+
+
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" type="submit">Jetzt verkaufen</button>
+                </div>
+
+
+                 
+
+                </div>
+                    </form>
+            </main>
+         </div>
+
+         
+		<footer class="f-cart">
+
+    <div class="bg-secondary">
+        <div class="container-xxl">
+            <div class="footer-headline">
+                <img data-src="img/icons/FxxK-Logo.svg" class="footer-logo lazy" alt="Frau Kruner Logo"> liebt es!
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-4 social-media-footer">
+                    <p>Folge mir auf</p>
+                    <a href="/"><img data-src="img/icons/Icon-instagram-primary.svg" class="lazy svg-up" alt="Instagram"></a>
+                    <a href="/"><img data-src="img/icons/Icon-facebook-primary.svg" class="lazy svg-up" alt="Facebook"></a>
+                </div>
+
+                <div class="col-12 col-md-4 help-footer">
+                    <p>Ich helfe gerne</p>
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/telefon-footer.svg" class="lazy svg-up" alt="Telefon"> <p>030 123 456 789</p>
+                    </a>
+
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/mail-footer.svg" class="lazy svg-up" alt="Telefon"> <p>hilfe@fraukruner.de</p>
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <p>Frau Kruner hilft dir dabei einfach vom heimischen Sofa aus gutes Geld zu verdienen.</p>
+                    <a href="/seller/registration" class="btn btn-primary">Verkäuferin werden</a>
+                </div>
+            </div>
+
+            <div class="collapsing-container-footer">
+                <div class="row">
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFrauKruner" aria-expanded="false" aria-controls="collapseFrauKruner">
+                        Frau Kruner <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseFrauKruner">
+                            <ul>
+                                <li><a href="/about">Über Frau Kruner</a></li>
+                                <li><a href="/shop">Zum Shop</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVerkauf" aria-expanded="false" aria-controls="collapseVerkauf">
+                            Verkauf <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseVerkauf">
+                            <ul>
+                                <li><a href="/seller/registration">Verkäufer/in werden</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHilfeundInfos" aria-expanded="false" aria-controls="collapseHilfeundInfos">
+                            Hilfe & Info <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseHilfeundInfos">
+                            <ul>
+                                <li><a href="/faq.html">FAQ - Hilfe</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRechtliches" aria-expanded="false" aria-controls="collapseRechtliches">
+                            Rechtliches <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseRechtliches">
+                            <ul>
+                                <li><a href="/impressum.html">Impressum</a></li>
+                                <li><a href="/page/datenschutz">Datenschutzhinweis</a></li>
+                                <li><a href="/allgemeine-geschaeftsbedingungen.html">Allgemeine Geschäftsbedingungen</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <script src="../files/jquery-3.6.0.min.js"></script>
+    <script src="js/app.min.js" async></script>
+</footer>
+	</body>
+</html>

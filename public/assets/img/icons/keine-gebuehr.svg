@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="52.12" height="52.081" viewBox="0 0 52.12 52.081">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_590" data-name="Rechteck 590" width="52.12" height="52.081" transform="translate(0 0)" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1281" data-name="Gruppe 1281" transform="translate(-1011 -884)">
+    <g id="Gruppe_1266" data-name="Gruppe 1266" transform="translate(197 56)">
+      <g id="Gruppe_1276" data-name="Gruppe 1276" transform="translate(814 828)">
+        <g id="Gruppe_1275" data-name="Gruppe 1275">
+          <g id="Gruppe_1274" data-name="Gruppe 1274" clip-path="url(#clip-path)">
+            <path id="Pfad_1310" data-name="Pfad 1310" d="M37.6,20.191A20.229,20.229,0,1,1,32,14.553" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <path id="Pfad_1311" data-name="Pfad 1311" d="M32.5,23.221a14.284,14.284,0,1,1-5.026-4.489" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <path id="Pfad_1312" data-name="Pfad 1312" d="M28.21,28.153a8.078,8.078,0,1,1-5.275-4.636" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <path id="Pfad_1313" data-name="Pfad 1313" d="M26.58,25.5,45.566,6.511V0" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <line id="Linie_132" data-name="Linie 132" x2="6.552" transform="translate(45.568 6.51)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <line id="Linie_133" data-name="Linie 133" y1="6.437" transform="translate(40.949 4.636)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <line id="Linie_134" data-name="Linie 134" x2="6.437" transform="translate(41.004 11.129)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+          </g>
+        </g>
+        <line id="Linie_135" data-name="Linie 135" x2="8.885" y2="8.885" transform="translate(16.43 26.833)" fill="none" stroke="#de322f" stroke-width="1"/>
+        <line id="Linie_136" data-name="Linie 136" x1="8.885" y2="8.885" transform="translate(16.43 26.832)" fill="none" stroke="#de322f" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+</svg>

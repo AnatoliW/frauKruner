@@ -1,0 +1,15 @@
+<svg id="Gruppe_1534" data-name="Gruppe 1534" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="92.308" height="84.535" viewBox="0 0 92.308 84.535">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_753" data-name="Rechteck 753" width="92.309" height="84.535" fill="none" stroke="#e74a3f" stroke-width="2"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1533" data-name="Gruppe 1533" clip-path="url(#clip-path)">
+    <path id="Pfad_1563" data-name="Pfad 1563" d="M.375,4.375v58.3a7.8,7.8,0,0,0,7.773,7.773H82a7.8,7.8,0,0,0,7.773-7.773V8.262a3.9,3.9,0,0,0-3.887-3.887H8.148" transform="translate(1.083 12.629)" fill="none" stroke="#e74a3f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <line id="Linie_209" data-name="Linie 209" y1="15.547" transform="translate(1.458 9.231)" fill="none" stroke="#e74a3f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <path id="Pfad_1564" data-name="Pfad 1564" d="M26.035,32.7h23.32V9.375H26.035a11.66,11.66,0,0,0,0,23.32Z" transform="translate(41.496 27.063)" fill="none" stroke="#e74a3f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <circle id="Ellipse_108" data-name="Ellipse 108" cx="3.887" cy="3.887" r="3.887" transform="translate(63.644 44.211)" fill="none" stroke="#e74a3f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <path id="Pfad_1565" data-name="Pfad 1565" d="M8.148.375a7.773,7.773,0,0,0,0,15.547" transform="translate(1.083 1.083)" fill="none" stroke="#e74a3f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <path id="Pfad_1566" data-name="Pfad 1566" d="M64.562,15.922V4.262A3.888,3.888,0,0,0,60.675.375H2.375" transform="translate(6.856 1.083)" fill="none" stroke="#e74a3f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  </g>
+</svg>

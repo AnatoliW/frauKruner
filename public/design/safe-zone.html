@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="de">
+	 <head>
+	<meta charset="UTF-8">
+	<!-- No Index-->
+	<meta name="robots" content="noindex">
+	<meta name="googlebot" content="noindex">
+	<!-- No Index-->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	<link rel="stylesheet" href="css/style.min.css" defer>
+
+	<link rel="apple-touch-icon" sizes="57x57" href="./img/favicons/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="./img/favicons/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="./img/favicons/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="./img/favicons/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="./img/favicons/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="./img/favicons/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="./img/favicons/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./img/favicons/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./img/favicons/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="./img/favicons/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./img/favicons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="./img/favicons/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./img/favicons/favicon-16x16.png">
+	<link rel="manifest" href="./files/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="./img/favicons/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+
+
+	<script>
+		function headerMenuButtonFunction() { 
+		  var navBarLock = document.getElementById("navBarHeader");
+		  document.body.classList.toggle('lock-scroll');
+		  navBarLock.classList.toggle("overflowAuto");
+
+	  };
+	  function headerSearchFunctionHidden() { 
+		  var searchAppers = document.getElementById("searchSecondaryHidden");
+		  searchAppers.classList.toggle("activeSearch");
+	  };
+
+
+	  window.onscroll = function() {removeActiveSearch()};
+
+	  function removeActiveSearch() {
+			if (document.body.scrollTop > 1 || document.documentElement.scrollTop > 1) {
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "0px";
+			} 
+			else{
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "4.3rem";
+			}
+		}
+	  
+	</script>
+
+	
+	<title>Safe zone</title>
+	<!--
+	<script>
+		document.cookie = "klaro=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+	</script>
+	-->
+	
+
+	<script type="text/plain"
+	data-type="application/javascript"
+	data-src="https://www.googletagmanager.com/gtag/js?id=G-Q53ZP4B0WM"
+	data-name="googleAnalytics">
+	</script>
+	<script defer type="text/plain" data-type="application/javascript"data-name="googleAnalytics">
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'G-Q53ZP4B0WM');
+	</script>
+
+	<!-- Google Tag Manager -->
+	<script data-type="application/javascript" type="text/plain" data-name="google-tag-manager">
+		(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+		new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+		j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+		'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+		})(window,document,'script','dataLayer','GTM-WJ2JJ8L');
+	</script>
+	<!-- End Google Tag Manager -->
+
+
+  <!-- Page loading styles -->
+  <style>
+    .page-loading {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-transition: all .4s .2s ease-in-out;
+      transition: all .4s .2s ease-in-out;
+      background-color: #fff;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 9999;
+    }
+
+    .page-loading.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .page-loading-inner {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      -webkit-transform: translateY(-50%);
+      transform: translateY(-50%);
+      -webkit-transition: opacity .2s ease-in-out;
+      transition: opacity .2s ease-in-out;
+      opacity: 0;
+    }
+    .page-loading.active > .page-loading-inner {
+      opacity: 1;
+    }
+    .page-loading-inner > span {
+      display: block;
+      font-size: 1rem;
+      font-weight: normal;
+      color: #7E7E7E;
+    }
+
+    @-webkit-keyframes spinner {
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @keyframes spinner {
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  
+
+  <!-- Page loading scripts -->
+  <script>
+	document.addEventListener("DOMContentLoaded", (event) => {
+
+		const preloader = document.querySelector('.page-loading');
+        preloader.classList.remove('active');
+        setTimeout(function () {
+          preloader.remove();
+        }, 1000);
+
+	});
+
+
+  </script>
+
+    <!-- Page loading spinner -->
+    <div class="page-loading active">
+		<div class="page-loading-inner">
+			<img src="https://fraukruner.de/assets/img/icons/lade-anim-farbe.gif" height="70px" width="70px" alt="Seite lädt">
+		  <span class="mt-3">Laden...</span>
+		</div>
+	  </div>
+
+</head>
+
+
+	<body>
+		
+<header>
+
+<!--Desktop Information-->
+<div class="container-before-header">
+    <div class="container-xxl d-flex justify-content-center align-items-center">
+        Kostenlose Anmeldung - Kostenlose Lieferung - Diskret und Anonym
+    </div>
+</div>
+<!--Desktop Information-->
+
+<!--Navigation-->
+    <nav class="navbar navbar-expand-lg " id="navBarHeader">
+        <div class="container-xxl">
+          <a class="navbar-brand" href="/"><img src="img/icons/FxxK-Logo.svg" class="navbar-logo" alt="Frau Kruner Logo"></a>
+        <!--Secondary Menu with Search for Mobile devices-->
+          <span class="navbar-header-secondary-before">
+            <ul class="navbar-header-secondary-before__list">
+
+              <li class="navbar-header-secondary-before__list__item hidden-search"  id="searchSecondaryHidden">
+
+                <button class="search-button-secondary" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/search-icon.svg" class="lazy" alt="Suche Icon"></button>
+
+                <form role="search" method="get" class="search-form-hidden" id="searchSecondaryHiddenForm" action="">
+                  <label class="d-flex">
+                    <input type="search" class="search-field-hidden" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    
+                     <span class="close-button" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/close-icon.svg" class="lazy" alt="Suche Icon"></span>
+
+                  </label>
+                  <input type="submit" class="search-submit-hidden" value="Suchen" />
+                </form>
+
+              </li>
+
+                <li class="navbar-header-secondary-before__list__item visible-search">
+                  <form role="search" method="get" class="search-form" action="">
+                    <label>
+                      <input type="search" class="search-field" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    </label>
+                    <input type="submit" class="search-submit" value="Suchen" />
+                  </form>
+                </li>
+                
+                <li class="navbar-header-secondary-before__list__item">
+                    <a href="/login-templ.html">
+                      <img src="img/icons/profil-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Profil">
+                      <svg xmlns="http://www.w3.org/2000/svg" id="iconLoggedIn" width="8.987" height="6.413" viewBox="0 0 8.987 6.413">
+                        <path data-name="iconcheck" d="M13.573,9,8.366,14.206,6,11.84" transform="translate(-5.293 -8.293)" fill="none" stroke="#db5743" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+                      </svg>
+                    </a> 
+                </li>
+
+                <li class="navbar-header-secondary-before__list__item">
+                  <span class="counter-cart">2</span>
+                    <a href="/warenkorb.html">
+                      <img src="img/icons/basket-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Warenkorb">
+                    </a> 
+                </li>
+            </ul>
+        </span>
+        <!--Secondary Menu with Search for Mobile devices-->
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" id="menuHeaderNavButton" onclick="headerMenuButtonFunction()">
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div>
+           </button>
+
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarMain">
+        <!--The Menu-->
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="/shop.html">Shop</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/safe-zone.html">Safe zone</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/ueber-fk.html">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/neuigkeiten.html">Neuigkeiten</a>
+              </li>
+              <!-- <li class="nav-item nav-item__item-primary">
+                <a class="nav-link" href="/seller-register-template.html">Unterwäsche verkaufen</a>
+              </li> -->
+            </ul>
+        <!--The Menu-->
+
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+              <span class="navbar-header-secondary">
+                  <ul class="navbar-header-secondary__list">
+                      <li class="navbar-header-secondary__list__item search-form">
+
+                        <form role="search" method="get" class="search-form" action="">
+                          <label>
+                            <input type="search" class="search-field" placeholder="Suche…" value="" name="suchfeld" title="Suchen" />
+                          </label>
+                          <input type="submit" class="search-submit" value="Suchen" />
+                        </form>
+
+                      </li>
+                      
+                      <li class="navbar-header-secondary__list__item">
+                          <a href="/login-templ.html">
+                            <img src="img/icons/profil-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Profil">
+                            <svg xmlns="http://www.w3.org/2000/svg" id="iconLoggedIn" width="8.987" height="6.413" viewBox="0 0 8.987 6.413">
+                              <path data-name="iconcheck" d="M13.573,9,8.366,14.206,6,11.84" transform="translate(-5.293 -8.293)" fill="none" stroke="#db5743" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+                            </svg>
+                            
+                            <span>Profil</span> 
+                          </a> 
+                      </li>
+
+                      <li class="navbar-header-secondary__list__item">
+                        <span class="counter-cart">2</span>
+                          <a href="/warenkorb.html">
+                            <img src="img/icons/basket-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Warenkorb">
+                            <span>Warenkorb</span>
+                          </a> 
+                      </li>
+                  </ul>
+              </span>
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+          </div>
+        </div>
+      </nav>
+<!--Navigation-->
+
+<!--Mobile Information-->
+      <div class="container-before-header__mobile">
+        <div class="container-xxl d-flex justify-content-center align-items-center">
+          Kostenlose Lieferung - Diskret und Anonym
+        </div>
+    </div>
+<!--Mobile Information-->
+
+</header>
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe data-name="google-tag-manager" data-src="https://www.googletagmanager.com/ns.html?id=GTM-WJ2JJ8L"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+		<main>
+
+			<section class="bg-secondary">
+				<div class="main-slider-front">
+					<img src="/assets/img/safe-zone/schloss.png" class="content-before-slide sz-before">
+					<div class="carousel-front-left">
+						<div class="carousel-front-left__cell" data-background-image-url="/assets/img/safe-zone/safe-zone.jpg"></div>                
+					</div>
+	
+					<div class="carousel-front-right">
+						<div class="carousel-front-right__cell">
+							<div class="carousel-front-right__content">
+								<h1 class="h2"><span class="unterline-primary">Safe</span> zone</h1>
+								<p>Egal ob dezenter Duft, feuchtes Höschen oder der Geruch von Schweiß - bei mir bekommst du alles!</p>
+								<a href="https://www.fraukruner.de/shop" class="btn btn-primary">Jetzt shoppen</a>
+							</div>
+						</div>
+	
+	
+					</div>
+	
+				</div>
+			</section>
+
+			<section class="container-xxl text-center pb-5 pt-5">
+				<svg xmlns="http://www.w3.org/2000/svg" width="56.635" height="90.471" class="mt-5 mb-5" viewBox="0 0 56.635 90.471">
+					<g id="Gruppe_1512" data-name="Gruppe 1512" transform="translate(0.59 0.59)">
+					  <g id="Gruppe_1513" data-name="Gruppe 1513">
+						<circle id="Ellipse_105" data-name="Ellipse 105" cx="26.317" cy="26.317" r="26.317" transform="translate(1.41 35.246)" fill="none" stroke="#fc6c72" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+						<path id="Pfad_1561" data-name="Pfad 1561" d="M2.375,42.144V19.173a18.8,18.8,0,1,1,37.6,0V42.144" transform="translate(6.554 1.035)" fill="none" stroke="#fc6c72" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+						<line id="Linie_208" data-name="Linie 208" y2="7.519" transform="translate(27.727 65.564)" fill="none" stroke="#fc6c72" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+						<circle id="Ellipse_106" data-name="Ellipse 106" cx="5.639" cy="5.639" r="5.639" transform="translate(22.088 56.165)" fill="none" stroke="#fc6c72" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+					  </g>
+					</g>
+				  </svg>
+				  
+				<p class="text-intro-safe">Deine Sicherheit und dein Vertrauen sind von entscheidender Bedeutung. Daher bieten wir dir und deine Daten einen geschützen Raum mit umfassenden Sicherheitsmaßnahmen, höchste Qualität und einer fortschrittlichen Authentifizierung.</öp>
+			</section>
+
+			<section class="bg-secondary">
+				<div class="container-xxl">
+					<div class="row pt-pb-10">
+						<div class="col-12 col-md-1"></div>
+						<div class="col-12 col-md-2">
+							<h5 class="text-primary">Frau Kruner:</h5>
+						</div>
+	
+						<div class="col-12 col-md-7">
+							<p class="text-about">
+	
+								<span>,,</span>Für mich als Unternehmerin, die selbst auch persönliche Kleidungsstücke online verkauft hat, ist die Anonymität im Internet von größter Bedeutung. Daher ist es mir um so wichtiger, dass alle Nutzer auf FrauKruner.de gleichermaßen geschützt werden.<br><br>
+
+								Das Internet bietet ein breites Angebot für den Verkauf unserer Kleidung, Fotos und Videos. Das hat aber auch seine Schattenseiten. Sich öffentlich zu zeigen, private Kontakte und Kontodaten zu tauschen, heißt auch immer ein Stückchen seiner Privatsphäre mitzugeben. Dies kann nicht mehr rückgängig gemacht werden. Nicht jeder führt böses im Schilde, aber unter vielen ist oft genau die eine Person. Häufig geht man leichtsinnig an Situationen heran und denkt, dass es nur die anderen trifft.<br><br>
+								
+								Meine erfolgreichen Jahre waren auch immer mit etwas Angst verbunden. Dieses Gefühl lief unterschwellig bei jedem Verkauf mit. Ich habe mich oft gefragt: „Was ist wenn…“, aber habe trotzdem weiter gemacht und wurde bestätigt. Es ist zu einigen beunruhigenden Situationen gekommen.<br><br>
+								
+								Daher habe ich diesen geschützten Raum geschaffen. Das ist besonders in einer Welt, in der persönliche Daten leicht missbraucht werden können, von größter Bedeutung. Es verhindert, dass Unbefugte Zugang zu meinem und deinem Leben erhalten und schützt vor möglichen Belästigungen oder sogar Stalking. Die Anonymität ermöglicht es beiden Parteien, Bestellungen diskret durchzuführen, ohne sich Sorgen darüber machen zu müssen, dass ihre Entscheidungen von anderen beobachtet oder beurteilt werden. 
+								<span>,,</span><br><br>
+	
+							</p>
+							<img data-src="/assets/img/icons/kruner-unterschrift.svg" class="lazy unterschrift-fk" alt="Frau Kruner Unterschrift">
+	
+						</div>
+					</div>
+				</div>
+			</section>
+
+
+			<section class="container-xxl pb-5 pt-5">
+					<h3 class="h2 mt-5 mb-5 pb-5 text-center">Deine Sicherheit — <span class="text-primary"> deine Garantie</span></h3>
+	
+
+					<div class="row  achtschritte">
+						<div class="col-12 col-md-3">
+							<h5 class="text-primary">Qualität</h5>
+						</div>
+						<div class="col-12 col-md-9">
+							
+							<p>Bei uns kannst du dich darauf verlassen, dass all unsere Mitglieder 100% echt und überprüft sind. Zur Sicherstellung höchster Qualität führen wir regelmäßige Qualitätskontrollen aller Mitglieder durch.<br><br>
+
+							Shops sind dazu angehalten, Produkte mit Duftstoffen ausschließlich vakuumverpackt zu versenden. Dabei ist es essenziell, dass die Sendung in einem neutralen Umschlag verschickt wird, auf dem die Absenderadresse von FrauKruner.de vermerkt ist. Des Weiteren erfolgt der Versand ausschließlich von Montag bis Donnerstag.<br><br>
+							
+							Offene Bestellungen täglich von uns geprüft.</p>
+						</div>
+
+						<div class="col-12 col-md-3">
+							<h5 class="text-primary">Support</h5>
+						</div>
+						<div class="col-12 col-md-9">
+							
+							<p>Bei uns bist du nicht einfach nur eine Nummer. Wir legen großen Wert darauf, dass deine Anliegen nicht nur zeitnah, sondern auch von echten Menschen mit Empathie und Verständnis bearbeitet werden.<br><br>
+							Wir verstehen, dass hinter jeder Anfrage eine individuelle Geschichte und persönliche Bedürfnisse stehen, deshalb setzen wir auf einen persönlichen und menschlichen Kundenservice, der sich um deine Anliegen kümmert und eine Lösung findet, die genau zu dir passt. Bei uns stehst du im Mittelpunkt, und wir sind für dich da.</p>
+						</div>
+
+						<div class="col-12 col-md-3">
+							<h5 class="text-primary">Gebühren</h5>
+						</div>
+						<div class="col-12 col-md-9">
+							
+							<p>Dein Shop bei uns ist und bleibt für dich vollkommen kostenlos. Das bedeutet, es fallen keine monatlichen Gebühren an, du musst kein Abonnement abschließen und es gibt auch keine versteckten Fallen oder zusätzlichen Kosten, die auf dich zukommen. <br><br>
+							Du kannst dich ausschließlich um deinen Shop und deinen Erfolg kümmern oder Einkäufe diskret tätigen und dein Erlebnis genießen. Du kannst dich auf uns verlassen. </p>
+						</div>
+
+
+					</div>
+			</section>
+
+			<section class="safez-last-image" style="background-image: url('/assets/img/safe-zone/wir-machen-was-du-nicht-weisst.jpg');">
+				<img data-src="https://www.fraukruner.de/assets/img/icons/FxxK-Logo.svg" class="lazy" width="179px" height="52px" loading="lazy" alt="Frau Kruner Logo">
+				<h4 class="h2">Ich mache was, was du nicht weißt.</h4>
+			</section>
+
+			<section class="container-xxl pt-5">
+				<h2 class="mt-5 mb-5 pb-5 text-center">Unsere Schutzmaßnahmen — <span class="text-primary"> deine Garantie</span></h2>
+	
+				<div class="schutzGarantie">
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/verschluesselte-uebertragung.svg" class="lazy mb-3" alt="Verschlüsselte Datenübertragung & Speicherung">
+						<p class="text-primary">Verschlüsselte Datenübertragung & Speicherung</p>
+						<p>Sichere Kommunikation und Aufbewahrung von Daten in einer geschützten, codierten Form, um die Vertraulichkeit und Integrität der Informationen zu gewährleisten.</p>
+					</div>
+	
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/verifizierungsdaten.svg" class="lazy mb-3" alt="Verifizierungsdaten werden gelöscht">
+						<p class="text-primary">Verifizierungsdaten werden gelöscht</p>
+						<p>Verifzierungsdaten werden gelöscht, sodass deine vertraulichen Daten nicht mehr zugänglich sind.</p>
+					</div>
+	
+	
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/18plus.svg" class="lazy mb-3" alt="Kinder- und Jugendschutz">
+						<p class="text-primary">Kinder- und Jugendschutz</p>
+						<p>Wir zeigen keine Inhalte an Jugendliche und Kinder, die potenziell schädlich oder altersunangemessen sind, sondern beschränken den Zugang auf angemessene Inhalte.</p>
+					</div>
+	
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/echtheit.svg" class="lazy mb-3" alt="Alles mit Echtheitsgarantie">
+						<p class="text-primary">Alles mit Echtheitsgarantie</p>
+						<p>Alles was du siehst, sind verifizierte und echte Shops.</p>
+					</div>
+
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/keine-pers-data.svg" class="lazy mb-3" alt="Keine persönlichen Daten an Dritte">
+						<p class="text-primary">Keine persönlichen Daten an Dritte</p>
+						<p>Es findet keine Datenübertragung an Käufer, Verkäufer oder externe Parteien statt, um die Sicherheit und Vertraulichkeit unserer Informationen zu gewährleisten.</p>
+					</div>
+	
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/verschl-bezahlung.svg" class="lazy mb-3" alt="Verschlüsselte Bezahlung">
+						<p class="text-primary">Verschlüsselte Bezahlung</p>
+						<p>Die Bezahlung erfolgt ausschließlich über verschlüsselte Kanäle und ist auf offizielle Zahlungsdienstleister wie Stripe und PayPal beschränkt.</p>
+					</div>
+	
+	
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/sicherheit-und-kaeferschutz.svg" class="lazy mb-3" alt="Sicherheit durch Käuferschutz">
+						<p class="text-primary">Sicherheit durch Käuferschutz</p>
+						<p>Unser Käuferschutz bietet Dir  Sicherheit und Gewissheit bei deinen Einkäufen, indem er  dich vor betrügerischen Transaktionen und unerwarteten Problemen schützt.</p>
+					</div>
+	
+					<div class="schutzGarantie__col">
+						<img data-src="/assets/img/safe-zone/firmensitz-in-de.svg" class="lazy mb-3" alt="Firmensitz in Deutschland">
+						<p class="text-primary">Firmensitz in Deutschland</p>
+						<p>Mehr Sicherheit wird durch unseren Firmensitz in Deutschland gewährleistet, da wir uns an strenge rechtliche Vorschriften und Datenschutzstandards halten.</p>
+					</div>
+	
+				</div>
+
+				
+			</section>
+	
+			<section>
+					<div class="vorteile-row-safe-zone">
+						<div class="vorteile-row-safe-zone__row">
+
+							<div class="vorteile-row-safe-zone__row__col">
+								<div class="vorteile-row-safe-zone__row__col-content">
+									<div class="vorteile-row-safe-zone__row__col-content-headline">
+										<h5 class="text-primary">10 Vorteile für die Verkäufer*in</h5>
+										<img data-src="/assets/img/safe-zone/icon-vorteile-verkaeferin.svg" height="84px" width="92px" loading="lazy" class="lazy" alt="Vorteile für die Verkäufer*in">
+									</div>
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Schutz der Privatsphäre</span>
+											<p>Anonymität schützt persönliche Informationen und verhindert, dass Unbefugte Zugriff auf persönliche Daten haben.
+												Verhinderung von Belästigung: Es minimiert das Risiko von Belästigung, Stalking oder unerwünschten Nachrichten von Käufern.</p>
+										</div>
+									</div>
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Diskretion</span>
+											<p>Du kannst Produkte verkaufen, ohne dass andere wissen, was genau du anbietest.</p>
+										</div>
+									</div>
+
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Sicherheit</span>
+											<p>Es verringert das Risiko von Betrug und Identitätsdiebstahl, da deine Identität nicht öffentlich bekannt ist.</p>
+										</div>
+									</div>
+
+
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Freiheit</span>
+											<p>Du kannst deine Artikel ohne Angst vor persönlichen Vorurteilen oder Urteilen über deine Angebote anbieten.</p>
+										</div>
+									</div>
+
+
+
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Flexibilität</span>
+											<p>Anonymität ermöglicht es dir, unterschiedliche Produkte ohne Sorge um Marken oder Stile zu verkaufen. Du kannst dein Profil sowie jedes Produkt schnell und unkompliziert jederzeit aktivieren oder deaktivieren.</p>
+										</div>
+									</div>
+
+
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Grenzenlose Reichweite</span>
+											<p>Du kannst im Internet verkaufen, ohne dass Kunden deine physische Adresse oder persönliche Informationen kennen.
+											</p>
+										</div>
+									</div>
+
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Schutz vor persönlichen Angriffen</span>
+											<p>Es reduziert die Wahrscheinlichkeit von Konflikten oder negativen Bewertungen, die auf persönlichen Gründen beruhen.
+											</p>
+										</div>
+									</div>
+
+
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Fokus auf das Geschäft</span>
+											<p>Die Anonymität ermöglicht es dir, den Fokus voll und ganz auf den Verkauf und die Optimierung deiner Produkte zu legen, anstatt wertvolle Zeit in Unterhaltungen mit Personen zu investieren, die letztendlich doch vom Kauf zurücktreten.</p>
+										</div>
+									</div>
+
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-primary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check"> 
+										</div>
+				
+										<div class="m-1">
+											<span class="text-primary">Kontrolle über deine Informationen</span>
+											<p>Du behältst die komplette Kontrolle über die Informationen, die du unserer Plattform teilen möchtest, und kannst so deine Sicherheit und Privatsphäre wahren.</p>
+										</div>
+									</div>
+
+
+									<a href="https://www.fraukruner.de/seller/registration" class="btn btn-primary">Jetzt als Verkäufer*in anmelden</a>
+								</div>
+							</div>
+
+							<div class="vorteile-row-safe-zone__row__col">
+								<div class="vorteile-row-safe-zone__row__col-content">
+
+									<div class="vorteile-row-safe-zone__row__col-content-headline">
+										<h5>10 Vorteile für die Käufer</h5>
+										<img data-src="/assets/img/safe-zone/icon-vorteile-kaefer.svg" height="84px" width="92px" loading="lazy" class="lazy" alt="Vorteile für die Käufer*in">
+									</div>
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Schutz der Privatsphäre</span>
+											<p>Anonymität gewährleistet, dass persönliche Informationen und das Einkaufsverhalten nicht preisgegeben werden.</p>
+										</div>
+									</div>
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Verhinderung von unerwünschter und gezielter Werbung</span>
+											<p>Anonymität verhindert, dass Unternehmen oder Verkäufer unaufgefordert auf Käufer zukommen und verhindert, dass persönliche Daten für Werbung genutzt werden.</p>
+										</div>
+									</div>
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Sichere Bezahlung und Käuferschutz</span>
+											<p>Wir gewährleisten eine sichere Bezahlungsabwicklung und schützt die Käufer vor Betrug oder nicht erhaltenen Produkten.</p>
+										</div>
+									</div>
+									
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Verhinderung von sozialer Beurteilung</span>
+											<p>Käufer können einkaufen, ohne sich Sorgen darüber zu machen, was andere über ihre Einkäufe denken könnten.</p>
+										</div>
+									</div>
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Sicherheit</span>
+											<p>Persönliche Daten sind vor Identitätsdiebstahl und Betrug geschützt.</p>
+										</div>
+									</div>
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Diskretion</span>
+											<p>Käufer können sensible Produkte diskret erwerben, ohne dass andere davon erfahren.</p>
+										</div>
+									</div>
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Unabhängigkeit</span>
+											<p>Anonymität ermöglicht es Käufern, unabhängig von ihrer Identität oder ihrem Standort einzukaufen.</p>
+										</div>
+									</div>
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Schutz vor persönlichen Angriffen</span>
+											<p>Es verringert die Wahrscheinlichkeit von Konflikten oder negativen Bewertungen, die auf persönlichen Gründen basieren.</p>
+										</div>
+									</div>
+									
+									<div class="d-flex">
+										<div class="m-1">
+											<img data-src="/assets/img/safe-zone/checkbox-sz-secondary.svg" height="30px" width="30px" loading="lazy" class="lazy" alt="Check">
+										</div>
+									
+										<div class="m-1">
+											<span class="text-secondary">Sorgenfreies Einkaufen</span>
+											<p>Käufer können in einer sicheren und urteilsfreien Umgebung einkaufen, ohne sich Gedanken über ihre Privatsphäre machen zu müssen.</p>
+										</div>
+									</div>
+									
+
+
+									<a href="https://www.fraukruner.de/register" class="btn btn-secondary">Jetzt als Käufer*in anmelden</a>
+
+								</div>
+							</div>
+						</div>
+
+					</div>
+					<div class="text-center">
+						<p>*Um Zugriff auf alle FSK18 Inhalte zu erlangen ist ausschließlich die einmalige Verifizierung notwendig.</p>
+					</div>
+			</section>
+
+
+		</main>
+		<footer class="mt-5">
+
+    <div class="container-xxl">
+        <h6 class="text-center text-primary">Zahlungsmethoden</h6>
+
+        <div class="payment-methods">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+
+        </div>
+        <div class="text-center">
+            <img data-src="/img/icons/ssl-secure-200.png" class="lazy m-3" height="80px" width="80px" titel="Moderne Sicherheitsstandarts für die Datenübertragung" alt="Unsere Webseite ist nach den neuesten Webstandarts Verschlüsselt.">
+        </div>
+
+    </div>
+
+    <div class="bg-secondary">
+        <div class="container-xxl">
+            <div class="footer-headline">
+                <img data-src="img/icons/FxxK-Logo.svg" class="footer-logo lazy" alt="Frau Kruner Logo"> liebt es!
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-4 social-media-footer">
+                    <p>Folge mir auf</p>
+                    <a href="/"><img data-src="img/icons/Icon-instagram-primary.svg" class="lazy svg-up" alt="Instagram"></a>
+                    <a href="/"><img data-src="img/icons/Icon-facebook-primary.svg" class="lazy svg-up" alt="Facebook"></a>
+                </div>
+
+                <div class="col-12 col-md-4 help-footer">
+                    <p>Ich helfe gerne</p>
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/telefon-footer.svg" class="lazy svg-up" alt="Telefon"> <p>030 123 456 789</p>
+                    </a>
+
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/mail-footer.svg" class="lazy svg-up" alt="Telefon"> <p>hilfe@fraukruner.de</p>
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <p>Frau Kruner hilft dir dabei einfach vom heimischen Sofa aus gutes Geld zu verdienen.</p>
+                    <a href="/verkaeferin-werden.html" class="btn btn-primary">Verkäuferin werden</a>
+                </div>
+            </div>
+
+            <div class="collapsing-container-footer">
+                <div class="row">
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFrauKruner" aria-expanded="false" aria-controls="collapseFrauKruner">
+                        Frau Kruner <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseFrauKruner">
+                            <ul>
+                                <li><a href="/ueber-fk.html">Über Frau Kruner</a></li>
+                                <li><a href="/shop.html">Zum Shop</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVerkauf" aria-expanded="false" aria-controls="collapseVerkauf">
+                            Verkauf <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseVerkauf">
+                            <ul>
+                                <li><a href="/verkaeferin-werden.html">Verkäufer/in werden</a></li>
+                                <li><a href="/werbematerial.html">Werbematerial</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHilfeundInfos" aria-expanded="false" aria-controls="collapseHilfeundInfos">
+                            Hilfe & Info <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseHilfeundInfos">
+                            <ul>
+                                <li><a href="/faq.html">FAQ - Hilfe</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRechtliches" aria-expanded="false" aria-controls="collapseRechtliches">
+                            Rechtliches <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseRechtliches">
+                            <ul>
+                                <li><a href="/impressum.html">Impressum</a></li>
+                                <li><a href="/datenschutzhinweis.html">Datenschutzhinweis</a></li>
+                                <li><a href="/allgemeine-geschaeftsbedingungen.html">Allgemeine Geschäftsbedingungen</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+
+    <script src="../files/jquery-3.6.0.min.js"></script>
+    <script src="js/app.min.js" async></script>
+
+    
+</footer>
+	</body>
+</html>

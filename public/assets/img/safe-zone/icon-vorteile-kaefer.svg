@@ -1,0 +1,12 @@
+<svg id="Gruppe_1536" data-name="Gruppe 1536" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="89.285" height="89.285" viewBox="0 0 89.285 89.285">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_754" data-name="Rechteck 754" width="89.285" height="89.285" fill="none" stroke="#122253" stroke-width="2"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1535" data-name="Gruppe 1535" clip-path="url(#clip-path)">
+    <path id="Pfad_1567" data-name="Pfad 1567" d="M19.172,19.172H86.841L72.7,58.051a3.755,3.755,0,0,1-3.53,2.474H26.251a3.756,3.756,0,0,1-3.729-3.293L15.412.375H.375" transform="translate(1.035 1.035)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <circle id="Ellipse_109" data-name="Ellipse 109" cx="7.519" cy="7.519" r="7.519" transform="translate(61.56 72.838)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <circle id="Ellipse_110" data-name="Ellipse 110" cx="7.519" cy="7.519" r="7.519" transform="translate(20.207 72.838)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  </g>
+</svg>

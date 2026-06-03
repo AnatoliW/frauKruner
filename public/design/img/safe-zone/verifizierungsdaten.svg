@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48.901" height="52.164" viewBox="0 0 48.901 52.164">
+  <g id="Gruppe_1593" data-name="Gruppe 1593" transform="translate(0.5 0.5)">
+    <g id="Gruppe_1580" data-name="Gruppe 1580" transform="translate(20.039 13.986)">
+      <line id="Linie_227" data-name="Linie 227" x2="7.824" y2="7.824" transform="translate(0 0.001)" fill="none" stroke="#de322f" stroke-width="1"/>
+      <line id="Linie_228" data-name="Linie 228" x1="7.824" y2="7.824" transform="translate(0)" fill="none" stroke="#de322f" stroke-width="1"/>
+    </g>
+    <line id="Linie_223" data-name="Linie 223" x2="47.901" transform="translate(0 6.674)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+    <path id="Pfad_1599" data-name="Pfad 1599" d="M26.044,7.048H5.875V5.511C5.875,2.675,8.482.375,11.7.375h8.526c3.214,0,5.821,2.3,5.821,5.136Z" transform="translate(7.99 -0.375)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+    <path id="Pfad_1604" data-name="Pfad 1604" d="M0,16V28.605" transform="translate(23.95 13.66)" fill="none" stroke="#122253" stroke-linecap="round" stroke-width="1"/>
+    <line id="Linie_225" data-name="Linie 225" y2="26.694" transform="translate(13.865 15.572)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+    <line id="Linie_226" data-name="Linie 226" y2="26.694" transform="translate(34.035 15.572)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+    <path id="Pfad_1600" data-name="Pfad 1600" d="M32.5,47.865H11.589c-4.029,0-7.352-2.79-7.553-6.34L1.875,3.375H42.213l-2.163,38.15C39.848,45.075,36.527,47.865,32.5,47.865Z" transform="translate(1.907 3.299)" fill="none" stroke="#122253" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+    <line id="Linie_227-2" data-name="Linie 227" x2="7.824" y2="7.824" transform="translate(20.039 13.987)" fill="none" stroke="#de322f" stroke-width="1"/>
+    <line id="Linie_228-2" data-name="Linie 228" x1="7.824" y2="7.824" transform="translate(20.039 13.986)" fill="none" stroke="#de322f" stroke-width="1"/>
+  </g>
+</svg>

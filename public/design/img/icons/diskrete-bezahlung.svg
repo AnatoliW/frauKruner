@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="57.817" height="52.179" viewBox="0 0 57.817 52.179">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_588" data-name="Rechteck 588" width="57.817" height="52.179" transform="translate(0 0)" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1279" data-name="Gruppe 1279" transform="translate(-429 -884)">
+    <g id="Gruppe_1264" data-name="Gruppe 1264" transform="translate(-263 166)">
+      <g id="Gruppe_1268" data-name="Gruppe 1268" transform="translate(692 718)">
+        <g id="Gruppe_1267" data-name="Gruppe 1267">
+          <g id="Gruppe_1266" data-name="Gruppe 1266" clip-path="url(#clip-path)">
+            <path id="Pfad_1307" data-name="Pfad 1307" d="M1.04,23.47,40.574.645a1.08,1.08,0,0,1,1.475.395L57.172,27.233a1.082,1.082,0,0,1-.4,1.477L17.243,51.534a1.078,1.078,0,0,1-1.475-.4L.645,24.945A1.079,1.079,0,0,1,1.04,23.47Z" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <rect id="Rechteck_587" data-name="Rechteck 587" width="47.81" height="4.199" transform="translate(2.996 29.008) rotate(-30)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <line id="Linie_125" data-name="Linie 125" y1="1.899" x2="3.289" transform="translate(38.402 31.702)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+            <line id="Linie_126" data-name="Linie 126" y1="1.899" x2="3.289" transform="translate(46.029 27.299)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+          </g>
+        </g>
+        <line id="Linie_127" data-name="Linie 127" x2="12.137" y2="3.252" transform="translate(14.292 38.803)" fill="none" stroke="#de322f" stroke-width="1"/>
+        <line id="Linie_128" data-name="Linie 128" x1="3.252" y2="12.137" transform="translate(18.734 34.36)" fill="none" stroke="#de322f" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+</svg>

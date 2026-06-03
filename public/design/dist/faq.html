@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="de">
+	 <head>
+	<meta charset="UTF-8">
+	<!-- No Index-->
+	<meta name="robots" content="noindex">
+	<meta name="googlebot" content="noindex">
+	<!-- No Index-->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+	<link rel="stylesheet" href="css/style.min.css" defer>
+
+	<link rel="apple-touch-icon" sizes="57x57" href="./img/favicons/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="./img/favicons/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="./img/favicons/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="./img/favicons/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="./img/favicons/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="./img/favicons/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="./img/favicons/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./img/favicons/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./img/favicons/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="./img/favicons/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./img/favicons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="./img/favicons/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./img/favicons/favicon-16x16.png">
+	<link rel="manifest" href="./files/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="./img/favicons/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+
+
+	<script>
+		function headerMenuButtonFunction() { 
+		  var navBarLock = document.getElementById("navBarHeader");
+		  document.body.classList.toggle('lock-scroll');
+		  navBarLock.classList.toggle("overflowAuto");
+
+	  };
+	  function headerSearchFunctionHidden() { 
+		  var searchAppers = document.getElementById("searchSecondaryHidden");
+		  searchAppers.classList.toggle("activeSearch");
+	  };
+
+
+	  window.onscroll = function() {removeActiveSearch()};
+
+	  function removeActiveSearch() {
+			if (document.body.scrollTop > 1 || document.documentElement.scrollTop > 1) {
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "0px";
+			} 
+			else{
+				var searchAppersScrolls = document.getElementById("searchSecondaryHiddenForm");
+				searchAppersScrolls.style.top = "4.3rem";
+			}
+		}
+	  
+	</script>
+
+	<title>FAQ</title>
+
+</head>
+	<body>
+		
+<header>
+
+<!--Desktop Information-->
+<div class="container-before-header">
+    <div class="container-xxl d-flex justify-content-center align-items-center">
+        Kostenlose Anmeldung - Kostenlose Lieferung - Diskret und Anonym
+    </div>
+</div>
+<!--Desktop Information-->
+
+<!--Navigation-->
+    <nav class="navbar navbar-expand-lg " id="navBarHeader">
+        <div class="container-xxl">
+          <a class="navbar-brand" href="/"><img src="img/icons/FxxK-Logo.svg" class="navbar-logo" alt="Frau Kruner Logo"></a>
+        <!--Secondary Menu with Search for Mobile devices-->
+          <span class="navbar-header-secondary-before">
+            <ul class="navbar-header-secondary-before__list">
+
+              <li class="navbar-header-secondary-before__list__item hidden-search"  id="searchSecondaryHidden">
+
+                <button class="search-button-secondary" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/search-icon.svg" class="lazy" alt="Suche Icon"></button>
+
+                <form role="search" method="get" class="search-form-hidden" id="searchSecondaryHiddenForm" action="">
+                  <label class="d-flex">
+                    <input type="search" class="search-field-hidden" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    
+                     <span class="close-button" onclick="headerSearchFunctionHidden()"><img data-src="img/icons/close-icon.svg" class="lazy" alt="Suche Icon"></span>
+
+                  </label>
+                  <input type="submit" class="search-submit-hidden" value="Suchen" />
+                </form>
+
+              </li>
+
+                <li class="navbar-header-secondary-before__list__item visible-search">
+                  <form role="search" method="get" class="search-form" action="">
+                    <label>
+                      <input type="search" class="search-field" placeholder="Suche…" value="" name="s" title="Suchen" />
+                    </label>
+                    <input type="submit" class="search-submit" value="Suchen" />
+                  </form>
+                </li>
+                
+                <li class="navbar-header-secondary-before__list__item">
+                    <a href="/login-templ.html">
+                      <img src="img/icons/profil-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Profil">
+                    </a> 
+                </li>
+
+                <li class="navbar-header-secondary-before__list__item">
+                  <span class="counter-cart">2</span>
+                    <a href="/warenkorb.html">
+                      <img src="img/icons/basket-icon.svg" class="navbar-header-secondary-before__list__item__icon" alt="Warenkorb">
+                    </a> 
+                </li>
+            </ul>
+        </span>
+        <!--Secondary Menu with Search for Mobile devices-->
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" id="menuHeaderNavButton" onclick="headerMenuButtonFunction()">
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div>
+           </button>
+
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarMain">
+        <!--The Menu-->
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="/shop.html">Shop</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/bestseller.html">Bestseller</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/ueber-fk.html">About</a>
+              </li>
+              <li class="nav-item nav-item__item-primary">
+                <a class="nav-link" href="/seller-register-template.html">Unterwäsche verkaufen</a>
+              </li>
+            </ul>
+        <!--The Menu-->
+
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+              <span class="navbar-header-secondary">
+                  <ul class="navbar-header-secondary__list">
+                      <li class="navbar-header-secondary__list__item search-form">
+
+                        <form role="search" method="get" class="search-form" action="">
+                          <label>
+                            <input type="search" class="search-field" placeholder="Suche…" value="" name="suchfeld" title="Suchen" />
+                          </label>
+                          <input type="submit" class="search-submit" value="Suchen" />
+                        </form>
+
+                      </li>
+                      
+                      <li class="navbar-header-secondary__list__item">
+                          <a href="/login-templ.html">
+                            <img src="img/icons/profil-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Profil">
+                            <span>Profil</span>
+                          </a> 
+                      </li>
+
+                      <li class="navbar-header-secondary__list__item">
+                        <span class="counter-cart">2</span>
+                          <a href="/warenkorb.html">
+                            <img src="img/icons/basket-icon.svg" class="navbar-header-secondary__list__item__icon" alt="Warenkorb">
+                            <span>Warenkorb</span>
+                          </a> 
+                      </li>
+                  </ul>
+              </span>
+        <!--Secondary Menu with Search for Desktop & Small Mobile devices-->
+          </div>
+        </div>
+      </nav>
+<!--Navigation-->
+
+<!--Mobile Information-->
+      <div class="container-before-header__mobile">
+        <div class="container-xxl d-flex justify-content-center align-items-center">
+          Kostenlose Lieferung - Diskret und Anonym
+        </div>
+    </div>
+<!--Mobile Information-->
+
+</header>
+		<main class="container mt-5 mb-5">
+			<h1>FAQ</h1>
+			
+		<section class="mt-5 p-3">
+			<div class="row">
+				<div class="col-12 col-xl-6">
+					<h3 class="mt-2 mb-5 text-primary mt-5">Für Verkäufer*innen</h3>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVerkauferinWerden" aria-expanded="false" aria-controls="collapseVerkauferinWerden">
+							<span class="arrow"><span></span><span></span></span>Wie kann ich Verkäuferin werden?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseVerkauferinWerden">
+							<p>Zuerst meldest du dich bei uns an und durchläufst den Alterscheck. Dein Account wird nach einer Prüfung freigeschalten und du kannst dann deinen Shop befüllen.<br> <b>Die Anmeldung ist 100% kostenfrei!</b> <br>
+							Gebühren fallen erst an, wenn du tatsächlich etwas verkaufst. Die Gebühren betragen 20% des Nettowarenwertes. Achte darauf, dass das Anzeigebild des jeweiligen Artikels jugendfrei ist, denn das ist auch für nicht registrierte Nutzer sichtbar. <br>
+							Jedes weitere Artikelbild zu einem Angebot kann FSK 18 sein. Diese musst du mit dem Haken FSK 18 bestätigen/ markieren. Somit sind sie für nicht altersgeprüfte User vorerst verpixelt. 
+							<br>
+							Beschreibe deine Artikel so gut wie möglich, dass User auf deinen Shop aufmerksam werden und achte auch auf die Zusatzoptionen, falls du welche anbieten möchtest. Hast du einen Kundenwunsch nicht gelistet, kann der Käufer diesen in dem "Extrafeld" anfragen.<br>
+							 Du kannst dies annehmen oder ablehnen. Wenn ein Artikel gekauft wurde, bereitest du diesen vor. Ist die Ware versandfertig, markierst du dies in deinem Profil. Der Käufer weiß somit, dass er mit einer Sendung von dir rechnen kann.<br> Zusätzlich kannst du noch Bildmaterial für den Käufer hochladen, falls ihr dies vereinbart habt. Jegliche Aufnahmen werden verschlüsselt übermittelt und ist ausschließlich für dich und den Käufer sichtbar/ einsehbar.<br>
+							Verpacke die Ware immer vakuumiert und in einem neutralen Umschlag mit folgendem <br><br><b>Absender:</b> <br>
+										  <b>FrauKrunder.de<br>
+										  Schönhauser Allee 163<br>
+										  10435 Berlin </b><br><br>
+								Du kannst alle Briefarten mit dieser Adresse versehen. Päkchen und Pakete sind ausgeschlossen. Bei einem evtl. Rückläufer eines Paketes wird dir dieser in Rechnung gestellt. <b>Adressen von Käufern dürfen nicht gespeichert werden.</b> Nachfolgend erhältst du deinen Kaufbeleg/ Rechnung und dein verdientes Geld auf dein PayPal Konto. Denke bitte im Anschluss an die Bewertung deines Käufers/ Käufer*innen/ Kaufes?!
+								</p>
+						</div>
+					</div>
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWieLangeDauertVerifizierung" aria-expanded="false" aria-controls="collapseWieLangeDauertVerifizierung">
+							<span class="arrow"><span></span><span></span></span>Wie lange dauert die Verifizierung? 
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseWieLangeDauertVerifizierung">
+							<p>Die Verifizierung kann bis zu 2 Tagen in Anspruch nehmen. </p>
+						</div>
+					</div>
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHochladenVorDerVerifizierung" aria-expanded="false" aria-controls="collapseHochladenVorDerVerifizierung">
+							<span class="arrow"><span></span><span></span></span>Kann ich schon vor der Verifizierung Artikel hochladen? 
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseHochladenVorDerVerifizierung">
+							<p>Du kannst deine Artikel direkt nach der Anmeldung hochladen, sie sind aber vorab nur für dich sichtbar. Sobald dein Alter bestätigt ist, werden deine Artikel für alle zu sehen sein. </p>
+						</div>
+					</div>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsegeldErhalten" aria-expanded="false" aria-controls="collapsegeldErhalten">
+							<span class="arrow"><span></span><span></span></span>Wie lange dauert es, bis ich mein Geld erhalte? 
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapsegeldErhalten">
+							<p>Die Auszahlung auf dein PayPal Konto erhältst du 7 Tage nach dem Versenden des Pakets. Sollte das Paket bereits angekommen sein, kannst du eine frühere Auszahlung im Profil anfragen. </p>
+						</div>
+					</div>
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProblemVerkauf" aria-expanded="false" aria-controls="collapseProblemVerkauf">
+							<span class="arrow"><span></span><span></span></span>Ich habe ein Problem mit einem Verkauf, wie gehe ich vor?  
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseProblemVerkauf">
+							<p>Schreibe eine Nachricht mit der Schilderung deines Problems an <a href="mailto:hilfe@fraukruner.de">hilfe@fraukruner.de</a>.</p>
+						</div>
+					</div>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProblemWebseiteFunktion" aria-expanded="false" aria-controls="collapseProblemWebseiteFunktion">
+							<span class="arrow"><span></span><span></span></span>Die Website funktioniert nicht.
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseProblemWebseiteFunktion">
+							<p>Schreibe eine Nachricht mit der Schilderung deines Problems an <a href="mailto:hilfe@fraukruner.de">hilfe@fraukruner.de</a>.</p>
+						</div>
+					</div>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWasDatenPersonalAusW" aria-expanded="false" aria-controls="collapseWasDatenPersonalAusW">
+							<span class="arrow"><span></span><span></span></span>Was passiert mit den Daten meines Personalausweises?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseWasDatenPersonalAusW">
+							<p>Die Daten und das Foto deines Personalausweises werden ausschließlich für die Registrierung genutzt und anschließend gelöscht. Egal ob die Registrierung erfolgreich oder nicht erfolgreich war.</p>
+						</div>
+					</div>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsesonderWuensche" aria-expanded="false" aria-controls="collapsesonderWuensche">
+							<span class="arrow"><span></span><span></span></span>Wie gehe ich mit Sonderwünschen/ Bemerkungen um?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapsesonderWuensche">
+							<p>Als Verkäufer*in hast du die Möglichkeit die Sonderwünsche/ Bemerkungen des Käufers* in zu bestätigen, wenn du dies umsetzten kannst und möchtest oder abzulehnen. Der Verkauf wird bei einer Ablehnung abgebrochen. </p>
+						</div>
+					</div>
+
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsewannBildFSK18" aria-expanded="false" aria-controls="collapsewannBildFSK18">
+							<span class="arrow"><span></span><span></span></span>Warum muss das Artikelbild FSK 16 sein und weitere Bilder können FSK 18 sein? 
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapsewannBildFSK18">
+							<p>Da nicht jeder User registriert ist, müssen die Inhalte unkenntlich gemacht werden, damit der Jugendschutz eingehalten wird. Denn das Anzeigebild eines jeden Artikels ist für jeden sichtbar. Weitere Bilder zu einem Artikel können FSK18 sein. Die sind für alle registrierten Nutzer sichtbar. Markiere die FSK 18 Bilder jeweils, wenn du einen Artikel hochlädst. </p>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="col-12 col-xl-6">
+					<h3 class="mt-2 mb-5 text-primary mt-5">Für Käufer*innen</h3>
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWieKaufenGast" aria-expanded="false" aria-controls="collapseWieKaufenGast">
+							<span class="arrow"><span></span><span></span></span>Kann ich als Gast bestellen?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseWieKaufenGast">
+							<p>Ja, aber du bekommst kein Bildmaterial zu deinem Artikel, da dein Alter nicht geprüft wurde. Registriere dich <a href="https://fraukruner.de/register">hier </a>, damit du den vollen Zugriff hast.</p>
+						</div>
+					</div>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseZensierteFotos" aria-expanded="false" aria-controls="collapseZensierteFotos">
+							<span class="arrow"><span></span><span></span></span>Warum sehe ich einige Bilder verpixelt?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseZensierteFotos">
+							<p>Wenn du registriert und altersgeprüft bist, hast du uneingeschränkten Zugriff auf alle Bilder. Noch kein Mitglied? Registriere dich hier <a href="https://fraukruner.de/register">zur Registrierung</a> </p>
+						</div>
+					</div>
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWieKannIchBezahlen" aria-expanded="false" aria-controls="collapseWieKannIchBezahlen">
+							<span class="arrow"><span></span><span></span></span>Wie kann ich bezahlen?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseWieKannIchBezahlen">
+							<p>Die Bezahlung wird selbstverständlich verschlüsselt übermittelt, die Bezahlmethoden findest du unten in der Leiste. </p>
+						</div>
+					</div>
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProblemKauf" aria-expanded="false" aria-controls="collapseProblemKauf">
+							<span class="arrow"><span></span><span></span></span>Ich habe ein Problem mit einem Kauf, wie gehe ich vor?  
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseProblemKauf">
+							<p>Schreibe eine Nachricht mit der Schilderung deines Problems an <a href="mailto:hilfe@fraukruner.de">hilfe@fraukruner.de</a>.</p>
+						</div>
+					</div>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProblemWebseiteFunktionKaef" aria-expanded="false" aria-controls="collapseProblemWebseiteFunktionKaef">
+							<span class="arrow"><span></span><span></span></span>Die Website funktioniert nicht.
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseProblemWebseiteFunktionKaef">
+							<p>Schreibe eine Nachricht mit der Schilderung deines Problems an <a href="mailto:hilfe@fraukruner.de">hilfe@fraukruner.de</a>.</p>
+						</div>
+					</div>
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWasDatenPersonalAusWKaef" aria-expanded="false" aria-controls="collapseWasDatenPersonalAusWKaef">
+							<span class="arrow"><span></span><span></span></span>Was passiert mit den Daten meines Personalausweises?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapseWasDatenPersonalAusWKaef">
+							<p>Die Daten und das Foto deines Personalausweises werden ausschließlich für die Registrierung genutzt und anschließend gelöscht. Egal ob die Registrierung erfolgreich oder nicht erfolgreich war.</p>
+						</div>
+					</div>
+
+
+					<div class="faq-list-collapsing">
+						<button class="faq-collapse-button-closed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsesonderWuenscheKaef" aria-expanded="false" aria-controls="collapsesonderWuenscheKaef">
+							<span class="arrow"><span></span><span></span></span>Kann ich Sonderwünsche äußern?
+						</button>
+					
+						<div class="collapse collapse_faq__sidebar" id="collapsesonderWuenscheKaef">
+							<p>Als Käufer*in hast du hier die Möglichkeit am Ende des Bestellvorgangs spezielle Anfragen zu tätigen, die in der vorherigen Auswahl nicht zu finden sind. Gerne kannst du hier auch die Wünsche zu den Fotos und zu einem Video mitteilen. Das Feld ist auf 200 Zeichen beschränkt. Die Mitteilung deiner privaten Daten ist untersagt und verstößt gegen die Richtlinien. Der Schutz aller Personen ist uns sehr wichtig. Dein Account wird bei Verstoß gegen unsere Richtlinien ohne Vorankündigung gelöscht. </p>
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+
+
+		</section>
+
+		</main>
+		<footer class="mt-5">
+
+    <div class="container-xxl">
+        <h6 class="text-center text-primary">Zahlungsmethoden</h6>
+
+        <div class="payment-methods">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+            <img data-src="/img/payment-methods/paypal.png" class="lazy" alt="PayPal">
+            <img data-src="/img/payment-methods/visa.png" class="lazy" alt="Visa">
+        </div>
+    </div>
+
+    <div class="bg-secondary">
+        <div class="container-xxl">
+            <div class="footer-headline">
+                <img data-src="img/icons/FxxK-Logo.svg" class="footer-logo lazy" alt="Frau Kruner Logo"> liebt es!
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-4 social-media-footer">
+                    <p>Folge mir auf</p>
+                    <a href="/"><img data-src="img/icons/Icon-instagram-primary.svg" class="lazy svg-up" alt="Instagram"></a>
+                    <a href="/"><img data-src="img/icons/Icon-facebook-primary.svg" class="lazy svg-up" alt="Facebook"></a>
+                </div>
+
+                <div class="col-12 col-md-4 help-footer">
+                    <p>Ich helfe gerne</p>
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/telefon-footer.svg" class="lazy svg-up" alt="Telefon"> <p>030 123 456 789</p>
+                    </a>
+
+                    <a href="/" class="d-flex-link-footer"> 
+                        <img data-src="img/icons/mail-footer.svg" class="lazy svg-up" alt="Telefon"> <p>hilfe@fraukruner.de</p>
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <p>Frau Kruner hilft dir dabei einfach vom heimischen Sofa aus gutes Geld zu verdienen.</p>
+                    <a href="/seller/registration" class="btn btn-primary">Verkäuferin werden</a>
+                </div>
+            </div>
+
+            <div class="collapsing-container-footer">
+                <div class="row">
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFrauKruner" aria-expanded="false" aria-controls="collapseFrauKruner">
+                        Frau Kruner <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseFrauKruner">
+                            <ul>
+                                <li><a href="/about">Über Frau Kruner</a></li>
+                                <li><a href="/shop">Zum Shop</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVerkauf" aria-expanded="false" aria-controls="collapseVerkauf">
+                            Verkauf <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseVerkauf">
+                            <ul>
+                                <li><a href="/seller/registration">Verkäufer/in werden</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHilfeundInfos" aria-expanded="false" aria-controls="collapseHilfeundInfos">
+                            Hilfe & Info <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseHilfeundInfos">
+                            <ul>
+                                <li><a href="/faq.html">FAQ - Hilfe</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-3 collapsing-container-footer__col">
+                        <button class="footer-collapse-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRechtliches" aria-expanded="false" aria-controls="collapseRechtliches">
+                            Rechtliches <span class="arrow"><span></span><span></span></span>
+                        </button>
+
+                        <div class="collapse collapse__footer" id="collapseRechtliches">
+                            <ul>
+                                <li><a href="/impressum.html">Impressum</a></li>
+                                <li><a href="/page/datenschutz">Datenschutzhinweis</a></li>
+                                <li><a href="/allgemeine-geschaeftsbedingungen.html">Allgemeine Geschäftsbedingungen</a></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+
+    <script src="../files/jquery-3.6.0.min.js"></script>
+    <script src="js/app.min.js" async></script>
+
+    
+</footer>
+	</body>
+</html>

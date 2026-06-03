@@ -1,0 +1,14 @@
+<svg id="Gruppe_1424" data-name="Gruppe 1424" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="39.942" height="55.484" viewBox="0 0 39.942 55.484">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_696" data-name="Rechteck 696" width="39.942" height="55.484" transform="translate(0 0)" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1423" data-name="Gruppe 1423" clip-path="url(#clip-path)">
+    <rect id="Rechteck_695" data-name="Rechteck 695" width="38.942" height="40.966" transform="translate(0.5 14.018)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+    <path id="Pfad_1472" data-name="Pfad 1472" d="M23.612,13.378v-3.8c0-4.99-2.557-9.074-5.68-9.074H12.875C9.752.5,7.2,4.584,7.2,9.574v3.8" transform="translate(4.567 0.64)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+    <line id="Linie_149" data-name="Linie 149" x1="9.39" y2="9.39" transform="translate(26.247 18.051)" fill="none" stroke="#de322f" stroke-width="1"/>
+    <line id="Linie_150" data-name="Linie 150" x1="9.39" y1="9.39" transform="translate(26.248 18.051)" fill="none" stroke="#de322f" stroke-width="1"/>
+    <path id="Pfad_1473" data-name="Pfad 1473" d="M12.88,38.664a3.994,3.994,0,0,1,1.788,4.255c-.032.183-.049.336-.08.5L14.3,45.8l.115.041,2.356.839,1.278-2.033c.078-.144.161-.273.252-.435a4,4,0,0,1,4.075-2.168c.118.011.426.067.574.1L30.382,43.4l.8-2.24L6.727,32.459l-.8,2.24,6.766,3.835c.069.045.138.091.2.137" transform="translate(-3 6)" fill="none" stroke="#031a41" stroke-miterlimit="10" stroke-width="1"/>
+  </g>
+</svg>
