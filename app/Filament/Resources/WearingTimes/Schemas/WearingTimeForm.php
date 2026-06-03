@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Filament\Resources\WearingTimes\Schemas;
+
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
+
+class WearingTimeForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextInput::make('name'),
+                TextInput::make('slug'),
+                TextInput::make('days')
+                    ->required()
+                    ->numeric()
+                    ->default(1),
+            ]);
+    }
+}
