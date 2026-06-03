@@ -1,0 +1,74 @@
+/**
+ * Print overrides (loaded with media="print").
+ * Blacklist approach: hide only non-print elements with display:none.
+ * Avoids body visibility:hidden which can prevent content from inheriting visibility.
+ */
+/* Remove from flow - no empty space */
+body > header,
+body > footer,
+.container-before-header,
+.container-before-header__mobile,
+.profile-aside,
+.breadcrumb-userprofile,
+.profile-content__profile-meta,
+.btn-back,
+.no-print,
+.hidden-print,
+/* Voyager admin chrome */
+nav.navbar.navbar-top,
+.side-menu,
+.app-footer,
+.fadetoblack,
+#voyager-loader {
+    display: none !important;
+}
+/* Remove margins that create empty gaps */
+main,
+.profile-container,
+.profile-content,
+.container.mt-5,
+.container.mb-5 {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+/* Full-width container for print */
+.container,
+.container-fluid {
+    max-width: none !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+/* Voyager: full width for side-body and content */
+.content-container .container-fluid,
+.side-body,
+.page-content.read,
+#buyerPrintWhole {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 0.5rem !important;
+    flex: 0 0 100% !important;
+}
+/* Override style.min.css: do NOT hide body - causes content to disappear */
+body {
+    visibility: visible !important;
+}
+/* Print areas: full width */
+#buyerPrintWhole,
+#charges,
+#printableArea {
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+/* Override column constraints for full-width print */
+.row,
+.col,
+.col-1, .col-2, .col-3, .col-4, .col-5, .col-6,
+.col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+.col-md-10, .col-md-12, .col-sm-12 {
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
+}

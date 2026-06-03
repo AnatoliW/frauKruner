@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Shop\Shop;
 use App\Shop\ShopFacade;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrap();
+
         $this->loadViewsFrom(resource_path('views/vendor/voyager'), 'voyager');
 
         if (! class_exists('Voyager')) {
