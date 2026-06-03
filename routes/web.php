@@ -111,6 +111,16 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:admin']], func
 
 Auth::routes();
 
+Route::middleware(['auth', 'role:seller', 'verified'])
+    ->prefix('seller/dashboard')
+    ->as('seller.')
+    ->group(base_path('routes/seller.php'));
+
+Route::middleware(['auth', 'role:user'])
+    ->prefix('buyer/dashboard')
+    ->as('buyer.')
+    ->group(base_path('routes/buyer.php'));
+
 
 
 //cart routes

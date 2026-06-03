@@ -3,11 +3,9 @@
 namespace App\View\Components;
 
 use Illuminate\View\Component;
-use App\Slider as SliderModel;
 
-class Slider extends Component
+class Front_app extends Component
 {
-        public $sliders;
     /**
      * Create a new component instance.
      *
@@ -15,7 +13,7 @@ class Slider extends Component
      */
     public function __construct()
     {
-        $this->sliders = SliderModel::all();
+        //
     }
 
     /**
@@ -25,6 +23,6 @@ class Slider extends Component
      */
     public function render()
     {
-        return view('components.slider');
+        return view('components.front_home');
     }
 }

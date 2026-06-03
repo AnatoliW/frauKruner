@@ -3,11 +3,9 @@
 namespace App\View\Components;
 
 use Illuminate\View\Component;
-use App\Slider as SliderModel;
 
-class Slider extends Component
+class Alert extends Component
 {
-        public $sliders;
     /**
      * Create a new component instance.
      *
@@ -15,16 +13,16 @@ class Slider extends Component
      */
     public function __construct()
     {
-        $this->sliders = SliderModel::all();
+        //
     }
 
     /**
      * Get the view / contents that represent the component.
      *
-     * @return \Illuminate\Contracts\View\View|\Closure|string
+     * @return \Illuminate\View\View|string
      */
     public function render()
     {
-        return view('components.slider');
+        return view('components.alert');
     }
 }

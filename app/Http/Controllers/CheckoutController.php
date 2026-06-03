@@ -38,7 +38,7 @@ class CheckoutController extends Controller
             // 'po_box' => 'required|string',
             'message' => 'nullable|max:200',
             'datenschutz' => 'required',
-            'cf-turnstile-response' => env('CAPTCHA') == true ? 'required' : 'nullable',
+            // 'cf-turnstile-response' => env('CAPTCHA') == true ? 'required' : 'nullable',
         ]);
         if (env('CAPTCHA') == true) {
             $token = $request->input('cf-turnstile-response');

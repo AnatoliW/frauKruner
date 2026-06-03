@@ -3,19 +3,22 @@
 namespace App\View\Components;
 
 use Illuminate\View\Component;
-use App\Slider as SliderModel;
 
-class Slider extends Component
+class Dashboard extends Component
 {
-        public $sliders;
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct()
+    public $type;
+    public $title;
+    public $bread;
+    public function __construct($type, $title, $bread)
     {
-        $this->sliders = SliderModel::all();
+        $this->type = $type;
+        $this->title = $title;
+        $this->bread = $bread;
     }
 
     /**
@@ -25,6 +28,6 @@ class Slider extends Component
      */
     public function render()
     {
-        return view('components.slider');
+        return view('layouts.dashboard');
     }
 }
