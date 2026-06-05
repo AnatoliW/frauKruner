@@ -7,6 +7,7 @@ use App\Product;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -70,8 +71,10 @@ class ProductsTable
                         ->icon('heroicon-m-arrow-up')
                         ->color('success')
                         ->url(fn (Product $record): string => ProductResource::getUrl('boost', ['record' => $record])),
-                    EditAction::make()
-                        ->label('Bearbeiten'),
+                    DeleteAction::make()
+                        ->label('Loeschen'),
+                    // EditAction::make()
+                    //     ->label('Bearbeiten'),
                 ])
                     ->label('Aktionen')
                     ->icon('heroicon-m-ellipsis-vertical'),
