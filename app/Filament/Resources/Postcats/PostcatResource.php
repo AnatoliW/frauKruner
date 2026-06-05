@@ -18,7 +18,9 @@ class PostcatResource extends BaseAdminResource
 {
     protected static ?string $model = Postcat::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ? string $navigationLabel = 'Kategorien';
+    protected static string|\UnitEnum|null $navigationGroup = 'Neuigkeiten';
 
     public static function form(Schema $schema): Schema
     {

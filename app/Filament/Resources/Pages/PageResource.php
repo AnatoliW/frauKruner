@@ -18,7 +18,9 @@ class PageResource extends BaseAdminResource
 {
     protected static ?string $model = Page::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ? string $navigationLabel = 'Seiten';
+    protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     public static function form(Schema $schema): Schema
     {
@@ -29,7 +31,6 @@ class PageResource extends BaseAdminResource
     {
         return PagesTable::configure($table);
     }
-    protected static string|\UnitEnum|null $navigationGroup = 'Content Management';
 
     public static function getRelations(): array
     {

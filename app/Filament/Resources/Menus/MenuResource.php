@@ -18,11 +18,11 @@ class MenuResource extends Resource
 {
     protected static ?string $model = Menu::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
+    protected static ? string $navigationLabel = 'Menüs';
 
-    protected static ?string $navigationLabel = 'Menus';
+    protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     protected static ?string $recordTitleAttribute = 'name';
 

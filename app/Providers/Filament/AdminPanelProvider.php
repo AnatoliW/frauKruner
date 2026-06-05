@@ -234,9 +234,13 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Produkte'),
                 NavigationGroup::make()
-                    ->label('Content Management'),
+                    ->label('Nutzer'),
                 NavigationGroup::make()
-                    ->label('System Management'),
+                    ->label('Gutscheine'),
+                NavigationGroup::make()
+                    ->label('Einstellungen'),
+                NavigationGroup::make()
+                    ->label('Neuigkeiten'),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([

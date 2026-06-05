@@ -21,7 +21,9 @@ class UserResource extends BaseAdminResource
 {
     protected static ?string $model = User::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ? string $navigationLabel = 'Nutzer';
+    protected static string|\UnitEnum|null $navigationGroup = 'Nutzer';
 
     public static function form(Schema $schema): Schema
     {

@@ -19,7 +19,9 @@ class RatingResource extends BaseAdminResource
 {
     protected static ?string $model = Rating::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ? string $navigationLabel = 'Bewertungen';
+    protected static string|\UnitEnum|null $navigationGroup = 'Nutzer';
 
     public static function form(Schema $schema): Schema
     {

@@ -18,7 +18,9 @@ class CouponResource extends BaseAdminResource
 {
     protected static ?string $model = Coupon::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ? string $navigationLabel = 'Gutscheine';
+    protected static string|\UnitEnum|null $navigationGroup = 'Gutscheine';
 
     public static function form(Schema $schema): Schema
     {
