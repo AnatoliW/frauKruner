@@ -1,7 +1,11 @@
 <x-filament-panels::page>
     @php
-        $packages = $this->getPackages();
-        $product = $this->getRecord();
+        $packages = \App\Package::query()
+            ->where('type', 'Product')
+            ->orderBy('days')
+            ->get();
+
+        $product = $record;
         $recommendedPackageId = $packages->count() >= 3
             ? $packages->sortBy('days')->values()->get(1)?->id
             : $packages->first()?->id;
@@ -212,7 +216,7 @@
             <div class="boost-grid">
                 @foreach ($packages as $package)
                     @php
-                        $active = (int) $this->packageId === (int) $package->id;
+                        $active = (int) ($packageId ?? 0) === (int) $package->id;
                         $recommended = (int) $recommendedPackageId === (int) $package->id;
                     @endphp
                     <label class="boost-card {{ $active ? 'active' : '' }}">

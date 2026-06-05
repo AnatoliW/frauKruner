@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Payments\Pages;
 
 use App\Filament\Resources\Payments\PaymentResource;
-use App\Support\Settings;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -20,10 +19,5 @@ class PayPayment extends ViewRecord
                 ->label('Zurueck')
                 ->url(PaymentResource::getUrl('index')),
         ];
-    }
-
-    public function getPaypalClientId(): ?string
-    {
-        return Settings::paypalClientId();
     }
 }

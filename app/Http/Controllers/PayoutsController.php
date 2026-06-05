@@ -93,21 +93,7 @@ class PayoutsController extends Controller
 
     public function payment(Payment $payment)
     {
-        if ($payment->status == 'PAID') {
-            $payment->payable->process();
-            if ($payment->payable->boostable_type == 'App\Models\User') {
-                return redirect()->route('filament.admin.pages.dashboard')->with([
-                    'message'    => "User is now pushed",
-                    'alert-type' => 'success',
-                ]);
-            } else {
-                return redirect()->route('filament.admin.pages.dashboard')->with([
-                    'message'    => "Product is now pushed",
-                    'alert-type' => 'success',
-                ]);
-            }
-        }
-        return redirect()->route('filament.admin.resources.payments.pay', ['record' => $payment]);
+        return view('admin.payment', compact('payment'));
     }
 
 
@@ -128,17 +114,10 @@ class PayoutsController extends Controller
                 $payment->save();
 
                 $payment->payable->process();
-                if ($payment->payable->boostable_type == 'App\Models\User') {
-                    return redirect()->route('filament.admin.pages.dashboard')->with([
-                        'message'    => "User is now pushed",
-                        'alert-type' => 'success',
-                    ]);
-                } else {
-                    return redirect()->route('filament.admin.pages.dashboard')->with([
-                        'message'    => "Product is now pushed",
-                        'alert-type' => 'success',
-                    ]);
-                }
+                return redirect()->route('admin.payment', $payment)->with([
+                    'message'    => 'Payment completed successfully.',
+                    'alert-type' => 'success',
+                ]);
             } else {
                 (new PaymentProcess)->paypal($request->payment_id);
 
@@ -148,17 +127,10 @@ class PayoutsController extends Controller
                 $payment->save();
 
                 $payment->payable->process();
-                if ($payment->payable->boostable_type == 'App\Models\User') {
-                    return redirect()->route('filament.admin.pages.dashboard')->with([
-                        'message'    => "User is now pushed",
-                        'alert-type' => 'success',
-                    ]);
-                } else {
-                    return redirect()->route('filament.admin.pages.dashboard')->with([
-                        'message'    => "Product is now pushed",
-                        'alert-type' => 'success',
-                    ]);
-                }
+                return redirect()->route('admin.payment', $payment)->with([
+                    'message'    => 'Payment completed successfully.',
+                    'alert-type' => 'success',
+                ]);
             }
         } catch (Exception $e) {
             return redirect()->back()->with([

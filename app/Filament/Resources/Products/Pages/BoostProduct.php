@@ -80,6 +80,6 @@ class BoostProduct extends ViewRecord
 
         $payment = $boost->charge($package->price);
 
-        $this->redirect(route('filament.admin.resources.payments.pay', ['record' => $payment]), navigate: true);
+        $this->redirect(route('admin.payment', $payment), navigate: true);
     }
 }

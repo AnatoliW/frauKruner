@@ -1,7 +1,9 @@
 <x-filament-panels::page>
     @php
+        use App\Support\Settings;
+
         $payment = $this->getRecord();
-        $paypalClientId = $this->getPaypalClientId();
+        $paypalClientId = Settings::paypalClientId();
     @endphp
 
     <div class="mx-auto w-full max-w-xl">
