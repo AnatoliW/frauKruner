@@ -2,85 +2,133 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Resources\Users\UserResource;
+use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UsersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('role_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('username')
+                    ->label('Nutzername')
+                    ->searchable(),
+                ImageColumn::make('avatar')
+                    ->label('Profilbild')
+                    ->square()
+                    ->disk('public')
+                    ->size(88)
+                    ->defaultImageUrl(asset('images/avatar/04.png')),
+                TextColumn::make('profile.description')
+                    ->label('Profilbeschreibung')
+                    ->formatStateUsing(function (?string $state): string {
+                        $plain = html_entity_decode(strip_tags($state ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                        return trim(preg_replace('/\s+/u', ' ', $plain) ?? '');
+                    })
+                    ->limit(180)
+                    ->wrap()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('profile', function (Builder $query) use ($search): void {
+                            $query->where('description', 'like', "%{$search}%");
+                        });
+                    }),
                 TextColumn::make('name')
+                    ->label('Vorname')
                     ->searchable(),
                 TextColumn::make('last_name')
+                    ->label('Nachname')
                     ->searchable(),
+                TextColumn::make('role.display_name')
+                    ->label('Nutzerkategorie')
+                    ->formatStateUsing(fn ($state, User $record): string => $state ?: ((int) $record->role_id === 3 ? 'Seller' : ((int) $record->role_id === 2 ? 'Normal User' : 'Admin')))
+                    ->sortable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('E-Mail')
                     ->searchable(),
-                TextColumn::make('avatar')
-                    ->searchable(),
-                TextColumn::make('email_verified_at')
-                    ->dateTime()
+                TextColumn::make('boosted')
+                    ->label('Gepusht')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Gepusht' : 'Pausiert')
+                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'info')
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('username')
-                    ->searchable(),
                 TextColumn::make('status')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('visibiliti_status')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('commission')
-                    ->numeric()
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Aktiv' : 'Pausiert')
+                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'warning')
                     ->sortable(),
                 TextColumn::make('verified')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('verification_deleted_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('resend')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('last_login_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('email_send_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('boosted')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('boost_start_date')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('boost_end_date')
-                    ->dateTime()
+                    ->label('Verifiziert')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Verifiziert' : 'Unverifiziert')
+                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'info')
                     ->sortable(),
                 IconColumn::make('is_commercial')
-                    ->boolean(),
+                    ->label('Gewerblich')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                TernaryFilter::make('boosted')
+                    ->label('Gepusht')
+                    ->trueLabel('Ja')
+                    ->falseLabel('Nein')
+                    ->placeholder('Alle'),
+                TernaryFilter::make('status')
+                    ->label('Status')
+                    ->trueLabel('Aktiv')
+                    ->falseLabel('Pausiert')
+                    ->placeholder('Alle'),
+                TernaryFilter::make('verified')
+                    ->label('Verifiziert')
+                    ->trueLabel('Ja')
+                    ->falseLabel('Nein')
+                    ->placeholder('Alle'),
+                Filter::make('incomplete')
+                    ->label('Unvollstaendige Seller')
+                    ->query(fn (Builder $query): Builder => $query
+                        ->where('role_id', 3)
+                        ->whereNull('verification_deleted_at')
+                        ->doesntHave('verification')
+                        ->where(function (Builder $query): void {
+                            $query->whereNull('status')->orWhere('status', 0);
+                        })),
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    DeleteAction::make()
+                        ->label('Loeschen'),
+                    EditAction::make()
+                        ->label('Bearbeiten'),
+                    Action::make('boost_profile')
+                        ->label('Profil pushen')
+                        ->icon('heroicon-m-arrow-up')
+                        ->color('success')
+                        ->url(fn (User $record): string => UserResource::getUrl('boost', ['record' => $record])),
+                    // Action::make('show')
+                    //     ->label('Anzeigen')
+                    //     ->icon('heroicon-m-eye')
+                    //     ->color('warning')
+                    //     ->url(fn (User $record): string => UserResource::getUrl('view', ['record' => $record])),
+                ])
+                    ->label('Aktionen')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
