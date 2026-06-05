@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\WearingTimes\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,26 +17,32 @@ class WearingTimesTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Name')
                     ->searchable(),
+                TextColumn::make('days')
+                    ->label('Tage')
+                    ->numeric()
+                    ->sortable(),
                 TextColumn::make('slug')
+                    ->label('Slug')
                     ->searchable(),
                 TextColumn::make('created_at')
+                    ->label('Erstellt am')
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('days')
-                    ->numeric()
                     ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    EditAction::make()
+                        ->label('Bearbeiten'),
+                    DeleteAction::make()
+                        ->label('Loeschen'),
+                ])
+                    ->label('Aktionen')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

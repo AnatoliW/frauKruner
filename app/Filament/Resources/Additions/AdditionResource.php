@@ -6,6 +6,7 @@ use App\Addition;
 use App\Filament\Resources\Additions\Pages\CreateAddition;
 use App\Filament\Resources\Additions\Pages\EditAddition;
 use App\Filament\Resources\Additions\Pages\ListAdditions;
+use App\Filament\Resources\Additions\Pages\ViewAddition;
 use App\Filament\Resources\Additions\Schemas\AdditionForm;
 use App\Filament\Resources\Additions\Tables\AdditionsTable;
 use BackedEnum;
@@ -42,6 +43,7 @@ class AdditionResource extends BaseAdminResource
         return [
             'index' => ListAdditions::route('/'),
             'create' => CreateAddition::route('/create'),
+            'view' => ViewAddition::route('/{record}'),
             'edit' => EditAddition::route('/{record}/edit'),
         ];
     }

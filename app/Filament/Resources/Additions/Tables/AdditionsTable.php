@@ -2,7 +2,12 @@
 
 namespace App\Filament\Resources\Additions\Tables;
 
+use App\Addition;
+use App\Filament\Resources\Additions\AdditionResource;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,23 +20,33 @@ class AdditionsTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Name')
                     ->searchable(),
                 TextColumn::make('slug')
+                    ->label('Slug')
                     ->searchable(),
                 TextColumn::make('created_at')
+                    ->label('Erstellt am')
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    // Action::make('show')
+                    //     ->label('Anzeigen')
+                    //     ->icon('heroicon-m-eye')
+                    //     ->color('warning')
+                    //     ->url(fn (Addition $record): string => AdditionResource::getUrl('view', ['record' => $record])),
+                    EditAction::make()
+                        ->label('Bearbeiten'),
+                    DeleteAction::make()
+                        ->label('Loeschen'),
+                ])
+                    ->label('Aktionen')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
