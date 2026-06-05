@@ -181,7 +181,9 @@ Route::group([
 
     Route::get('order/payouts', [AdminController::class, 'index'])->name('admin.order.payouts');
     Route::get('order/lists', [AdminController::class, 'lists'])->name('admin.order.lists');
-    Route::get('order/prepayments', [AdminController::class, 'prepayments'])->name('admin.order.prepayments');
+    Route::get('order/prepayments', function () {
+        return redirect()->route('filament.admin.resources.prepayments.index');
+    })->name('admin.order.prepayments');
     Route::get('order/advance-payemnt/check/{order}', [AdminController::class, 'payemntCheck'])->name('admin.order.payment.check');
     Route::post('order/advance-payemnt/check/{order}', [AdminController::class, 'payemntCheckUpdate'])->name('admin.order.payment.check.update');
     Route::get('boost/list', [AdminController::class, 'boosts'])->name('admin.boosts.list');

@@ -53,7 +53,7 @@ class OrdersTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('commission')
-                    ->label('Komission')
+                    ->label('Komision')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('shipping_date')
