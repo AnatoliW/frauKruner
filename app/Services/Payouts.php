@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Settings;
 use Illuminate\Support\Facades\Http;
 
 class Payouts
@@ -9,8 +10,8 @@ class Payouts
 
     public static function token()
     {
-        $client_id = setting('site.client_id');
-        $secret_id = setting('site.paypal_secret_id');
+        $client_id = Settings::paypalClientId();
+        $secret_id = Settings::paypalSecretId();
         $endpoint = ['local' => 'https://api.sandbox.paypal.com/v1/oauth2/token', 'production' => 'https://api-m.paypal.com/v1/oauth2/token','development' => "https://api.sandbox.paypal.com/v1/oauth2/token"];
         $res = Http::withBasicAuth($client_id, $secret_id)
             ->asForm()

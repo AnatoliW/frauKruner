@@ -3,6 +3,7 @@
 namespace App\Payment;
 
 use App\Services\Payouts;
+use App\Support\Settings;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -47,8 +48,8 @@ class PaymentProcess
             'Package name :'.$payment->payable->package->name ;
    
      
-        $clientId = setting('site.client_id');
-        $clientSecret = setting('site.paypal_secret_id');
+        $clientId = Settings::paypalClientId();
+        $clientSecret = Settings::paypalSecretId();
         $endpoint = ['local' => 'https://api.sandbox.paypal.com/v1/payments/payment', 'production' => 'https://api-m.paypal.com/v1/payments/payment','development' => 'https://api.sandbox.paypal.com/v1/payments/payment'];
        
         $response = Http::withBasicAuth($clientId, $clientSecret)

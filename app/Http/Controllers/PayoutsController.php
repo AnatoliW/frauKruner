@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Filament\Resources\Products\ProductResource;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notification;
@@ -106,7 +107,7 @@ class PayoutsController extends Controller
                 ]);
             }
         }
-        return view('admin.payment', compact('payment'));
+        return redirect()->route('filament.admin.resources.payments.pay', ['record' => $payment]);
     }
 
 
@@ -173,18 +174,13 @@ class PayoutsController extends Controller
     }
     public function boost($type, $id)
     {
-        switch ($type) {
-            case 'Product':
-                $packages = Package::where('type', 'Product')->get();
-                $model = Product::find($id);
-                break;
-
-            default:
-                $packages = Package::where('type', 'Profile')->get();
-                $model = User::find($id);
-
-                break;
+        if ($type === 'Product') {
+            return redirect()->route('filament.admin.resources.products.boost', ['record' => $id]);
         }
+
+        $packages = Package::where('type', 'Profile')->get();
+        $model = User::find($id);
+
         if ($model->boosted) {
             if ($model instanceof User) {
                 return redirect()->route('filament.admin.pages.dashboard')->with([

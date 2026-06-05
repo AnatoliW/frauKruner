@@ -5,14 +5,16 @@ namespace App\Filament\Resources\Boosts;
 use App\Filament\Resources\Boosts\Pages\CreateBoost;
 use App\Filament\Resources\Boosts\Pages\EditBoost;
 use App\Filament\Resources\Boosts\Pages\ListBoosts;
+use App\Filament\Resources\Boosts\Pages\ViewBoost;
 use App\Filament\Resources\Boosts\Schemas\BoostForm;
 use App\Filament\Resources\Boosts\Tables\BoostsTable;
+use App\Filament\Resources\BaseAdminResource;
 use App\Models\Boost;
 use BackedEnum;
-use App\Filament\Resources\BaseAdminResource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BoostResource extends BaseAdminResource
 {
@@ -30,6 +32,14 @@ class BoostResource extends BaseAdminResource
         return BoostsTable::configure($table);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->filter()
+            ->paid()
+            ->latest();
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -43,6 +53,7 @@ class BoostResource extends BaseAdminResource
             'index' => ListBoosts::route('/'),
             'create' => CreateBoost::route('/create'),
             'edit' => EditBoost::route('/{record}/edit'),
+            'invoice' => ViewBoost::route('/{record}/invoice'),
         ];
     }
 }
