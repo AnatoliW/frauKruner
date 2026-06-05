@@ -8,6 +8,7 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use App\Filament\Widgets\DashboardOverviewWidget;
 use Filament\Pages\Dashboard;
 use Filament\Support\Icons\Heroicon;
 use Filament\Panel;
@@ -258,8 +259,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                // AccountWidget::class,
+                // FilamentInfoWidget::class,
+                DashboardOverviewWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
