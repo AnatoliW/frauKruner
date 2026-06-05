@@ -20,7 +20,11 @@ class OrderResource extends BaseAdminResource
 {
     protected static ?string $model = Order::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $navigationLabel = 'Bestellungen';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Zahlungen';
 
     public static function form(Schema $schema): Schema
     {

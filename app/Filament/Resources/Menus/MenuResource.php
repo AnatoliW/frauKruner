@@ -20,7 +20,7 @@ class MenuResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System';
+    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
 
     protected static ?string $navigationLabel = 'Menus';
 

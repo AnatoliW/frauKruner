@@ -16,9 +16,11 @@ class PayoutResource extends BaseAdminResource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationLabel = 'Payouts';
+    protected static ?string $navigationLabel = 'Auszahlungen';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Zahlungen';
 
     public static function form(Schema $schema): Schema
     {

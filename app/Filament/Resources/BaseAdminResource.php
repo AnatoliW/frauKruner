@@ -120,31 +120,35 @@ abstract class BaseAdminResource extends Resource
         return static::canPerform('edit');
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|\UnitEnum|null
     {
+        if (static::$navigationGroup) {
+            return static::$navigationGroup;
+        }
+
         $table = static::getModelTableName();
 
         if (! $table) {
-            return 'System';
+            return 'System Management';
         }
 
         $groups = [
-            'Catalog' => [
+            'Catalog Management' => [
                 'categories', 'products', 'product_tags', 'product_brands', 'prodcats', 'prodcat_products',
                 'tags', 'attributes', 'brands', 'additions', 'finishings', 'wearing_times', 'sliders',
             ],
-            'Orders & Payments' => [
+            'Order Management' => [
                 'orders', 'order_products', 'orderimages', 'payments', 'payment_icons', 'shippings',
-                'coupons', 'packages', 'boosts',
+                'coupons', 'boosts', 'payouts', 'prepayments',
             ],
-            'Users & Roles' => [
+            'Administration' => [
                 'users', 'roles', 'permissions', 'profiles', 'addresses', 'verifications', 'favorites',
                 'points', 'user_metas', 'notifications', 'ratings', 'reviews', 'methods',
             ],
-            'Content' => [
-                'pages', 'posts', 'postcats', 'faqs', 'contacts',
+            'Content Management' => [
+                'pages', 'posts', 'postcats', 'faqs', 'contacts', 'packages',
             ],
-            'System' => [
+            'System Management' => [
                 'settings', 'logs', 'images', 'metas',
             ],
         ];
@@ -155,7 +159,7 @@ abstract class BaseAdminResource extends Resource
             }
         }
 
-        return 'System';
+        return 'System Management';
     }
 
     public static function getNavigationSort(): ?int

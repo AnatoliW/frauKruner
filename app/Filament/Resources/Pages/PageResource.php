@@ -29,6 +29,7 @@ class PageResource extends BaseAdminResource
     {
         return PagesTable::configure($table);
     }
+    protected static string|\UnitEnum|null $navigationGroup = 'Content Management';
 
     public static function getRelations(): array
     {
@@ -46,6 +47,5 @@ class PageResource extends BaseAdminResource
         ];
     }
 }
-
 
 
