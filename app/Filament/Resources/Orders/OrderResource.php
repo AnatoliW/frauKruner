@@ -11,6 +11,7 @@ use App\Filament\Resources\Orders\Tables\OrdersTable;
 use App\Order;
 use BackedEnum;
 use App\Filament\Resources\BaseAdminResource;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
@@ -29,6 +30,14 @@ class OrderResource extends BaseAdminResource
     public static function table(Table $table): Table
     {
         return OrdersTable::configure($table);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->children()
+            ->paid()
+            ->latest(Order::CREATED_AT);
     }
 
     public static function getRelations(): array

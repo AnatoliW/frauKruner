@@ -227,7 +227,7 @@ class HomeController extends Controller
         ];
         Mail::to($order->email)->send(new UserNotifyEmail($mail_data));
         Mail::to($order->vendor->email)->send(new UserNotifyEmail($mail_data2));
-        return redirect('admin/order/lists')->with([
+        return redirect()->route('filament.admin.resources.orders.index')->with([
             'message'    => "Bestellung storniert",
             'alert-type' => 'success',
         ]);

@@ -5,9 +5,9 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Order;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,140 +16,84 @@ class OrdersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
                 TextColumn::make('parent_id')
+                    ->label('Haupt ID')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('vendor_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('product_id')
+                    ->label('Nutzer ID')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('first_name')
+                    ->label('Vorname')
                     ->searchable(),
                 TextColumn::make('last_name')
-                    ->searchable(),
-                TextColumn::make('additional')
-                    ->searchable(),
-                TextColumn::make('street')
-                    ->searchable(),
-                TextColumn::make('house_no')
-                    ->searchable(),
-                TextColumn::make('zip')
-                    ->searchable(),
-                TextColumn::make('federal_state')
-                    ->searchable(),
-                TextColumn::make('po_box')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->label('Email address')
-                    ->searchable(),
-                TextColumn::make('discount')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('discount_code')
-                    ->searchable(),
-                TextColumn::make('subtotal')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('tax')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('shipping_cost')
-                    ->money()
-                    ->sortable(),
-                TextColumn::make('shipping_method')
-                    ->searchable(),
-                TextColumn::make('tracking_Id')
+                    ->label('Nachname')
                     ->searchable(),
                 TextColumn::make('total')
+                    ->label('Gesamt')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('payment_gateway')
+                TextColumn::make('vendor.name')
+                    ->label('Verkaeuferin')
                     ->searchable(),
-                TextColumn::make('shipped')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('video_uploaded_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('status')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('payouts_status')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('payouts_rerquest')
-                    ->numeric()
+                    ->label('Status der Auszahlung')
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Ausgezahlt' : 'Nicht ausgezahlt')
+                    ->badge()
+                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'primary')
                     ->sortable(),
                 TextColumn::make('vendor_total')
+                    ->label('Verkaeuferin bekommt')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('commission')
+                    ->label('Komission')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('photo')
-                    ->searchable(),
-                TextColumn::make('video')
-                    ->searchable(),
                 TextColumn::make('shipping_date')
+                    ->label('Versanddatum')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('send_shipping_email')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('payment_id')
+                    ->label('Zahlungs-ID')
                     ->searchable(),
-                TextColumn::make('payment_status')
-                    ->numeric()
+                TextColumn::make('created_at')
+                    ->label('Bestelldatum')
                     ->sortable(),
-                TextColumn::make('is_rated')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('product_name')
-                    ->searchable(),
-                IconColumn::make('meta_remove_status')
-                    ->boolean(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                Action::make('view')
-                    ->label('Ansehen')
-                    ->color('warning')
-                    ->icon('heroicon-m-eye')
-                    ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
-                Action::make('payout')
-                    ->label('Auszahlen')
-                    ->color('success')
-                    ->icon('heroicon-m-wallet')
-                    ->requiresConfirmation()
-                    ->modalHeading('Auszahlung bestaetigen')
-                    ->modalDescription('Bist du sicher, dass du die Bestellung als ausgezahlt markieren moechtest?')
-                    ->url(fn (Order $record): string => route('payout', [$record, request()->integer('page', 1)]))
-                    ->visible(fn (Order $record): bool => (int) ($record->payouts_status ?? 0) === 0),
-                Action::make('cancel')
-                    ->label('Stornieren')
-                    ->color('danger')
-                    ->icon('heroicon-m-x-circle')
-                    ->requiresConfirmation()
-                    ->modalHeading('Bestellung stornieren')
-                    ->modalDescription('Bist du sicher, dass du die Bestellung stornieren moechtest?')
-                    ->url(fn (Order $record): string => route('admin.order.cancel', $record))
-                    ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
+                ActionGroup::make([
+                    Action::make('view')
+                        ->label('Ansehen')
+                        ->color('warning')
+                        ->icon('heroicon-m-eye')
+                        ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
+                    Action::make('cancel')
+                        ->label('Stornieren')
+                        ->color('danger')
+                        ->icon('heroicon-m-x-circle')
+                        ->requiresConfirmation()
+                        ->modalHeading('Bestellung stornieren')
+                        ->modalDescription('Bist du sicher, dass du die Bestellung stornieren moechtest?')
+                        ->url(fn (Order $record): string => route('admin.order.cancel', $record))
+                        ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
+                    Action::make('cancelled')
+                        ->label('Storniert')
+                        ->color('gray')
+                        ->disabled()
+                        ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) === 3),
+                ])
+                    ->label('Aktionen')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

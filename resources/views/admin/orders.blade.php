@@ -162,11 +162,6 @@
                                             {{ \Carbon\Carbon::parse($data->created_at)->format('d.m.Y') }}
                                             </td>
                                             <td class="no-sort no-click bread-actions">
-                                                @foreach($actions as $action)
-                                                    @if (!method_exists($action, 'massAction'))
-                                                        @include('voyager::bread.partials.actions', ['action' => $action])
-                                                    @endif
-                                                @endforeach
                                                 @if($data->status!==3)
                                                 <a class="btn btn-sm btn-danger pull-right view" onclick="return confirm('Bist du sicher, dass du die Bestellung stornieren möchtest?');" href="{{route('admin.order.cancel',$data->id)}}" >Stornieren</a>
                                                 @endif
