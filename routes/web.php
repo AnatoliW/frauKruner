@@ -179,7 +179,9 @@ Route::group([
     Route::get('boost/{type}/{id}', [PayoutsController::class, 'boost'])->name('admin.boost');
     Route::post('boost/{type}/{id}', [PayoutsController::class, 'boostStore'])->name('admin.boost.store');
 
-    Route::get('order/payouts', [AdminController::class, 'index'])->name('admin.order.payouts');
+    Route::get('order/payouts', function () {
+        return redirect()->route('filament.admin.resources.payouts.index');
+    })->name('admin.order.payouts');
     Route::get('order/lists', [AdminController::class, 'lists'])->name('admin.order.lists');
     Route::get('order/prepayments', function () {
         return redirect()->route('filament.admin.resources.prepayments.index');

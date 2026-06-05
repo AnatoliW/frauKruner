@@ -84,7 +84,7 @@ class PayoutsController extends Controller
         //     'title' => 'Auszahlungen',
         //     'description' => 'Auszahlung erfolgreich. Bitte überprüfe in 1 - 2 Werktagen dein Konto.',
         // ]);
-        return redirect()->route('admin.order.payouts',['page'=>$page])->with([
+        return redirect()->route('filament.admin.resources.payouts.index')->with([
             'message'    => "Auszahlung erfolgreich!",
             'alert-type' => 'success',
         ]);
