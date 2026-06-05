@@ -9,6 +9,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
+use Filament\Support\Icons\Heroicon;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -220,7 +221,7 @@ class AdminPanelProvider extends PanelProvider
         </script>
     HTML
             )
-            ->sidebarCollapsibleOnDesktop(true)
+            // ->sidebarCollapsibleOnDesktop(true)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -228,19 +229,32 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Zahlungen'),
+                    ->label('Zahlungen')
+                    ->icon(Heroicon::OutlinedCreditCard),
+
                 NavigationGroup::make()
-                    ->label('Push'),
+                    ->label('Push')
+                    ->icon(Heroicon::OutlinedRocketLaunch),
+
                 NavigationGroup::make()
-                    ->label('Produkte'),
+                    ->label('Produkte')
+                    ->icon(Heroicon::OutlinedShoppingBag),
+
                 NavigationGroup::make()
-                    ->label('Nutzer'),
+                    ->label('Nutzer')
+                    ->icon(Heroicon::OutlinedUsers),
+
                 NavigationGroup::make()
-                    ->label('Gutscheine'),
+                    ->label('Gutscheine')
+                    ->icon(Heroicon::OutlinedTicket),
+
                 NavigationGroup::make()
-                    ->label('Einstellungen'),
+                    ->label('Einstellungen')
+                    ->icon(Heroicon::OutlinedCog6Tooth),
+
                 NavigationGroup::make()
-                    ->label('Neuigkeiten'),
+                    ->label('Neuigkeiten')
+                    ->icon(Heroicon::OutlinedNewspaper),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
