@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Filament\Resources\Orders\OrderResource;
+use App\Order;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -125,7 +127,29 @@ class OrdersTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                Action::make('view')
+                    ->label('Ansehen')
+                    ->color('warning')
+                    ->icon('heroicon-m-eye')
+                    ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
+                Action::make('payout')
+                    ->label('Auszahlen')
+                    ->color('success')
+                    ->icon('heroicon-m-wallet')
+                    ->requiresConfirmation()
+                    ->modalHeading('Auszahlung bestaetigen')
+                    ->modalDescription('Bist du sicher, dass du die Bestellung als ausgezahlt markieren moechtest?')
+                    ->url(fn (Order $record): string => route('payout', [$record, request()->integer('page', 1)]))
+                    ->visible(fn (Order $record): bool => (int) ($record->payouts_status ?? 0) === 0),
+                Action::make('cancel')
+                    ->label('Stornieren')
+                    ->color('danger')
+                    ->icon('heroicon-m-x-circle')
+                    ->requiresConfirmation()
+                    ->modalHeading('Bestellung stornieren')
+                    ->modalDescription('Bist du sicher, dass du die Bestellung stornieren moechtest?')
+                    ->url(fn (Order $record): string => route('admin.order.cancel', $record))
+                    ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
