@@ -13,8 +13,11 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductsTable
 {
@@ -62,6 +65,30 @@ class ProductsTable
                     ->sortable(),
             ])
             ->filters([
+                TernaryFilter::make('status')
+                    ->label('Status')
+                    ->trueLabel('Aktiv')
+                    ->falseLabel('Inaktiv')
+                    ->placeholder('Alle'),
+                TernaryFilter::make('boosted')
+                    ->label('Gepusht')
+                    ->trueLabel('Ja')
+                    ->falseLabel('Nein')
+                    ->placeholder('Alle'),
+                Filter::make('active_boost')
+                    ->label('Aktiver Push')
+                    ->query(fn (Builder $query): Builder => $query
+                        ->where('boosted', 1)
+                        ->whereNotNull('boost_start_date')
+                        ->whereNotNull('boost_end_date')
+                        ->where('boost_start_date', '<=', now())
+                        ->where('boost_end_date', '>=', now())),
+                Filter::make('expired_boost')
+                    ->label('Push abgelaufen')
+                    ->query(fn (Builder $query): Builder => $query
+                        ->where('boosted', 1)
+                        ->whereNotNull('boost_end_date')
+                        ->where('boost_end_date', '<', now())),
                 TrashedFilter::make(),
             ])
             ->recordActions([
