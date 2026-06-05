@@ -20,6 +20,15 @@ class AttributeResource extends BaseAdminResource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+     protected static bool $shouldRegisterNavigation = false;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return AttributeForm::configure($schema);

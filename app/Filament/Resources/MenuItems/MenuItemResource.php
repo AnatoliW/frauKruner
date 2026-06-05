@@ -19,6 +19,7 @@ class MenuItemResource extends Resource
     protected static ?string $model = MenuItem::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static string|\UnitEnum|null $navigationGroup = 'System Management';
 

@@ -129,37 +129,37 @@ abstract class BaseAdminResource extends Resource
         $table = static::getModelTableName();
 
         if (! $table) {
-            return 'System Management';
+            return '';
         }
 
         $groups = [
-            'Catalog Management' => [
-                'categories', 'products', 'product_tags', 'product_brands', 'prodcats', 'prodcat_products',
-                'tags', 'attributes', 'brands', 'additions', 'finishings', 'wearing_times', 'sliders',
-            ],
-            'Order Management' => [
-                'orders', 'order_products', 'orderimages', 'payments', 'payment_icons', 'shippings',
-                'coupons', 'boosts', 'payouts', 'prepayments',
-            ],
-            'Administration' => [
-                'users', 'roles', 'permissions', 'profiles', 'addresses', 'verifications', 'favorites',
-                'points', 'user_metas', 'notifications', 'ratings', 'reviews', 'methods',
-            ],
-            'Content Management' => [
-                'pages', 'posts', 'postcats', 'faqs', 'contacts', 'packages',
-            ],
-            'System Management' => [
-                'settings', 'logs', 'images', 'metas',
-            ],
+            // 'Catalog Management' => [
+            //     'categories', 'products', 'product_tags', 'product_brands', 'prodcats', 'prodcat_products',
+            //     'tags', 'attributes', 'brands', 'additions', 'finishings', 'wearing_times', 'sliders',
+            // ],
+            // 'Order Management' => [
+            //     'orders', 'order_products', 'orderimages', 'payments', 'payment_icons', 'shippings',
+            //     'coupons', 'boosts', 'payouts', 'prepayments',
+            // ],
+            // 'Administration' => [
+            //     'users', 'roles', 'permissions', 'profiles', 'addresses', 'verifications', 'favorites',
+            //     'points', 'user_metas', 'notifications', 'ratings', 'reviews', 'methods',
+            // ],
+            // 'Content Management' => [
+            //     'pages', 'posts', 'postcats', 'faqs', 'contacts', 'packages',
+            // ],
+            // 'System Management' => [
+            //     'settings', 'logs', 'images', 'metas',
+            // ],
         ];
 
-        foreach ($groups as $group => $tables) {
-            if (in_array($table, $tables, true)) {
-                return $group;
-            }
-        }
+        // foreach ($groups as $group => $tables) {
+        //     if (in_array($table, $tables, true)) {
+        //         return $group;
+        //     }
+        // }
 
-        return 'System Management';
+        return '';
     }
 
     public static function getNavigationSort(): ?int
@@ -172,7 +172,7 @@ abstract class BaseAdminResource extends Resource
 
         $order = [
             'users' => 10,
-            'roles' => 11,
+            // 'roles' => 11,
             'permissions' => 12,
             'profiles' => 13,
             'addresses' => 14,
