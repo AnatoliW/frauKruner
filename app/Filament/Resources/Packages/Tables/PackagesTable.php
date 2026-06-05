@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Packages\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,30 +17,39 @@ class PackagesTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Name')
                     ->searchable(),
                 TextColumn::make('price')
+                    ->label('Preis')
                     ->money()
                     ->sortable(),
                 TextColumn::make('days')
+                    ->label('Tage')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('status')
-                    ->numeric()
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => ((int) $state) === 1 ? 'Aktiv' : 'Inaktiv')
+                    ->color(fn ($state): string => ((int) $state) === 1 ? 'info' : 'gray')
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Erstellt am')
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
+                TextColumn::make('type')
+                    ->label('Typ')
+                    ->wrap(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    EditAction::make()->label('Bearbeiten'),
+                    DeleteAction::make()->label('Löschen'),
+                ])
+                    ->label('Aktionen'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
