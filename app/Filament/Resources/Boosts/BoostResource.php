@@ -20,7 +20,11 @@ class BoostResource extends BaseAdminResource
 {
     protected static ?string $model = Boost::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ? string $navigationLabel = 'Push-Übersicht';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Push';
 
     public static function form(Schema $schema): Schema
     {

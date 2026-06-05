@@ -20,7 +20,9 @@ class PackageResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Content Management';
+    protected static ? string $navigationLabel = 'Push-Optionen';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Push';
 
     public static function form(Schema $schema): Schema
     {

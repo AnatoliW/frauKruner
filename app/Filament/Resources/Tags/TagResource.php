@@ -19,7 +19,9 @@ class TagResource extends BaseAdminResource
 {
     protected static ?string $model = Tag::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ? string $navigationLabel = 'Tags';
+    protected static string|\UnitEnum|null $navigationGroup = 'Produkte';
 
     public static function form(Schema $schema): Schema
     {
