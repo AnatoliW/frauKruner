@@ -13,6 +13,7 @@ use App\Filament\Resources\BaseAdminResource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PostResource extends BaseAdminResource
 {
@@ -28,6 +29,11 @@ class PostResource extends BaseAdminResource
     public static function table(Table $table): Table
     {
         return PostsTable::configure($table);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['category']);
     }
 
     public static function getRelations(): array

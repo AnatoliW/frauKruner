@@ -2,7 +2,12 @@
 
 namespace App\Filament\Resources\Faqs\Tables;
 
+use App\Faq;
+use App\Filament\Resources\Faqs\FaqResource;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -13,26 +18,50 @@ class FaqsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('question')
+                    ->label('Frage')
+                    ->wrap()
+                    ->searchable(),
+                TextColumn::make('answer')
+                    ->label('Antwort')
+                    ->limit(160)
+                    ->wrap()
                     ->searchable(),
                 TextColumn::make('type')
-                    ->numeric()
+                    ->label('Typ')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => match ((string) $state) {
+                        '3' => 'Seller',
+                        '2' => 'Buyer',
+                        '1' => 'All',
+                        default => $state ? ucfirst((string) $state) : 'All',
+                    })
+                    ->color(fn ($state): string => (string) $state === '3' ? 'info' : 'gray')
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Erstellt am')
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    DeleteAction::make()
+                        ->label('Löschen'),
+                    EditAction::make()
+                        ->label('Bearbeiten'),
+                    // Action::make('show')
+                    //     ->label('Anzeigen')
+                    //     ->icon('heroicon-m-eye')
+                    //     ->color('warning')
+                    //     ->url(fn (Faq $record): string => FaqResource::getUrl('edit', ['record' => $record])),
+                ])
+                    ->label('Aktionen')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -2,7 +2,12 @@
 
 namespace App\Filament\Resources\Ratings\Tables;
 
+use App\Filament\Resources\Ratings\RatingResource;
+use App\Rating;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -13,40 +18,46 @@ class RatingsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('status')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('product_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->label('Email address')
-                    ->searchable(),
+                    ->label('Erstellt am')
+                    ->dateTime('Y-m-d H:i:s')
+                    ->sortable(),
                 TextColumn::make('rating')
+                    ->label('Sterne')
+                    ->sortable(),
+                TextColumn::make('review')
+                    ->label('Bewertung')
+                    ->limit(180)
+                    ->wrap()
                     ->searchable(),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('vendor_id')
-                    ->numeric()
+                TextColumn::make('user.email')
+                    ->label('Nutzer')
+                    ->formatStateUsing(fn ($state, Rating $record): string => $state ?: ($record->email ?? '-'))
+                    ->searchable(),
+                TextColumn::make('vendor.email')
+                    ->label('Verkäufer')
+                    ->formatStateUsing(fn ($state): string => $state ?: '-')
                     ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    DeleteAction::make()
+                        ->label('Löschen'),
+                    EditAction::make()
+                        ->label('Bearbeiten'),
+                    // Action::make('show')
+                    //     ->label('Anzeigen')
+                    //     ->icon('heroicon-m-eye')
+                    //     ->color('warning')
+                    //     ->url(fn (Rating $record): string => RatingResource::getUrl('edit', ['record' => $record])),
+                ])
+                    ->label('Aktionen')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

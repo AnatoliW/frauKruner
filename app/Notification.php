@@ -9,6 +9,11 @@ class Notification extends Model
 {
     protected $guarded = [];
 
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class)->withDefault();
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class)->withDefault();

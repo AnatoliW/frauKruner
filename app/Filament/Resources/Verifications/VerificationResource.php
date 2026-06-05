@@ -13,6 +13,7 @@ use App\Filament\Resources\BaseAdminResource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class VerificationResource extends BaseAdminResource
 {
@@ -28,6 +29,11 @@ class VerificationResource extends BaseAdminResource
     public static function table(Table $table): Table
     {
         return VerificationsTable::configure($table);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['user.role']);
     }
 
     public static function getRelations(): array
