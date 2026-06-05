@@ -2,7 +2,12 @@
 
 namespace App\Filament\Resources\Categories\Tables;
 
+use App\Category;
+use App\Filament\Resources\Categories\CategoryResource;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
@@ -15,36 +20,56 @@ class CategoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make('parent_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('order')
+                    ->label('Bestellung')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('name')
+                    ->label('Name')
                     ->searchable(),
                 TextColumn::make('slug')
+                    ->label('Slug')
                     ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('featured')
+                    ->label('Auf der Startseite?')
                     ->numeric()
                     ->sortable(),
-                ImageColumn::make('image'),
+                ImageColumn::make('image')
+                    ->label('Bild'),
                 TextColumn::make('title')
+                    ->label('Titel')
                     ->searchable(),
+                TextColumn::make('description')
+                    ->label('Beschreibung')
+                    ->limit(80)
+                    ->wrap()
+                    ->searchable(),
+                TextColumn::make('color')
+                    ->label('Hintergrundfarbe')
+                    ->badge()
+                    ->color('gray'),
+                TextColumn::make('font')
+                    ->label('Schriftfarbe')
+                    ->badge()
+                    ->color('gray'),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    DeleteAction::make()
+                        ->label('Loeschen'),
+                    EditAction::make()
+                        ->label('Bearbeiten'),
+                    // Action::make('show')
+                    //     ->label('Anzeigen')
+                    //     ->icon('heroicon-m-eye')
+                    //     ->color('warning')
+                    //     ->url(fn (Category $record): string => CategoryResource::getUrl('view', ['record' => $record])),
+                ])
+                    ->label('Aktionen')
+                    ->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

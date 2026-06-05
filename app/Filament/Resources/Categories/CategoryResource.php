@@ -6,6 +6,7 @@ use App\Category;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
+use App\Filament\Resources\Categories\Pages\ViewCategory;
 use App\Filament\Resources\Categories\Schemas\CategoryForm;
 use App\Filament\Resources\Categories\Tables\CategoriesTable;
 use BackedEnum;
@@ -42,6 +43,7 @@ class CategoryResource extends BaseAdminResource
         return [
             'index' => ListCategories::route('/'),
             'create' => CreateCategory::route('/create'),
+            'view' => ViewCategory::route('/{record}'),
             'edit' => EditCategory::route('/{record}/edit'),
         ];
     }

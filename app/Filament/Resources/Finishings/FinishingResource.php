@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Finishings;
 use App\Filament\Resources\Finishings\Pages\CreateFinishing;
 use App\Filament\Resources\Finishings\Pages\EditFinishing;
 use App\Filament\Resources\Finishings\Pages\ListFinishings;
+use App\Filament\Resources\Finishings\Pages\ViewFinishing;
 use App\Filament\Resources\Finishings\Schemas\FinishingForm;
 use App\Filament\Resources\Finishings\Tables\FinishingsTable;
 use App\Finishing;
@@ -42,6 +43,7 @@ class FinishingResource extends BaseAdminResource
         return [
             'index' => ListFinishings::route('/'),
             'create' => CreateFinishing::route('/create'),
+            'view' => ViewFinishing::route('/{record}'),
             'edit' => EditFinishing::route('/{record}/edit'),
         ];
     }
