@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 if (! function_exists('media_url')) {
@@ -16,11 +17,26 @@ if (! function_exists('media_url')) {
             return $path;
         }
 
-        if (Str::startsWith($path, ['assets/', 'images/', 'storage/'])) {
+        if (Str::startsWith($path, ['assets/', 'images/'])) {
             return asset($path);
         }
 
-        return asset('storage/' . ltrim($path, '/'));
+        // Keep compatibility with legacy values stored as "public/..." or "storage/...".
+        if (Str::startsWith($path, 'public/')) {
+            $path = Str::after($path, 'public/');
+        }
+
+        if (Str::startsWith($path, 'storage/')) {
+            $path = Str::after($path, 'storage/');
+        }
+
+        $normalizedPath = ltrim($path, '/');
+
+        try {
+            return Storage::url($normalizedPath);
+        } catch (\Throwable $throwable) {
+            return asset('storage/' . $normalizedPath);
+        }
     }
 }
 
