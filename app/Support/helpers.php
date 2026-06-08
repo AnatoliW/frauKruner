@@ -33,7 +33,15 @@ if (! function_exists('media_url')) {
         $normalizedPath = ltrim($path, '/');
 
         try {
-            return Storage::url($normalizedPath);
+            $disk = config('filesystems.default', 'public');
+
+            if (config('filesystems.disks.s3.bucket')) {
+                $disk = 's3';
+            }
+
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $filesystem */ $filesystem = Storage::disk($disk);
+
+            return $filesystem->url($normalizedPath);
         } catch (\Throwable $throwable) {
             return asset('storage/' . $normalizedPath);
         }
