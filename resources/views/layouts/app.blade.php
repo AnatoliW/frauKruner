@@ -1,12 +1,15 @@
 @php
-$menus = menu('main', '_json');
-$paymentMethods = Cache::get('payment_methods');
+    $menus = menu('main', '_json');
+    $paymentMethods = Cache::get('payment_methods');
 
-if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMethods->contains(fn ($item) => !is_object($item))) {
-    Cache::forget('payment_methods');
-    $paymentMethods = App\PaymentIcon::all();
-    Cache::put('payment_methods', $paymentMethods, 60);
-}
+    if (
+        !($paymentMethods instanceof \Illuminate\Support\Collection) ||
+        $paymentMethods->contains(fn($item) => !is_object($item))
+    ) {
+        Cache::forget('payment_methods');
+        $paymentMethods = App\PaymentIcon::all();
+        Cache::put('payment_methods', $paymentMethods, 60);
+    }
 
 @endphp
 
@@ -19,8 +22,8 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
 
     <!-- Robots Header Development-->
     @if (env('APP_ENV') == 'development')
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="googlebot" content="noindex, nofollow">
+        <meta name="robots" content="noindex, nofollow">
+        <meta name="googlebot" content="noindex, nofollow">
     @endif
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -83,7 +86,9 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
     <script defer data-config="klaroConfig" type="application/javascript" src="{{ asset('assets/js/klaro.js') }}"></script>
 
     <!-- Google Tag Manager -->
-    <script
+
+    @if (env('APP_ENV') == 'production')
+        <script
         async
         data-type="application/javascript"
         type="text/plain"
@@ -91,7 +96,7 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
         data-name="googleAnalytics">
     </script>
 
-    <script defer type="text/plain" data-type="application/javascript" data-name="googleAnalytics">
+        <script defer type="text/plain" data-type="application/javascript" data-name="googleAnalytics">
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
@@ -100,7 +105,7 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
     </script>
 
 
-    <script
+        <script
         data-type="application/javascript"
         type="text/plain"
         data-name="google-tag-manager">
@@ -110,7 +115,7 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
         'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','GTM-WJ2JJ8L');
     </script>
-
+    @endif
 
     <!-- Google tag (gtag.js)
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q53ZP4B0WM"></script>
@@ -299,16 +304,17 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
 
 <body>
     <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe data-name="google-tag-manager" data-src="https://www.googletagmanager.com/ns.html?id=GTM-WJ2JJ8L"
-            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <noscript><iframe data-name="google-tag-manager"
+            data-src="https://www.googletagmanager.com/ns.html?id=GTM-WJ2JJ8L" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
     <header>
         @if (env('APP_ENV') == 'development')
-        <div class="d-flex justify-content-center align-items-center"
-            style="background-color: red; color: #fff; font-size: 1.2rem; font-weight: 700; height: 3rem;">
-            <span class="text-center">ES IST EINE TESTSEITE BITTE NICHT BESTELLEN!!!!!!!!</span>
-        </div>
+            <div class="d-flex justify-content-center align-items-center"
+                style="background-color: red; color: #fff; font-size: 1.2rem; font-weight: 700; height: 3rem;">
+                <span class="text-center">ES IST EINE TESTSEITE BITTE NICHT BESTELLEN!!!!!!!!</span>
+            </div>
         @endif
 
         <!--Desktop Information-->
@@ -364,11 +370,9 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
 
                         <li class="navbar-header-secondary-before__list__item">
                             <a href="{{ route('login') }}"
-                                @if (Auth::check())
-                                title="Zum Profil"
+                                @if (Auth::check()) title="Zum Profil"
                                 @else
-                                title="Zum Login/ Zur Registrierung"
-                                @endif>
+                                title="Zum Login/ Zur Registrierung" @endif>
                                 <svg xmlns="http://www.w3.org/2000/svg" height="23px" width="24px"
                                     viewBox="0 0 22.314 24.5">
                                     <g id="Gruppe_1098" data-name="Gruppe 1098"
@@ -387,33 +391,33 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                                     </g>
                                 </svg>
                                 @if (Auth::check())
-                                <svg xmlns="http://www.w3.org/2000/svg" id="iconLoggedIn" width="8.987"
-                                    height="6.413" viewBox="0 0 8.987 6.413">
-                                    <path data-name="iconcheck" d="M13.573,9,8.366,14.206,6,11.84"
-                                        transform="translate(-5.293 -8.293)" fill="none" stroke="#db5743"
-                                        stroke-linecap="round" stroke-linejoin="round" stroke-width="1" />
-                                </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" id="iconLoggedIn" width="8.987"
+                                        height="6.413" viewBox="0 0 8.987 6.413">
+                                        <path data-name="iconcheck" d="M13.573,9,8.366,14.206,6,11.84"
+                                            transform="translate(-5.293 -8.293)" fill="none" stroke="#db5743"
+                                            stroke-linecap="round" stroke-linejoin="round" stroke-width="1" />
+                                    </svg>
                                 @endif
 
                             </a>
                         </li>
                         @if (Auth::check())
-                        @if (auth()->user()?->role_id !== 3 && auth()->user()?->role_id !== 1)
-                        <li class="navbar-header-secondary__list__item favorit">
-                            <span class="counter-cart counter-fav"
-                                id="">{{ auth()->user()?->favorites->count() ?? '0' }}</span>
-                            <a href="/buyer/dashboard/favoriten">
-                                <svg xmlns="http://www.w3.org/2000/svg" height="20"
-                                    viewBox="0 0 27.182 25">
-                                    <path id="icon-hearth"
-                                        d="M29.182,10.3A6.687,6.687,0,0,0,22.363,3.75a6.83,6.83,0,0,0-6.272,3.975A6.831,6.831,0,0,0,9.817,3.75,6.687,6.687,0,0,0,3,10.3C3,20.8,16.091,27.75,16.091,27.75S29.182,20.8,29.182,10.3Z"
-                                        transform="translate(-2.5 -3.25)" fill="none"
-                                        stroke-linecap="round" stroke-linejoin="round" stroke-width="1" />
-                                </svg>
+                            @if (auth()->user()?->role_id !== 3 && auth()->user()?->role_id !== 1)
+                                <li class="navbar-header-secondary__list__item favorit">
+                                    <span class="counter-cart counter-fav"
+                                        id="">{{ auth()->user()?->favorites->count() ?? '0' }}</span>
+                                    <a href="/buyer/dashboard/favoriten">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20"
+                                            viewBox="0 0 27.182 25">
+                                            <path id="icon-hearth"
+                                                d="M29.182,10.3A6.687,6.687,0,0,0,22.363,3.75a6.83,6.83,0,0,0-6.272,3.975A6.831,6.831,0,0,0,9.817,3.75,6.687,6.687,0,0,0,3,10.3C3,20.8,16.091,27.75,16.091,27.75S29.182,20.8,29.182,10.3Z"
+                                                transform="translate(-2.5 -3.25)" fill="none"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="1" />
+                                        </svg>
 
-                            </a>
-                        </li>
-                        @endif
+                                    </a>
+                                </li>
+                            @endif
                         @endif
                         <li class="navbar-header-secondary-before__list__item">
                             <span class="counter-cart ">{{ Cart::getContent()->count() }}</span>
@@ -496,11 +500,9 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
 
                             <li class="navbar-header-secondary__list__item">
                                 <a href="{{ url('login') }}"
-                                    @if (Auth::check())
-                                    title="Zum Profil"
+                                    @if (Auth::check()) title="Zum Profil"
                                     @else
-                                    title="Zum Login/Registrierung"
-                                    @endif>
+                                    title="Zum Login/Registrierung" @endif>
                                     <svg xmlns="http://www.w3.org/2000/svg" height="23px" width="24px"
                                         viewBox="0 0 22.314 24.5">
                                         <g id="Gruppe_1098" data-name="Gruppe 1098"
@@ -519,33 +521,33 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                                         </g>
                                     </svg>
                                     @if (Auth::check())
-                                    <svg xmlns="http://www.w3.org/2000/svg" id="iconLoggedIn" width="8.987"
-                                        height="6.413" viewBox="0 0 8.987 6.413">
-                                        <path data-name="iconcheck" d="M13.573,9,8.366,14.206,6,11.84"
-                                            transform="translate(-5.293 -8.293)" fill="none" stroke="#db5743"
-                                            stroke-linecap="round" stroke-linejoin="round" stroke-width="1" />
-                                    </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" id="iconLoggedIn" width="8.987"
+                                            height="6.413" viewBox="0 0 8.987 6.413">
+                                            <path data-name="iconcheck" d="M13.573,9,8.366,14.206,6,11.84"
+                                                transform="translate(-5.293 -8.293)" fill="none" stroke="#db5743"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="1" />
+                                        </svg>
                                     @endif
                                 </a>
                             </li>
                             @if (Auth::check())
-                            @if (auth()->user()?->role_id !== 3 && auth()->user()?->role_id !== 1)
-                            <li class="navbar-header-secondary__list__item">
-                                <span class="counter-cart counter-fav"
-                                    id="">{{ auth()->user()?->favorites?->count() ?? '0' }}</span>
+                                @if (auth()->user()?->role_id !== 3 && auth()->user()?->role_id !== 1)
+                                    <li class="navbar-header-secondary__list__item">
+                                        <span class="counter-cart counter-fav"
+                                            id="">{{ auth()->user()?->favorites?->count() ?? '0' }}</span>
 
-                                <a href="/buyer/dashboard/favoriten">
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="20"
-                                        viewBox="0 0 27.182 25">
-                                        <path id="icon-hearth"
-                                            d="M29.182,10.3A6.687,6.687,0,0,0,22.363,3.75a6.83,6.83,0,0,0-6.272,3.975A6.831,6.831,0,0,0,9.817,3.75,6.687,6.687,0,0,0,3,10.3C3,20.8,16.091,27.75,16.091,27.75S29.182,20.8,29.182,10.3Z"
-                                            transform="translate(-2.5 -3.25)" fill="none"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="1" />
-                                    </svg>
-                                </a>
-                            </li>
-                            @endif
+                                        <a href="/buyer/dashboard/favoriten">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20"
+                                                viewBox="0 0 27.182 25">
+                                                <path id="icon-hearth"
+                                                    d="M29.182,10.3A6.687,6.687,0,0,0,22.363,3.75a6.83,6.83,0,0,0-6.272,3.975A6.831,6.831,0,0,0,9.817,3.75,6.687,6.687,0,0,0,3,10.3C3,20.8,16.091,27.75,16.091,27.75S29.182,20.8,29.182,10.3Z"
+                                                    transform="translate(-2.5 -3.25)" fill="none"
+                                                    stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="1" />
+                                            </svg>
+                                        </a>
+                                    </li>
+                                @endif
                             @endif
 
                             <li class="navbar-header-secondary__list__item">
@@ -605,20 +607,24 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
             );
     @endphp
     @if (!$hideAgeGate)
-        <div class="modal fade" id="ageGateModal" tabindex="-1" aria-labelledby="ageGateModalLabel" aria-hidden="true"
-            data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal fade" id="ageGateModal" tabindex="-1" aria-labelledby="ageGateModalLabel"
+            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content py-5">
 
-                    <div class="modal-body pt-2 text-center d-flex align-items-center justify-content-center flex-column">
-                    <img class="lazy mb-4 img-fluid" alt="Kinder- und Jugendschutz" style="max-width:110px;" data-src="/assets/img/safe-zone/18plus.svg">
+                    <div
+                        class="modal-body pt-2 text-center d-flex align-items-center justify-content-center flex-column">
+                        <img class="lazy mb-4 img-fluid" alt="Kinder- und Jugendschutz" style="max-width:110px;"
+                            data-src="/assets/img/safe-zone/18plus.svg">
                         <h2 class="modal-title h4 mb-3" id="ageGateModalLabel">Willkommen im Duftparadies</h2>
                         <p class="mb-0">Diese Welt ist für neugierige Erwachsene gedacht. Bitte bestätige, dass du
                             mindestens 18 Jahre alt bist!</p>
                     </div>
-                    <div class="modal-footer d-flex align-items-center justify-content-center flex-wrap gap-2 border-0 pt-0">
+                    <div
+                        class="modal-footer d-flex align-items-center justify-content-center flex-wrap gap-2 border-0 pt-0">
                         <button type="button" class="btn btn-primary mb-2" id="ageGateAccept">Ich bin 18+</button>
-                        <a href="{{ route('age.restricted') }}" class="btn btn-primary-outline mb-0">Ich bin noch nicht 18</a>
+                        <a href="{{ route('age.restricted') }}" class="btn btn-primary-outline mb-0">Ich bin noch
+                            nicht 18</a>
                     </div>
                 </div>
             </div>
@@ -670,26 +676,27 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
 
     <footer>
         @if (!@$type == 'dashboard')
-        <div class="container-xxl">
-            <p class="h6 text-center text-primary">Zahlungsmethoden</p>
+            <div class="container-xxl">
+                <p class="h6 text-center text-primary">Zahlungsmethoden</p>
 
-            <div class="payment-methods">
+                <div class="payment-methods">
 
-                @foreach ($paymentMethods as $data)
-                @if (!is_object($data))
-                    @continue
-                @endif
-                <img data-src="{{ media_url(data_get($data, 'logo')) }}" class="lazy" alt="Bezahlmethode Logo">
-                @endforeach
-                <span>VORKASSE</span>
+                    @foreach ($paymentMethods as $data)
+                        @if (!is_object($data))
+                            @continue
+                        @endif
+                        <img data-src="{{ media_url(data_get($data, 'logo')) }}" class="lazy"
+                            alt="Bezahlmethode Logo">
+                    @endforeach
+                    <span>VORKASSE</span>
+                </div>
+
+                <div class="text-center">
+                    <img data-src="/assets/img/icons/ssl-secure-200.png" class="lazy m-3" height="80px"
+                        width="80px" titel="Moderne Sicherheitsstandarts für die Datenübertragung"
+                        alt="Unsere Webseite ist nach den neuesten Webstandarts Verschlüsselt.">
+                </div>
             </div>
-
-            <div class="text-center">
-                <img data-src="/assets/img/icons/ssl-secure-200.png" class="lazy m-3" height="80px"
-                    width="80px" titel="Moderne Sicherheitsstandarts für die Datenübertragung"
-                    alt="Unsere Webseite ist nach den neuesten Webstandarts Verschlüsselt.">
-            </div>
-        </div>
         @endif
 
         <div class="bg-secondary">
@@ -761,7 +768,8 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                                 <ul>
                                     <li><a href="/page/verkauferin-werden">Wie werde ich Verkäuferin?</a></li>
                                     <li><a href="/page/werbematerial">Werbematerial (Download)</a></li>
-                                    <li><a href="/Neuigkeiten/verkaeuferinnen-gesucht-nebenjob-frauen">Verkäuferinnen gesucht</a></li>
+                                    <li><a href="/Neuigkeiten/verkaeuferinnen-gesucht-nebenjob-frauen">Verkäuferinnen
+                                            gesucht</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -776,7 +784,8 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                             <div class="collapse collapse__footer" id="collapseHilfeundInfos">
                                 <ul>
                                     <li><a href="{{ route('faq') }}">FAQ - Hilfe</a></li>
-                                    <li><a href="mailto:k@fraukruner.de" target="_blank">Werbung/ Media Kit anfordern</a></li>
+                                    <li><a href="mailto:k@fraukruner.de" target="_blank">Werbung/ Media Kit
+                                            anfordern</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -791,8 +800,8 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                             <div class="collapse collapse__footer" id="collapseRechtliches">
                                 <ul>
                                     @foreach ($menus as $menu)
-                                    <li><a href="{{ $menu->url ? $menu->url : '#' }}"
-                                            target="{{ $menu->target }}">{{ $menu->title }}</a></li>
+                                        <li><a href="{{ $menu->url ? $menu->url : '#' }}"
+                                                target="{{ $menu->target }}">{{ $menu->title }}</a></li>
                                     @endforeach
 
 
@@ -841,24 +850,24 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                                     class="@error('email') is-invalid @enderror" id="email" name="email"
                                     value="{{ old('email') }}" required>
                                 @error('email')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
                                 @enderror
                                 <label for="password">Password</label>
                                 <input type="password" class="form-control @error('email') is-invalid @enderror"
                                     placeholder="Passwort" id="password" name="password" minlength="8" required>
                                 @error('password')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
                                 @enderror
                                 <div class="form-group mt-3">
                                     <div class="cf-turnstile" data-sitekey="{{ env('TURNSTILE_SITE_KEY') }}">
                                     </div>
                                     @if ($errors->has('cf-turnstile-response'))
-                                    <div class="text-danger">{{ $errors->first('cf-turnstile-response') }}
-                                    </div>
+                                        <div class="text-danger">{{ $errors->first('cf-turnstile-response') }}
+                                        </div>
                                     @endif
                                 </div>
                                 <input type="hidden" name="same" value="same">
@@ -868,7 +877,8 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                                 vergessen</a>
 
                             <div class="register-section mt-5">
-                                <p class="h3 small text-secondary">Ich bin neu hier und möchte alle Vorteile nutzen:</p>
+                                <p class="h3 small text-secondary">Ich bin neu hier und möchte alle Vorteile nutzen:
+                                </p>
                                 <div class="d-flex flex-wrap ">
                                     <a href="{{ route('register') }}"
                                         class="btn btn-outline-secondary mx-0 my-2 rounded-pill">Jetzt registrieren</a>
@@ -890,16 +900,16 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                 <script src="{{ asset('assets/js/app.min.js?v=9.5') }}" async></script>
                 @stack('scripts')
                 @if ($errors->any())
-                <script>
-                    @foreach($errors->all() as $error)
-                    toastr.error(@json($error));
-                    @endforeach
-                </script>
+                    <script>
+                        @foreach ($errors->all() as $error)
+                            toastr.error(@json($error));
+                        @endforeach
+                    </script>
                 @endif
                 @if (session()->has('success'))
-                <script>
-                    toastr.success("{{ session('success') }}")
-                </script>
+                    <script>
+                        toastr.success("{{ session('success') }}")
+                    </script>
                 @endif
                 <script src="{{ asset('js/custom/star-rating.js') }}" type="text/javascript"></script>
                 <script type="text/javascript">
@@ -1107,7 +1117,8 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
                             const deleteFormfavCreate = this.querySelector('.deleteFormfavCreate');
                             const favoriteId = form.querySelector('input[name="favorite_id"]').value;
 
-                            const url = `{{ route('buyer.favorite.delete', ['favorite' => '__FAVORITE__']) }}`.replace('__FAVORITE__', favoriteId);
+                            const url = `{{ route('buyer.favorite.delete', ['favorite' => '__FAVORITE__']) }}`.replace(
+                                '__FAVORITE__', favoriteId);
 
 
                             fetch(url, {
@@ -1141,7 +1152,8 @@ if (!($paymentMethods instanceof \Illuminate\Support\Collection) || $paymentMeth
 
                                         } else {
 
-                                            form.querySelector('input[name="favorite_id"]').value = data.favorite?.id
+                                            form.querySelector('input[name="favorite_id"]').value = data.favorite
+                                                ?.id
                                             button.innerHTML = ` <svg xmlns="http://www.w3.org/2000/svg"
                                                                                 viewBox="0 0 24 24" fill="currentColor"
                                                                                 class="size-6">
