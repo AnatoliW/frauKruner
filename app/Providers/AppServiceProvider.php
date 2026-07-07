@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Shop\Shop;
 use App\Shop\ShopFacade;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Config::set('mail.from.address', mail_from_address());
+        Config::set('mail.from.name', mail_from_name());
+
         Paginator::useBootstrap();
 
         $this->loadViewsFrom(resource_path('views/vendor/voyager'), 'voyager');

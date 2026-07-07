@@ -1,7 +1,7 @@
-<x-dashboard type='seller' title="Meine Bewertungen" :bread="[
+<x-dashboard type='seller' title="Erfahrungen" :bread="[
     'Startseite' => route('home'),
     'Profil' => route('seller.dashboard'),
-    'Meine Bewertungen' => route('seller.reviews'),
+    'Erfahrungen' => route('seller.reviews'),
 ]">
 
     <div class="card-fields-shopping-cart mt-5">

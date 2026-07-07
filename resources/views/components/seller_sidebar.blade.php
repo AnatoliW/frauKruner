@@ -24,7 +24,7 @@
         </li>
         <li class="profile-menu__head-item">
             <a href="{{ route('seller.reviews') }}"
-                class="to-content-btn"><span>1</span>Bewertungen</a>
+                class="to-content-btn"><span>1</span>Erfahrungen</a>
         </li>
         <li class="profile-menu__head-item">
             <a href="{{ route('seller.reviews') }}"

@@ -70,7 +70,8 @@ class UserResource extends BaseAdminResource
             'create' => CreateUser::route('/create'),
             'boost' => BoostUser::route('/{record}/boost'),
             'view' => ViewUser::route('/{record}'),
-            'edit' => EditUser::route('/{record}/edit'),
+            'edit' => ViewUser::route('/{record}/edit'),
+            'edit-form' => EditUser::route('/{record}/edit-form'),
         ];
     }
 }

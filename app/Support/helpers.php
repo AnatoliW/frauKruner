@@ -4,6 +4,38 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+if (! function_exists('mail_from_address')) {
+    function mail_from_address(): string
+    {
+        $address = env('MAIL_FROM_ADDRESS');
+
+        if (! filled($address) || $address === 'null') {
+            $host = parse_url((string) config('app.url', 'http://localhost'), PHP_URL_HOST) ?: 'localhost';
+
+            if (in_array($host, ['localhost', '127.0.0.1'], true)) {
+                return 'noreply@fraukruner.de';
+            }
+
+            return 'noreply@'.$host;
+        }
+
+        return $address;
+    }
+}
+
+if (! function_exists('mail_from_name')) {
+    function mail_from_name(): string
+    {
+        $name = env('MAIL_FROM_NAME');
+
+        if (! filled($name) || $name === 'null') {
+            return (string) config('app.name', 'Frau Kruner');
+        }
+
+        return $name;
+    }
+}
+
 if (! function_exists('media_url')) {
     function media_url(?string $path, string $fallback = 'assets/img/user.png'): string
     {

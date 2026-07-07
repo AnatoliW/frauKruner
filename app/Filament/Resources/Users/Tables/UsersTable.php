@@ -112,20 +112,21 @@ class UsersTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    DeleteAction::make()
-                        ->label('Loeschen'),
-                    EditAction::make()
-                        ->label('Bearbeiten'),
+                    Action::make('view')
+                        ->label('Ansehen')
+                        ->icon('heroicon-m-eye')
+                        ->color('warning')
+                        ->url(fn (User $record): string => UserResource::getUrl('edit', ['record' => $record])),
                     Action::make('boost_profile')
                         ->label('Profil pushen')
                         ->icon('heroicon-m-arrow-up')
                         ->color('success')
                         ->url(fn (User $record): string => UserResource::getUrl('boost', ['record' => $record])),
-                    // Action::make('show')
-                    //     ->label('Anzeigen')
-                    //     ->icon('heroicon-m-eye')
-                    //     ->color('warning')
-                    //     ->url(fn (User $record): string => UserResource::getUrl('view', ['record' => $record])),
+                    EditAction::make()
+                        ->label('Bearbeiten')
+                        ->url(fn (User $record): string => UserResource::getUrl('edit-form', ['record' => $record])),
+                    DeleteAction::make()
+                        ->label('Löschen'),
                 ])
                     ->label('Aktionen')
                     ->icon('heroicon-m-ellipsis-vertical'),

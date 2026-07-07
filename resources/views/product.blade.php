@@ -342,7 +342,7 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <p class="h5 modal-title" id="bewertungModalLabel">Meine Bewertungen</p>
+                                <p class="h5 modal-title" id="bewertungModalLabel">Erfahrungen</p>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Schließen"></button>
                             </div>
@@ -412,7 +412,7 @@
             @auth
                 @if ($baught >= 1 && $rating->count() < 1)
                     <!-- <div class="col-md-12 mt-4" id="rating">
-                        <h4>Ihre Bewertung</h4>
+                        <h4>Ihre Erfahrung</h4>
                     </div>
                     <form action="{{ url('/rating', ['product_id' => $product->id]) }}" method="post">
                         @csrf
@@ -423,7 +423,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="">
-                                    <label for="comment">Bewertungstext</label>
+                                    <label for="comment">Erfahrungstext</label>
                                     <textarea name="comment" style="height:100px" class="form-control @error('comment') is-invalid @enderror"
                                         id="comment" required></textarea>
                                     @error('comment')

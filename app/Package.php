@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Package extends Model
 {
+    protected $guarded = [];
+
     public function setPriceAttribute($value)
     {
         $this->attributes['price'] = $value * 100;

@@ -110,7 +110,7 @@
         </li>
         <li class="profile-menu__head-item">
             <a href="{{ route('seller.reviews') }}"
-                class="to-content-btn"><span>{{ $reviews }}</span>Bewertungen</a>
+                class="to-content-btn"><span>{{ $reviews }}</span>Erfahrungen</a>
         </li>
         <li class="profile-menu__head-item">
             <a href="{{ route('seller.charges') }}"

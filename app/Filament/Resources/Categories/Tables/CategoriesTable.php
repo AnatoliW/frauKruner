@@ -21,7 +21,7 @@ class CategoriesTable
         return $table
             ->columns([
                 TextColumn::make('order')
-                    ->label('Bestellung')
+                    ->label('Reihenfolge')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('name')
@@ -32,7 +32,9 @@ class CategoriesTable
                     ->searchable(),
                 TextColumn::make('featured')
                     ->label('Auf der Startseite?')
-                    ->numeric()
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Ja' : 'Nein')
+                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'gray')
                     ->sortable(),
                 ImageColumn::make('image')
                     ->label('Bild'),
@@ -59,7 +61,7 @@ class CategoriesTable
             ->recordActions([
                 ActionGroup::make([
                     DeleteAction::make()
-                        ->label('Loeschen'),
+                        ->label('Löschen'),
                     EditAction::make()
                         ->label('Bearbeiten'),
                     // Action::make('show')

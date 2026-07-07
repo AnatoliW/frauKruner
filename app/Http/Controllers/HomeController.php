@@ -90,10 +90,9 @@ class HomeController extends Controller
     }
     public function invoice(Order $order)
     {
+        $order->load(['product', 'vendor.address', 'vendor.verification', 'products']);
         $products = $order->products;
-        // if($order->user_id != auth()->id() || $user->vendor_id != auth()->id()){
-        // 	 return redirect('/');
-        // }
+
         return view('auth.invoice', compact('order', 'products'));
     }
     public function printemail()

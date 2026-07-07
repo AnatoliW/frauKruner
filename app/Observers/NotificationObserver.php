@@ -14,7 +14,7 @@ class NotificationObserver
      */
     public function created(Notification $notification)
     {
-    dd($notification);
+        //
     }
 
     /**

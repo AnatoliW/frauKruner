@@ -144,58 +144,90 @@ class AdminPanelProvider extends PanelProvider
                 color: #dbeafe;
             }
 
-            /* Keep table columns compact on wide layouts. */
-            .fi-ta-table {
+            .fi-resource-orders .fi-ta-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+                gap: 0.35rem !important;
+                flex-wrap: nowrap !important;
+            }
+
+            /* Keep table columns compact on wide layouts (orders/payouts only). */
+            .fi-resource-orders .fi-ta-table,
+            .fi-resource-payouts .fi-ta-table {
                 width: 100%;
                 table-layout: auto;
             }
 
-            .fi-ta-table .fi-ta-header-cell,
-            .fi-ta-table .fi-ta-cell {
+            .fi-resource-orders .fi-ta-table .fi-ta-header-cell,
+            .fi-resource-orders .fi-ta-table .fi-ta-cell,
+            .fi-resource-payouts .fi-ta-table .fi-ta-header-cell,
+            .fi-resource-payouts .fi-ta-table .fi-ta-cell {
                 width: auto;
             }
 
-            .fi-ta-table .fi-ta-header-cell.fi-growable {
+            .fi-resource-orders .fi-ta-table .fi-ta-header-cell.fi-growable,
+            .fi-resource-payouts .fi-ta-table .fi-ta-header-cell.fi-growable {
                 width: auto;
             }
 
-            .fi-ta-table .fi-ta-col,
-            .fi-ta-table .fi-ta-text {
+            .fi-resource-orders .fi-ta-table .fi-ta-col,
+            .fi-resource-orders .fi-ta-table .fi-ta-text,
+            .fi-resource-payouts .fi-ta-table .fi-ta-col,
+            .fi-resource-payouts .fi-ta-table .fi-ta-text {
                 width: auto;
             }
 
-            .fi-ta-table th.fi-ta-header-cell {
+            .fi-resource-orders .fi-ta-table th.fi-ta-header-cell,
+            .fi-resource-payouts .fi-ta-table th.fi-ta-header-cell {
                 width: 1%;
                 white-space: nowrap;
             }
 
-            .fi-ta-table td.fi-ta-cell:not(:has(.fi-wrapped)) {
+            .fi-resource-orders .fi-ta-table td.fi-ta-cell:not(:has(.fi-wrapped)),
+            .fi-resource-payouts .fi-ta-table td.fi-ta-cell:not(:has(.fi-wrapped)) {
                 width: 1%;
                 white-space: nowrap;
             }
 
-            .fi-ta-table .fi-ta-header-cell {
+            .fi-resource-orders .fi-ta-table .fi-ta-header-cell,
+            .fi-resource-payouts .fi-ta-table .fi-ta-header-cell {
                 padding: 0.5rem 0.625rem;
             }
 
-            .fi-ta-table .fi-ta-text:not(.fi-inline) {
+            .fi-resource-orders .fi-ta-table .fi-ta-text:not(.fi-inline),
+            .fi-resource-payouts .fi-ta-table .fi-ta-text:not(.fi-inline) {
                 padding: 0.5rem 0.625rem;
             }
 
-            .fi-ta-table .fi-ta-header-cell:first-of-type {
+            .fi-resource-orders .fi-ta-table .fi-ta-header-cell:first-of-type,
+            .fi-resource-payouts .fi-ta-table .fi-ta-header-cell:first-of-type {
                 padding-inline-start: 1rem;
             }
 
-            .fi-ta-table .fi-ta-header-cell:last-of-type {
+            .fi-resource-orders .fi-ta-table .fi-ta-header-cell:last-of-type,
+            .fi-resource-payouts .fi-ta-table .fi-ta-header-cell:last-of-type {
                 padding-inline-end: 1rem;
             }
 
-            .fi-ta-table .fi-ta-cell:first-of-type .fi-ta-text:not(.fi-inline) {
+            .fi-resource-orders .fi-ta-table .fi-ta-cell:first-of-type .fi-ta-text:not(.fi-inline),
+            .fi-resource-payouts .fi-ta-table .fi-ta-cell:first-of-type .fi-ta-text:not(.fi-inline) {
                 padding-inline-start: 1rem;
             }
 
-            .fi-ta-table .fi-ta-cell:last-of-type .fi-ta-text:not(.fi-inline) {
+            .fi-resource-orders .fi-ta-table .fi-ta-cell:last-of-type .fi-ta-text:not(.fi-inline),
+            .fi-resource-payouts .fi-ta-table .fi-ta-cell:last-of-type .fi-ta-text:not(.fi-inline) {
                 padding-inline-end: 1rem;
+            }
+
+            /* Keep bulk-select column aligned between header and body rows. */
+            .fi-ta-table .fi-ta-selection-cell,
+            .fi-ta-table .fi-ta-actions-header-cell,
+            .fi-ta-table .fi-ta-empty-header-cell {
+                width: 1%;
+                white-space: nowrap;
+                text-align: start;
             }
 
             .fi-ta-record-content .fi-ta-col.fi-growable {
@@ -369,10 +401,6 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Nutzer')
                     ->icon(Heroicon::OutlinedUsers),
-
-                NavigationGroup::make()
-                    ->label('Gutscheine')
-                    ->icon(Heroicon::OutlinedTicket),
 
                 NavigationGroup::make()
                     ->label('Einstellungen')

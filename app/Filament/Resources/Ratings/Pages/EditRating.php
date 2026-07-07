@@ -10,10 +10,21 @@ class EditRating extends EditRecord
 {
     protected static string $resource = RatingResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Bewertung bearbeiten';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->label('Löschen'),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return RatingResource::getUrl('index');
     }
 }

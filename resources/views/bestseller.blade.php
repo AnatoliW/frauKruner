@@ -103,7 +103,7 @@
                                     <button class="sidebar-collapse-button-closed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#collapseBewertung"
                                         aria-expanded="false" aria-controls="collapseBewertung">
-                                        <span class="arrow"><span></span><span></span></span> Bewertung
+                                        <span class="arrow"><span></span><span></span></span> Erfahrung
                                     </button>
 
                                     <div class="collapse collapse__sidebar" id="collapseBewertung">
@@ -245,7 +245,7 @@
                     <label for="sortierung" class="d-flex d-md-none"><span
                             class="arrow"><span></span><span></span></span> </label>
                     <select name="sortierung" class="sortierung" id="sortierung">
-                        <option value="bewertung">Bewertung</option>
+                        <option value="bewertung">Erfahrung</option>
                         <option value="preis">Preis</option>
                         <option value="neuste">Neuste</option>
                         <option value="verkaeufe">Verkäufe</option>
@@ -292,7 +292,7 @@
                 <div class="sorting-list-collapsing">
                     <button class="sidebar-collapse-button" type="button" data-bs-toggle="collapse"
                         data-bs-target="#collapseBewertung" aria-expanded="true" aria-controls="collapseBewertung">
-                        <span class="arrow"><span></span><span></span></span> Bewertung
+                        <span class="arrow"><span></span><span></span></span> Erfahrung
                     </button>
 
                     <div class="collapse collapse__sidebar show" id="collapseBewertung">

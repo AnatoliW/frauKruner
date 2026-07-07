@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Order;
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -63,9 +62,6 @@ class OrdersTable
                     ->label('Versanddatum')
                     ->date('d.m.Y')
                     ->sortable(),
-                TextColumn::make('payment_id')
-                    ->label('Zahlungs-ID')
-                    ->searchable(),
                 TextColumn::make('created_at')
                     ->label('Bestelldatum')
                     ->dateTime('d.m.Y H:i')
@@ -75,29 +71,31 @@ class OrdersTable
                 //
             ])
             ->recordActions([
-                ActionGroup::make([
-                    Action::make('view')
-                        ->label('Ansehen')
-                        ->color('warning')
-                        ->icon('heroicon-m-eye')
-                        ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
-                    Action::make('cancel')
-                        ->label('Stornieren')
-                        ->color('danger')
-                        ->icon('heroicon-m-x-circle')
-                        ->requiresConfirmation()
-                        ->modalHeading('Bestellung stornieren')
-                        ->modalDescription('Bist du sicher, dass du die Bestellung stornieren moechtest?')
-                        ->url(fn (Order $record): string => route('admin.order.cancel', $record))
-                        ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
-                    Action::make('cancelled')
-                        ->label('Storniert')
-                        ->color('gray')
-                        ->disabled()
-                        ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) === 3),
-                ])
-                    ->label('Aktionen')
-                    ->icon('heroicon-m-ellipsis-vertical'),
+                Action::make('view')
+                    ->label('Ansehen')
+                    ->button()
+                    ->size('sm')
+                    ->color('warning')
+                    ->icon('heroicon-m-eye')
+                    ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
+                Action::make('cancel')
+                    ->label('Stornieren')
+                    ->button()
+                    ->size('sm')
+                    ->color('danger')
+                    ->icon('heroicon-m-x-circle')
+                    ->requiresConfirmation()
+                    ->modalHeading('Bestellung stornieren')
+                    ->modalDescription('Bist du sicher, dass du die Bestellung stornieren moechtest?')
+                    ->url(fn (Order $record): string => route('admin.order.cancel', $record))
+                    ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
+                Action::make('cancelled')
+                    ->label('Storniert')
+                    ->button()
+                    ->size('sm')
+                    ->color('gray')
+                    ->disabled()
+                    ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) === 3),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

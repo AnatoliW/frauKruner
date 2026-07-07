@@ -93,13 +93,18 @@ class ProductsTable
             ])
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('view')
+                        ->label('Ansehen')
+                        ->icon('heroicon-m-eye')
+                        ->color('warning')
+                        ->url(fn (Product $record): string => ProductResource::getUrl('view', ['record' => $record])),
                     Action::make('boost')
                         ->label('Produkt pushen')
                         ->icon('heroicon-m-arrow-up')
                         ->color('success')
                         ->url(fn (Product $record): string => ProductResource::getUrl('boost', ['record' => $record])),
                     DeleteAction::make()
-                        ->label('Loeschen'),
+                        ->label('Löschen'),
                     // EditAction::make()
                     //     ->label('Bearbeiten'),
                 ])

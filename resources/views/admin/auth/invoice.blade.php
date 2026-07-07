@@ -330,7 +330,7 @@
                                                 
                                                 @if (Auth()->user()->role_id == 2)
                                                     <div class="col-12 mt-5">
-                                                        @if ($order->seller_info->vat_perchatage >= 1)
+                                                        @if (($order->seller_info->vat_perchatage ?? 0) >= 1)
                                                             Umsatzsteuer wird gemäß § 25a UStG nicht ausgewiesen.
                                                         @else
                                                             Gemäß § 19 UStG enthält der o.g. Rechnungsbetrag keine Umsatzsteuer.

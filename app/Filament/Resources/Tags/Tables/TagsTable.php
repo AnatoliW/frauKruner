@@ -40,7 +40,7 @@ class TagsTable
                     EditAction::make()
                         ->label('Bearbeiten'),
                     DeleteAction::make()
-                        ->label('Loeschen'),
+                        ->label('Löschen'),
                 ])
                     ->label('Aktionen')
                     ->icon('heroicon-m-ellipsis-vertical'),

@@ -10,7 +10,7 @@ Mit deinem Feedback hilfst du uns, besser zu werden.</p>
 @component('mail::button', ['url' => $url, 'color' => 'green'])Feedback geben
 @endcomponent
 <p>
-Ich freue mich auf deine Bewertung!<br><br>
+Ich freue mich auf deine Erfahrung!<br><br>
 Herzliche Grüße<br><br>
 Kathleen<br></p>
 {{ config('app.name') }}

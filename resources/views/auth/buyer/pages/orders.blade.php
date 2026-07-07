@@ -35,12 +35,14 @@
                                     <span style="min-width:100px;">Bestellt:</span>
                                     <span>{{ $order->created_at->format('d.m.Y') }}</span>
                                 </div>
-                                @if ($order->shipping_method == !null)
+                                @if (filled($order->shipping_date))
                                     <div class="d-flex">
                                         <!-- if not sended yes then "offen" if -->
                                         <span style="min-width:100px;">Versendet:</span>
                                         <span>{{ $order->shipping_date->format('d.m.Y') }}
-                                            ({{ $order->shipping_method }})
+                                            @if (filled($order->shipping_method))
+                                                ({{ $order->shipping_method }})
+                                            @endif
                                         </span>
                                     </div>
                                 @endif
@@ -94,11 +96,11 @@
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                     data-bs-target="#ratingModal" data-order-id="{{ $order->id }}"
                                     data-user-id="{{ $order->vendor->id }}">
-                                    Bewerten
+                                    Erfahrung teilen
                                 </button>
                             @endif
                         @else
-                            <span class="text-grey small">Bewertung abgegeben</span>
+                            <span class="text-grey small">Erfahrung geteilt</span>
                         @endif
 
                     </div>
@@ -139,7 +141,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="ratingModalLabel">Deine Bewertung</h5>
+                    <h5 class="modal-title" id="ratingModalLabel">Deine Erfahrung</h5>
                     <button type="button" class="btn btn-close border-0" data-bs-dismiss="modal"
                         aria-label="Schließen">
                         <span aria-hidden="true"></span>
@@ -155,6 +157,10 @@
                         .rating-container .star {
                             font-size: 22px;
                         }
+
+                        #ratingModal .rating-container .caption {
+                            display: none;
+                        }
                     </style>
                     <form id="ratingForm" action="" method="POST">
                         @csrf
@@ -163,26 +169,36 @@
                                 min="1" max="5" step=".5" data-size="xs" required>
                         </div>
                         <div class="form-group">
-                            <label for="comment">Bewertungstext</label>
+                            <label for="comment">Erfahrungstext</label>
                             <textarea class="form-control" id="comment" name="comment" rows="2" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Bewertung abgeben</button>
+                        <button type="submit" class="btn btn-primary">Erfahrung teilen</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        document.getElementById('ratingModal').addEventListener('show.bs.modal', function(event) {
-            var button = event.relatedTarget;
-            var orderId = button.getAttribute('data-order-id');
-            var userId = button.getAttribute('data-user-id');
-            var actionUrl = "{{ url('rating') }}" + '/' + userId + '/' + orderId;
-            var form = document.getElementById('ratingForm');
-            form.setAttribute('action', actionUrl);
-        });
-    </script>
+    @push('scripts')
+        <script>
+            document.getElementById('ratingModal').addEventListener('show.bs.modal', function(event) {
+                var button = event.relatedTarget;
+                var orderId = button.getAttribute('data-order-id');
+                var userId = button.getAttribute('data-user-id');
+                var actionUrl = "{{ url('rating') }}" + '/' + userId + '/' + orderId;
+                document.getElementById('ratingForm').setAttribute('action', actionUrl);
+
+                var $rating = $('#ratingModal .product_rating');
+                if ($rating.length && typeof $rating.rating === 'function') {
+                    $rating.rating('destroy');
+                    $rating.rating({
+                        showCaption: false,
+                        language: 'de',
+                    });
+                }
+            });
+        </script>
+    @endpush
 
 </x-dashboard>
 

@@ -129,6 +129,7 @@ Route::post('/add-update', [CartController::class, 'update'])->name('cart.update
 Route::get('/cart-destroy/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
 
 //checkout routes
+Route::get('/store-checkout', fn () => redirect()->route('checkout'));
 Route::post('/store-checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 Route::get('/payment/{order}', [CheckoutController::class, 'payment'])->name('payment');
 Route::post('/payment/process', [CheckoutController::class, 'processPayment'])->name('payment.process');

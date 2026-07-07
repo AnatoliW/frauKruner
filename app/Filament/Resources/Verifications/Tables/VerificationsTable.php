@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Verifications\Tables;
 
 use App\Models\Verification;
+use App\Filament\Resources\Verifications\VerificationResource;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -58,10 +60,16 @@ class VerificationsTable
             ])
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('view')
+                        ->label('Ansehen')
+                        ->icon('heroicon-m-eye')
+                        ->color('warning')
+                        ->url(fn (Verification $record): string => VerificationResource::getUrl('edit', ['record' => $record])),
                     EditAction::make()
-                        ->label('Bearbeiten'),
+                        ->label('Felder bearbeiten')
+                        ->url(fn (Verification $record): string => VerificationResource::getUrl('edit-form', ['record' => $record])),
                     DeleteAction::make()
-                        ->label('Loeschen'),
+                        ->label('Löschen'),
                 ])
                     ->label('Aktionen')
                     ->icon('heroicon-m-ellipsis-vertical'),

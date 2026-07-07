@@ -228,7 +228,6 @@ class CheckoutController extends Controller
         }
 
         // try {
-        sleep(2);
         $order = Order::find($request->order_id);
         if ($request->payment_type == 'paypal') {
             $paypal_body = $this->paypalPayment($request);

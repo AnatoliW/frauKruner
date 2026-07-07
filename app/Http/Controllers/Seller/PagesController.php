@@ -110,7 +110,7 @@ class PagesController extends Controller
 
         // Continue with the rest of your body text
         $body .= '<br><br>Wir wünschen dir viel Spaß und tolle Erlebnisse. <br><br>
-                  Vergiss anschließend nicht, dein Einkaufserlebnis zu bewerten.<br><br>
+                  Vergiss anschließend nicht, deine Erfahrung zu teilen.<br><br>
                   Bei Fragen oder Problemen kontaktiere den Support unter<br>
                   <a href="tel:03096607799">030 96607799</a>.<br><br>';
 

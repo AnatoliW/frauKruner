@@ -193,7 +193,7 @@
                                     <button class="sidebar-collapse-button-closed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#rating" aria-expanded="false"
                                         aria-controls="rating">
-                                        <span class="arrow"><span></span><span></span></span> Bewertung
+                                        <span class="arrow"><span></span><span></span></span> Erfahrung
                                     </button>
 
                                     <div class="collapse collapse__sidebar" id="rating">
@@ -389,7 +389,7 @@
                 <div class="sorting-list-collapsing">
                     <button class="sidebar-collapse-button" type="button" data-bs-toggle="collapse"
                         data-bs-target="#collapseBewertung" aria-expanded="false" aria-controls="collapseBewertung">
-                        <span class="arrow"><span></span><span></span></span> Bewertung
+                        <span class="arrow"><span></span><span></span></span> Erfahrung
                     </button>
 
                     <div class="collapse__sidebar collapse" id="collapseBewertung" style="">
@@ -583,7 +583,7 @@
                             </button>
 
                             <div class="collapse_faq__sidebar ms-0 collapse " id="collapseSocken4" style="" itemscope="" itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                                <p itemprop="text">Hier ist es wichtig, die Voraussetzungen zu erfüllen. Beim getragenen Socken Verkauf geht es in erster Linie um den Duft und nicht jede*r Mensch hat auch Fußgeruch. Wenn du verkaufen möchtest, ist es wichtig, dass du ehrlich zu dir selbst bist, denn das spiegelt sich final auch in deinen Bewertungen wieder. Es gibt aber auch eine andere Art von getragenen Socken und das ist der Fanartikel. Hier geht es primär darum, wer die Socken getragen hat, zweitranging oder gar nicht um den Duft. Oft ist das bei Influencers zu beobachten (Merchandise). Hier werden Produkte im dreistelligen Bereich verkauft, die aber wenig mit der Qualität zu tun haben, die für diese wirkliche Neigung essenziell sind.</p>
+                                <p itemprop="text">Hier ist es wichtig, die Voraussetzungen zu erfüllen. Beim getragenen Socken Verkauf geht es in erster Linie um den Duft und nicht jede*r Mensch hat auch Fußgeruch. Wenn du verkaufen möchtest, ist es wichtig, dass du ehrlich zu dir selbst bist, denn das spiegelt sich final auch in deinen Erfahrungen wieder. Es gibt aber auch eine andere Art von getragenen Socken und das ist der Fanartikel. Hier geht es primär darum, wer die Socken getragen hat, zweitranging oder gar nicht um den Duft. Oft ist das bei Influencers zu beobachten (Merchandise). Hier werden Produkte im dreistelligen Bereich verkauft, die aber wenig mit der Qualität zu tun haben, die für diese wirkliche Neigung essenziell sind.</p>
                             </div>
                         </div>
 
@@ -728,7 +728,7 @@
                             </button>
 
                             <div class="collapse_faq__sidebar ms-0 collapse " id="collapseSchuhe3" style="" itemscope="" itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                                <p itemprop="text">Ja, dies ist sogar weit verbreitet. Vinted, Kleinanzeigen und andere Märkte sind oft die 1. Anlaufstelle. Es muss aber ganz klar zwischen einem Alltagsprodukt und einem Fetischverkauf unterschieden werden. Achte bei deinen Käufen auf die Seriosität des Anbieters, die Bewertungen und sichere Zahlmethoden, wie bei FrauKruner.de. Ein privater Datentausch ist nicht notwendig. Das Rundum-Sorglos-Paket für gebrauchte Schuhe online erhältst du nur bei uns.</p>
+                                <p itemprop="text">Ja, dies ist sogar weit verbreitet. Vinted, Kleinanzeigen und andere Märkte sind oft die 1. Anlaufstelle. Es muss aber ganz klar zwischen einem Alltagsprodukt und einem Fetischverkauf unterschieden werden. Achte bei deinen Käufen auf die Seriosität des Anbieters, die Erfahrungen und sichere Zahlmethoden, wie bei FrauKruner.de. Ein privater Datentausch ist nicht notwendig. Das Rundum-Sorglos-Paket für gebrauchte Schuhe online erhältst du nur bei uns.</p>
                             </div>
                         </div>
 
@@ -739,7 +739,7 @@
                             </button>
 
                             <div class="collapse_faq__sidebar ms-0 collapse " id="collapseSchuhe4" style="" itemscope="" itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                                <p itemprop="text">Wenn wir von dem Alltagsprodukt sprechen dann achtest du auf die Bewertungen, die Produktbeschreibung und auf das Rückgaberecht. Um bei der Größe keinen Fehler zu machen, lass dir die Sohle ausmessen und schaue dir alle Fotos genau an. Bei dem Fetischprodukt ist es egal, da diese meisten nicht mehr selbst getragen werden. Hier geht es primär um die Veredelungen und um das, was zuvor mit dem Produkt gemacht wurde.</p>
+                                <p itemprop="text">Wenn wir von dem Alltagsprodukt sprechen dann achtest du auf die Erfahrungen, die Produktbeschreibung und auf das Rückgaberecht. Um bei der Größe keinen Fehler zu machen, lass dir die Sohle ausmessen und schaue dir alle Fotos genau an. Bei dem Fetischprodukt ist es egal, da diese meisten nicht mehr selbst getragen werden. Hier geht es primär um die Veredelungen und um das, was zuvor mit dem Produkt gemacht wurde.</p>
                             </div>
                         </div>
 
@@ -797,7 +797,7 @@
                             </button>
 
                             <div class="collapse_faq__sidebar ms-0 collapse " id="collapseExkret3" style="" itemscope="" itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                                <p itemprop="text">Die Goldenshower ist in der Welt der Nischen sehr bekannt. Der Fetisch, wenn man es so betiteln möchte, ist fast schon ein alltägliches Produkt, mit dem Erfahrungen gesammelt und sich ausprobiert wird. Da NS von Natur aus in einem gesunden Körper steril ist, sind die Einsatzmöglichkeiten enorm groß und vermutlich ist NS auch deshalb so beliebt.</p>
+                                <p itemprop="text">Die Goldenshower ist in der Welt der Nischen sehr bekannt. Der Fetisch, wenn man es so betiteln möchte, ist fast schon ein alltägliches Produkt, mit dem Erfahrungen geteilt und sich ausprobiert wird. Da NS von Natur aus in einem gesunden Körper steril ist, sind die Einsatzmöglichkeiten enorm groß und vermutlich ist NS auch deshalb so beliebt.</p>
                             </div>
                         </div>
 

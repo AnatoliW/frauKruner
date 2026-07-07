@@ -15,11 +15,17 @@ class Order extends Model
     use HasMeta;
     protected $guarded = [];
 
-    protected $dates = ['shipping_date', 'created_at'];
     protected $meta_attributes = [
         "payment_prove",
    
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'shipping_date' => 'datetime',
+        ];
+    }
 
 
     public function user()
@@ -156,7 +162,48 @@ class Order extends Model
     }
     public function getSellerInfoAttribute($value)
     {
-        return json_decode($value);
+        $info = json_decode($value ?? '');
+
+        if (filled($value) && $info) {
+            return $info;
+        }
+
+        return $this->resolveSellerInfo();
+    }
+
+    public function resolveSellerInfo(): object
+    {
+        $vendor = $this->relationLoaded('vendor')
+            ? $this->vendor
+            : $this->vendor()->with(['address', 'verification'])->first();
+
+        if (! $vendor) {
+            return (object) [
+                'f_name' => null,
+                'l_name' => null,
+                'street' => null,
+                'house_no' => null,
+                'zip' => null,
+                'federal_state' => null,
+                'email' => null,
+                'vat_number' => null,
+                'is_pay_vat' => 0,
+                'vat_perchatage' => (float) (setting('finance.vat') ?: 19),
+            ];
+        }
+
+        return (object) [
+            'f_name' => $vendor->first_name ?? $vendor->name ?? $vendor->verification?->name,
+            'l_name' => $vendor->last_name ?? $vendor->address?->last_name ?? $vendor->verification?->last_name,
+            'street' => $vendor->street ?? $vendor->address?->street ?? $vendor->verification?->street,
+            'house_no' => $vendor->house_no ?? $vendor->address?->house_no ?? $vendor->verification?->house_no,
+            'zip' => $vendor->zip ?? $vendor->address?->zip ?? $vendor->verification?->zip,
+            'federal_state' => $vendor->federal_state ?? $vendor->address?->federal_state ?? $vendor->verification?->city,
+            'email' => $vendor->email,
+            'vat_number' => $vendor->vat ?? null,
+            'is_pay_vat' => (int) ($vendor->is_pay_vat ?? 0),
+            'vat_perchatage' => (float) (setting('finance.vat') ?: 19),
+        ];
     }
     
     public function setSellerInfoAttribute($value)

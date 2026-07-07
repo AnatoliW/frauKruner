@@ -818,7 +818,7 @@
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <p class="h5 modal-title" id="bewertungModalLabel">Meine Bewertungen</p>
+                            <p class="h5 modal-title" id="bewertungModalLabel">Erfahrungen</p>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Schließen"></button>
                         </div>
@@ -913,12 +913,14 @@
                 @endif
                 <script src="{{ asset('js/custom/star-rating.js') }}" type="text/javascript"></script>
                 <script type="text/javascript">
-                    $("#product_rating").rating({
-                        showCaption: true
+                    $(".product_rating").rating({
+                        showCaption: false,
+                        language: 'de',
                     });
                     $(".published_rating").rating({
                         showCaption: false,
                         readonly: true,
+                        language: 'de',
                     });
                 </script>
                 <script>

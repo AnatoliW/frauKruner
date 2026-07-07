@@ -136,7 +136,7 @@
                                     <button class="sidebar-collapse-button-closed" type="button"
                                         data-bs-toggle="collapse" data-bs-target="#rating" aria-expanded="false"
                                         aria-controls="rating">
-                                        <span class="arrow"><span></span><span></span></span> Bewertung
+                                        <span class="arrow"><span></span><span></span></span> Erfahrung
                                     </button>
 
                                     <div class="collapse collapse__sidebar" id="rating">
@@ -336,7 +336,7 @@
                 <div class="sorting-list-collapsing">
                     <button class="sidebar-collapse-button" type="button" data-bs-toggle="collapse"
                         data-bs-target="#collapseBewertung" aria-expanded="false" aria-controls="collapseBewertung">
-                        <span class="arrow"><span></span><span></span></span> Bewertung
+                        <span class="arrow"><span></span><span></span></span> Erfahrung
                     </button>
 
                     <div class="collapse__sidebar collapse" id="collapseBewertung" style="">

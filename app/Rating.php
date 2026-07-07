@@ -3,11 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use App\Product;
 
 class Rating extends Model
 {
-    protected $fillable = ['name', 'email', 'review', 'rating', 'product_id', 'user_id', 'vendor_id'];
+    protected $fillable = ['name', 'email', 'review', 'rating', 'product_id', 'user_id', 'vendor_id', 'status'];
 
     public function product()
     {
@@ -25,8 +26,15 @@ class Rating extends Model
     protected static function booted(): void
     {
         static::created(function (Rating $rating) {
-            // $rating->product->addPoint($rating->rating);
-            $rating->vendor->addPoint($rating->rating);
+            if (! $rating->vendor_id) {
+                return;
+            }
+
+            $vendor = User::query()->find($rating->vendor_id);
+
+            if ($vendor) {
+                $vendor->addPoint($rating->rating);
+            }
         });
     }
 

@@ -37,7 +37,7 @@ abstract class BaseAdminResource extends Resource
         return sprintf('%s_%s', $action, $table);
     }
 
-    protected static function canPerform(string $action): bool
+    protected static function canPerform(string $action, bool $forNavigation = false): bool
     {
         $user = Auth::user();
 
@@ -57,8 +57,17 @@ abstract class BaseAdminResource extends Resource
             return false;
         }
 
-        // Keep backward compatibility: allow role_id=1 when no permission rows exist yet.
-        if ((int) ($user->role_id ?? 0) === 1 && ! $role->permissions()->exists()) {
+        // Sidebar visibility follows assigned browse permissions only.
+        if ($forNavigation) {
+            if ((int) ($user->role_id ?? 0) === 1 && ! $role->permissions()->exists()) {
+                return true;
+            }
+
+            return $role->permissions()->where('key', $permissionKey)->exists();
+        }
+
+        // Administrators can use all resource actions in the admin panel.
+        if ((int) ($user->role_id ?? 0) === 1) {
             return true;
         }
 
@@ -67,12 +76,16 @@ abstract class BaseAdminResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
+        if (! static::$shouldRegisterNavigation) {
+            return false;
+        }
+
         return static::canViewAny();
     }
 
     public static function canViewAny(): bool
     {
-        return static::canPerform('browse');
+        return static::canPerform('browse', forNavigation: true);
     }
 
     public static function canView(Model $record): bool
@@ -182,6 +195,7 @@ abstract class BaseAdminResource extends Resource
             'orderimages' => 22,
             'payments' => 23,
             'shippings' => 24,
+            'coupons' => 25,
             'products' => 30,
             'categories' => 31,
             'tags' => 32,

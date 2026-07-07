@@ -39,7 +39,18 @@ class PackagesTable
                     ->sortable(),
                 TextColumn::make('type')
                     ->label('Typ')
-                    ->wrap(),
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'Product' => 'Produkt',
+                        'Profile' => 'Profil',
+                        default => $state ?: '-',
+                    })
+                    ->color(fn (?string $state): string => match ($state) {
+                        'Product' => 'success',
+                        'Profile' => 'info',
+                        default => 'gray',
+                    })
+                    ->sortable(),
             ])
             ->filters([
                 //

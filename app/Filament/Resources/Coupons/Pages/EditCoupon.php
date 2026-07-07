@@ -10,10 +10,21 @@ class EditCoupon extends EditRecord
 {
     protected static string $resource = CouponResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Gutschein bearbeiten';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->label('Löschen'),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return CouponResource::getUrl('edit', ['record' => $this->getRecord()]);
     }
 }

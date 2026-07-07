@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Verifications;
 use App\Filament\Resources\Verifications\Pages\CreateVerification;
 use App\Filament\Resources\Verifications\Pages\EditVerification;
 use App\Filament\Resources\Verifications\Pages\ListVerifications;
+use App\Filament\Resources\Verifications\Pages\ViewVerification;
 use App\Filament\Resources\Verifications\Schemas\VerificationForm;
 use App\Filament\Resources\Verifications\Tables\VerificationsTable;
 use App\Models\Verification;
@@ -54,7 +55,9 @@ class VerificationResource extends BaseAdminResource
         return [
             'index' => ListVerifications::route('/'),
             'create' => CreateVerification::route('/create'),
-            'edit' => EditVerification::route('/{record}/edit'),
+            'view' => ViewVerification::route('/{record}'),
+            'edit' => ViewVerification::route('/{record}/edit'),
+            'edit-form' => EditVerification::route('/{record}/edit-form'),
         ];
     }
 }
