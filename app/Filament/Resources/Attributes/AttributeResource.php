@@ -18,11 +18,17 @@ class AttributeResource extends BaseAdminResource
 {
     protected static ?string $model = Attribute::class;
 
+    protected static ?string $navigationLabel = 'Produktattribute';
+
+    protected static ?string $modelLabel = 'Produktattribut';
+
+    protected static ?string $pluralModelLabel = 'Produktattribute';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
      protected static bool $shouldRegisterNavigation = false;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Systemverwaltung';
 
     public static function shouldRegisterNavigation(): bool
     {

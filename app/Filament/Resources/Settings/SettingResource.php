@@ -20,6 +20,10 @@ class SettingResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Globale Einstellungen';
+
+    protected static ?string $modelLabel = 'Einstellung';
+
+    protected static ?string $pluralModelLabel = 'Globale Einstellungen';
     protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     public static function form(Schema $schema): Schema

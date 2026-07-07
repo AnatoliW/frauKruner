@@ -21,10 +21,10 @@ class MenusTable
                     ->sortable(),
                 TextColumn::make('items_count')
                     ->counts('items')
-                    ->label('Items')
+                    ->label('Einträge')
                     ->sortable(),
                 TextColumn::make('updated_at')
-                    ->dateTime('Y-m-d H:i')
+                    ->date('d.m.Y')
                     ->sortable(),
             ])
             ->filters([

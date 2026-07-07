@@ -25,7 +25,7 @@ class NotificationsTable
                     ->formatStateUsing(fn ($state): string => match ((int) $state) {
                         3 => 'Verkäufer',
                         2 => 'Käufer',
-                        1 => 'Admin',
+                        1 => 'Administrator',
                         default => 'Alle',
                     })
                     ->sortable(),

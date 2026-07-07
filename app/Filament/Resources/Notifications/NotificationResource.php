@@ -21,6 +21,10 @@ class NotificationResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Nachrichten';
+
+    protected static ?string $modelLabel = 'Nachricht';
+
+    protected static ?string $pluralModelLabel = 'Nachrichten';
     protected static string|\UnitEnum|null $navigationGroup = 'Nutzer';
 
     public static function form(Schema $schema): Schema

@@ -23,8 +23,8 @@ class VerificationsTable
                     ->formatStateUsing(fn ($state, Verification $record): string => $state ?: ($record->user?->name ?? '-'))
                     ->searchable(),
                 TextColumn::make('user.role.display_name')
-                    ->label('Role')
-                    ->formatStateUsing(fn ($state, Verification $record): string => $state ?: ((int) ($record->user?->role_id ?? 0) === 3 ? 'Seller' : ((int) ($record->user?->role_id ?? 0) === 2 ? 'Normal User' : 'Admin')))
+                    ->label('Rolle')
+                    ->formatStateUsing(fn ($state, Verification $record): string => $state ?: ((int) ($record->user?->role_id ?? 0) === 3 ? 'Verkäufer/in' : ((int) ($record->user?->role_id ?? 0) === 2 ? 'Käufer/in' : 'Administrator')))
                     ->sortable(),
                 TextColumn::make('street')
                     ->label('Straße')
@@ -40,7 +40,7 @@ class VerificationsTable
                     ->searchable(),
                 TextColumn::make('date_of_birth')
                     ->label('Geburtsdatum')
-                    ->date()
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('Status')
@@ -50,7 +50,7 @@ class VerificationsTable
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
             ])
             ->filters([

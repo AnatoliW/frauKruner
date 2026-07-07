@@ -21,7 +21,7 @@ class RatingForm
                     ->numeric(),
                 TextInput::make('name'),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label('E-Mail-Adresse')
                     ->email(),
                 TextInput::make('rating'),
                 Textarea::make('review')

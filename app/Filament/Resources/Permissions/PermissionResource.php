@@ -18,6 +18,12 @@ class PermissionResource extends BaseAdminResource
 {
     protected static ?string $model = Permission::class;
 
+    protected static ?string $navigationLabel = 'Berechtigungen';
+
+    protected static ?string $modelLabel = 'Berechtigung';
+
+    protected static ?string $pluralModelLabel = 'Berechtigungen';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

@@ -22,7 +22,7 @@ class SettingsTable
             ->defaultSort('group')
             ->columns([
                 TextColumn::make('key')
-                    ->label('Key')
+                    ->label('Schlüssel')
                     ->searchable(),
                 TextColumn::make('display_name')
                     ->label('Titel')
@@ -47,7 +47,7 @@ class SettingsTable
                 SelectFilter::make('group')
                     ->label('Gruppe')
                     ->options([
-                        'Site' => 'Site',
+                        'Website' => 'Website',
                         'Admin' => 'Admin',
                         'code' => 'code',
                         'Finance' => 'Finance',

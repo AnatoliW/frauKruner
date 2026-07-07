@@ -18,6 +18,10 @@ class PayoutResource extends BaseAdminResource
 
     protected static ?string $navigationLabel = 'Auszahlungen';
 
+    protected static ?string $modelLabel = 'Auszahlung';
+
+    protected static ?string $pluralModelLabel = 'Auszahlungen';
+
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Zahlungen';

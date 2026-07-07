@@ -21,6 +21,10 @@ class PostResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Beiträge';
+
+    protected static ?string $modelLabel = 'Beitrag';
+
+    protected static ?string $pluralModelLabel = 'Beiträge';
     protected static string|\UnitEnum|null $navigationGroup = 'Neuigkeiten';
 
     public static function form(Schema $schema): Schema

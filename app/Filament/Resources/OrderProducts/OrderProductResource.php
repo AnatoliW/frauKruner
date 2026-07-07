@@ -18,6 +18,12 @@ class OrderProductResource extends BaseAdminResource
 {
     protected static ?string $model = OrderProduct::class;
 
+    protected static ?string $navigationLabel = 'Bestellpositionen';
+
+    protected static ?string $modelLabel = 'Bestellposition';
+
+    protected static ?string $pluralModelLabel = 'Bestellpositionen';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

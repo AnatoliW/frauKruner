@@ -18,11 +18,17 @@ class ContactResource extends BaseAdminResource
 {
     protected static ?string $model = Contact::class;
 
+    protected static ?string $navigationLabel = 'Kontakte';
+
+    protected static ?string $modelLabel = 'Kontakt';
+
+    protected static ?string $pluralModelLabel = 'Kontakte';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static bool $shouldRegisterNavigation = false;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Systemverwaltung';
 
     public static function shouldRegisterNavigation(): bool
     {

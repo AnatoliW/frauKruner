@@ -20,6 +20,10 @@ class PostcatResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Kategorien';
+
+    protected static ?string $modelLabel = 'Beitragskategorie';
+
+    protected static ?string $pluralModelLabel = 'Kategorien';
     protected static string|\UnitEnum|null $navigationGroup = 'Neuigkeiten';
 
     public static function form(Schema $schema): Schema

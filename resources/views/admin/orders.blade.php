@@ -146,7 +146,7 @@
                                             <td>
                                             @if(!empty($data->shipping_date))
                                                 @if ($data->shipping_date)
-                                                {{ Carbon\Carbon::parse($data->shipping_date)->format('d. m. Y') }}
+                                                {{ Carbon\Carbon::parse($data->shipping_date)->format('d.m.Y') }}
                                                 @endif
                                              @else
                                                 <p>Kein Versanddatum eingegeben</p>

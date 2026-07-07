@@ -19,7 +19,11 @@ class SliderResource extends BaseAdminResource
     protected static ?string $model = Slider::class;
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static ? string $navigationLabel = 'Sliders';
+    protected static ? string $navigationLabel = 'Slider';
+
+    protected static ?string $modelLabel = 'Slider';
+
+    protected static ?string $pluralModelLabel = 'Slider';
     protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     public static function form(Schema $schema): Schema

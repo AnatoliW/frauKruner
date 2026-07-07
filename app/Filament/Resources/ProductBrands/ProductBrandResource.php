@@ -18,6 +18,12 @@ class ProductBrandResource extends BaseAdminResource
 {
     protected static ?string $model = ProductBrand::class;
 
+    protected static ?string $navigationLabel = 'Produktmarken';
+
+    protected static ?string $modelLabel = 'Produktmarke';
+
+    protected static ?string $pluralModelLabel = 'Produktmarken';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

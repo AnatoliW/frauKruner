@@ -24,6 +24,10 @@ class BoostResource extends BaseAdminResource
 
     protected static ? string $navigationLabel = 'Push-Übersicht';
 
+    protected static ?string $modelLabel = 'Push-Eintrag';
+
+    protected static ?string $pluralModelLabel = 'Push-Übersicht';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Push';
 
     public static function form(Schema $schema): Schema

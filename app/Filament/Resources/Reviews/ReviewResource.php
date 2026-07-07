@@ -18,6 +18,12 @@ class ReviewResource extends BaseAdminResource
 {
     protected static ?string $model = Review::class;
 
+    protected static ?string $navigationLabel = 'Rezensionen';
+
+    protected static ?string $modelLabel = 'Rezension';
+
+    protected static ?string $pluralModelLabel = 'Rezensionen';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

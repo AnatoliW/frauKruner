@@ -25,8 +25,8 @@ class PaymentIconsTable
                     ->label('Logo')
                     ->square(),
                 TextColumn::make('created_at')
-                    ->label('Created At')
-                    ->dateTime()
+                    ->label('Erstellt am')
+                    ->date('d.m.Y')
                     ->sortable(),
             ])
             ->filters([

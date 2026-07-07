@@ -23,7 +23,7 @@ class BoostsTable
                     ->label('Was wurde gepusht')
                     ->getStateUsing(function (Boost $record): string {
                         $name = $record->boostable?->name ?? $record->boostable?->title ?? '-';
-                        $type = class_basename((string) $record->boostable_type) === 'User' ? 'Seller' : 'Product';
+                        $type = class_basename((string) $record->boostable_type) === 'User' ? 'Verkäufer/in' : 'Produkt';
 
                         return $name . ' (' . $type . ')';
                     })
@@ -42,11 +42,11 @@ class BoostsTable
                     ->color(fn ($state): string => (int) $state === 1 ? 'info' : 'gray')
                     ->sortable(),
                 TextColumn::make('tax')
-                    ->label('Tax')
+                    ->label('MwSt.')
                     ->money()
                     ->sortable(),
                 TextColumn::make('start_day')
-                    ->label('Start')
+                    ->label('Startdatum')
                     ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('end_day')

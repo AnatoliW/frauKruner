@@ -19,7 +19,11 @@ class FaqResource extends BaseAdminResource
     protected static ?string $model = Faq::class;
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static ? string $navigationLabel = 'FAQ';
+    protected static ? string $navigationLabel = 'Häufige Fragen';
+
+    protected static ?string $modelLabel = 'Frage';
+
+    protected static ?string $pluralModelLabel = 'Häufige Fragen';
     protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     public static function form(Schema $schema): Schema

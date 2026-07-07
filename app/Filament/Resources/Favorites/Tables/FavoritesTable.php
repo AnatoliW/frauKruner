@@ -23,11 +23,11 @@ class FavoritesTable
                 TextColumn::make('favoritable_type')
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

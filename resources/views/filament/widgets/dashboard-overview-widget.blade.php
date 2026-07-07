@@ -185,11 +185,11 @@
         @if (! $this->hasStorageSymlink())
             <div class="storage-alert">
                 <p class="storage-alert-title">
-                    Fehlender Storage Symlink
+                    Fehlender Speicher-Symlink
                 </p>
 
                 <p class="storage-alert-text">
-                    Wir konnten keinen Storage Symlink finden. Dies könnte zu Problemen führen beim Laden von Medien Dateien aus dem Browser.
+                    Es wurde kein Speicher-Symlink gefunden. Dadurch können Mediendateien im Browser möglicherweise nicht geladen werden.
                 </p>
 
                 <div class="storage-alert-action">
@@ -219,7 +219,7 @@
                     </h3>
 
                     <p class="dashboard-card-text">
-                        Sie haben {{ $this->getOrdersCount() }} posts in Ihrer Datenbank.
+                        Sie haben {{ $this->getOrdersCount() }} Bestellungen in Ihrer Datenbank.
                     </p>
 
                     <div class="dashboard-card-action">
@@ -247,7 +247,7 @@
                     </h3>
 
                     <p class="dashboard-card-text">
-                        Sie haben {{ $this->getProductsCount() }} posts in Ihrer Datenbank.
+                        Sie haben {{ $this->getProductsCount() }} Produkte in Ihrer Datenbank.
                     </p>
 
                     <div class="dashboard-card-action">

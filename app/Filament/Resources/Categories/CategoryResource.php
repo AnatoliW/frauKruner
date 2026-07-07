@@ -23,6 +23,10 @@ class CategoryResource extends BaseAdminResource
 
     protected static ? string $navigationLabel = 'Kategorie';
 
+    protected static ?string $modelLabel = 'Kategorie';
+
+    protected static ?string $pluralModelLabel = 'Kategorie';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Produkte';
 
     public static function form(Schema $schema): Schema

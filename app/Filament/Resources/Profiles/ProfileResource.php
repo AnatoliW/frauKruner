@@ -18,6 +18,12 @@ class ProfileResource extends BaseAdminResource
 {
     protected static ?string $model = Profile::class;
 
+    protected static ?string $navigationLabel = 'Nutzerprofile';
+
+    protected static ?string $modelLabel = 'Nutzerprofil';
+
+    protected static ?string $pluralModelLabel = 'Nutzerprofile';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

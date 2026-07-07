@@ -20,6 +20,10 @@ class WearingTimeResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Tragedauer';
+
+    protected static ?string $modelLabel = 'Tragedauer';
+
+    protected static ?string $pluralModelLabel = 'Tragedauer';
     protected static string|\UnitEnum|null $navigationGroup = 'Produkte';
 
     public static function form(Schema $schema): Schema

@@ -14,7 +14,7 @@ class ContactForm
             ->components([
                 TextInput::make('name'),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label('E-Mail-Adresse')
                     ->email(),
                 TextInput::make('subject'),
                 Textarea::make('message')

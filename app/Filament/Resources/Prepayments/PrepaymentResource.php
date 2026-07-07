@@ -18,6 +18,10 @@ class PrepaymentResource extends BaseAdminResource
 
     protected static ?string $navigationLabel = 'Vorkasse';
 
+    protected static ?string $modelLabel = 'Vorkasse';
+
+    protected static ?string $pluralModelLabel = 'Vorkasse';
+
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
     protected static string|\UnitEnum|null $navigationGroup = 'Zahlungen';
 

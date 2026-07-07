@@ -18,6 +18,12 @@ class MetaResource extends BaseAdminResource
 {
     protected static ?string $model = Meta::class;
 
+    protected static ?string $navigationLabel = 'Metadaten';
+
+    protected static ?string $modelLabel = 'Metadatum';
+
+    protected static ?string $pluralModelLabel = 'Metadaten';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

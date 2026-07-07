@@ -5,7 +5,7 @@
 
     <div class="mx-auto w-full max-w-4xl space-y-6">
         <x-filament::section>
-            <x-slot name="heading">Kategorie Details</x-slot>
+            <x-slot name="heading">Kategoriedetails</x-slot>
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>

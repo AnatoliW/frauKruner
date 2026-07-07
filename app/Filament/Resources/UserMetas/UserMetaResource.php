@@ -18,6 +18,12 @@ class UserMetaResource extends BaseAdminResource
 {
     protected static ?string $model = UserMeta::class;
 
+    protected static ?string $navigationLabel = 'Nutzer-Metadaten';
+
+    protected static ?string $modelLabel = 'Nutzer-Metadatum';
+
+    protected static ?string $pluralModelLabel = 'Nutzer-Metadaten';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

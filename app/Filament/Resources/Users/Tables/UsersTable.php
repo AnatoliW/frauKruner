@@ -56,7 +56,7 @@ class UsersTable
                     ->searchable(),
                 TextColumn::make('role.display_name')
                     ->label('Nutzerkategorie')
-                    ->formatStateUsing(fn ($state, User $record): string => $state ?: ((int) $record->role_id === 3 ? 'Seller' : ((int) $record->role_id === 2 ? 'Normal User' : 'Admin')))
+                    ->formatStateUsing(fn ($state, User $record): string => $state ?: ((int) $record->role_id === 3 ? 'Verkäufer/in' : ((int) $record->role_id === 2 ? 'Käufer/in' : 'Administrator')))
                     ->sortable(),
                 TextColumn::make('email')
                     ->label('E-Mail')
@@ -101,7 +101,7 @@ class UsersTable
                     ->falseLabel('Nein')
                     ->placeholder('Alle'),
                 Filter::make('incomplete')
-                    ->label('Unvollstaendige Seller')
+                    ->label('Unvollständige Verkäufer/innen')
                     ->query(fn (Builder $query): Builder => $query
                         ->where('role_id', 3)
                         ->whereNull('verification_deleted_at')

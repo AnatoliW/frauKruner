@@ -18,6 +18,12 @@ class ProdcatProductResource extends BaseAdminResource
 {
     protected static ?string $model = ProdcatProduct::class;
 
+    protected static ?string $navigationLabel = 'Kategorie-Zuordnungen';
+
+    protected static ?string $modelLabel = 'Kategorie-Zuordnung';
+
+    protected static ?string $pluralModelLabel = 'Kategorie-Zuordnungen';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

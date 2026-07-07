@@ -24,7 +24,7 @@ class BoostForm
                 TextInput::make('price')
                     ->required()
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
                 TextInput::make('status')
                     ->required()
                     ->numeric()
@@ -32,11 +32,12 @@ class BoostForm
                 DateTimePicker::make('start_day'),
                 DateTimePicker::make('end_day'),
                 TextInput::make('tax')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 TextInput::make('user_info'),
                 TextInput::make('base_price')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
             ]);
     }
 }

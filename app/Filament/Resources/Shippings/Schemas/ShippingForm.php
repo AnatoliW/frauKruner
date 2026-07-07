@@ -14,7 +14,7 @@ class ShippingForm
                 TextInput::make('Shipping_method'),
                 TextInput::make('shipping_cost')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
             ]);
     }
 }

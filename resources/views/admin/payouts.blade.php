@@ -147,7 +147,7 @@
                                             @if(!empty($data->shipping_date))
                                             <p class="text-success">Versanddatum:<br>
                                                 @if ($data->shipping_date)
-                                                {{ Carbon\Carbon::parse($data->shipping_date)->format('d. m. Y') }}
+                                                {{ Carbon\Carbon::parse($data->shipping_date)->format('d.m.Y') }}
                                                 @endif
                                             </p>
                                              @else

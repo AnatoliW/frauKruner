@@ -19,6 +19,12 @@ class PaymentResource extends BaseAdminResource
 {
     protected static ?string $model = Payment::class;
 
+    protected static ?string $navigationLabel = 'Zahlungsvorgänge';
+
+    protected static ?string $modelLabel = 'Zahlungsvorgang';
+
+    protected static ?string $pluralModelLabel = 'Zahlungsvorgänge';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

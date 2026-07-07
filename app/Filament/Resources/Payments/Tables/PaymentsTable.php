@@ -15,40 +15,51 @@ class PaymentsTable
         return $table
             ->columns([
                 TextColumn::make('payable_id')
+                    ->label('Verknüpfte ID')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('payable_type')
+                    ->label('Verknüpfter Typ')
                     ->searchable(),
                 TextColumn::make('payment_trnx_id')
+                    ->label('Transaktions-ID')
                     ->searchable(),
                 TextColumn::make('payment_method')
+                    ->label('Zahlungsmethode')
                     ->searchable(),
                 TextColumn::make('status')
+                    ->label('Status')
                     ->badge(),
                 TextColumn::make('amount')
-                    ->numeric()
+                    ->label('Betrag')
+                    ->money()
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Erstellt am')
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Aktualisiert am')
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('tax')
-                    ->numeric()
+                    ->label('MwSt.')
+                    ->money()
                     ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Bearbeiten'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Löschen'),
                 ]),
             ]);
     }

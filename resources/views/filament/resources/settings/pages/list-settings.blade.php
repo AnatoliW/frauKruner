@@ -132,7 +132,7 @@
 
                                         @if (! empty($values[$item['id']]))
                                             <p class="settings-current-value">
-                                                Current: {{ $values[$item['id']] }}
+                                                Aktuell: {{ $values[$item['id']] }}
                                             </p>
                                         @endif
                                     @else

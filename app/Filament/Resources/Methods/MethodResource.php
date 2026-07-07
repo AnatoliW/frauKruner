@@ -18,6 +18,12 @@ class MethodResource extends BaseAdminResource
 {
     protected static ?string $model = Method::class;
 
+    protected static ?string $navigationLabel = 'Bankverbindungen';
+
+    protected static ?string $modelLabel = 'Bankverbindung';
+
+    protected static ?string $pluralModelLabel = 'Bankverbindungen';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

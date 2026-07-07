@@ -35,7 +35,7 @@ class PackagesTable
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('type')
                     ->label('Typ')

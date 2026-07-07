@@ -19,7 +19,8 @@ class CouponForm
                 TextInput::make('limit')
                     ->numeric(),
                 TextInput::make('minimum_cart')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 TextInput::make('used')
                     ->numeric()
                     ->default(0),

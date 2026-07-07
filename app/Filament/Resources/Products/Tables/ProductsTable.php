@@ -34,7 +34,7 @@ class ProductsTable
                     ->label('Name')
                     ->searchable(),
                 TextColumn::make('details')
-                    ->label('Details')
+                    ->label('Kurzinfo')
                     ->limit(120)
                     ->wrap()
                     ->searchable(),
@@ -45,7 +45,7 @@ class ProductsTable
                     ->searchable(),
                 TextColumn::make('status')
                     ->label('Status')
-                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Yes' : 'No')
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Ja' : 'Nein')
                     ->sortable(),
                 TextColumn::make('boosted')
                     ->label('Gepusht')
@@ -53,15 +53,15 @@ class ProductsTable
                     ->sortable(),
                 TextColumn::make('boost_start_date')
                     ->label('Push-Start')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('boost_end_date')
                     ->label('Push-Ende')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('deleted_at')
-                    ->label('Deleted At')
-                    ->dateTime()
+                    ->label('Gelöscht am')
+                    ->date('d.m.Y')
                     ->sortable(),
             ])
             ->filters([

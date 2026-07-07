@@ -18,6 +18,12 @@ class ImageResource extends BaseAdminResource
 {
     protected static ?string $model = Image::class;
 
+    protected static ?string $navigationLabel = 'Bilder';
+
+    protected static ?string $modelLabel = 'Bild';
+
+    protected static ?string $pluralModelLabel = 'Bilder';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

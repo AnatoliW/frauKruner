@@ -5,7 +5,7 @@
 
     <div class="mx-auto w-full max-w-5xl space-y-6">
         <x-filament::section>
-            <x-slot name="heading">User Details</x-slot>
+            <x-slot name="heading">Nutzerdetails</x-slot>
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
@@ -42,7 +42,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Erstellt am</p>
-                    <p class="font-medium">{{ $user->created_at?->format('Y-m-d H:i:s') ?? '-' }}</p>
+                    <p class="font-medium">{{ $user->created_at?->format('d.m.Y') ?? '-' }}</p>
                 </div>
             </div>
 

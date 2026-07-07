@@ -60,11 +60,11 @@ class PrepaymentsTable
                     }),
                 TextColumn::make('total')
                     ->label('Gesamt')
-                    ->numeric()
+                    ->money()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Bestelldatum')
-                    ->date('d.m.Y')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
             ->filters([

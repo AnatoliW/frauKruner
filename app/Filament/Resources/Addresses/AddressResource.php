@@ -18,6 +18,12 @@ class AddressResource extends BaseAdminResource
 {
     protected static ?string $model = Address::class;
 
+    protected static ?string $navigationLabel = 'Adressen';
+
+    protected static ?string $modelLabel = 'Adresse';
+
+    protected static ?string $pluralModelLabel = 'Adressen';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

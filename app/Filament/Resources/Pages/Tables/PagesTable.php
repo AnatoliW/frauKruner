@@ -29,7 +29,7 @@ class PagesTable
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
             ])
             ->filters([

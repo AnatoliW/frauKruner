@@ -18,10 +18,16 @@ class ShippingResource extends BaseAdminResource
 {
     protected static ?string $model = Shipping::class;
 
+    protected static ?string $navigationLabel = 'Versandarten';
+
+    protected static ?string $modelLabel = 'Versandart';
+
+    protected static ?string $pluralModelLabel = 'Versandarten';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
      protected static bool $shouldRegisterNavigation = false;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Systemverwaltung';
 
     public static function shouldRegisterNavigation(): bool
     {

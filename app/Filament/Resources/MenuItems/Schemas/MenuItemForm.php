@@ -16,7 +16,7 @@ class MenuItemForm
         return $schema
             ->components([
                 Select::make('menu_id')
-                    ->label('Menu')
+                    ->label('Menü')
                     ->options(Menu::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
@@ -35,7 +35,7 @@ class MenuItemForm
                 TextInput::make('color')
                     ->maxLength(255),
                 Select::make('parent_id')
-                    ->label('Parent Item')
+                    ->label('Übergeordneter Eintrag')
                     ->options(MenuItem::query()->orderBy('title')->pluck('title', 'id'))
                     ->searchable(),
                 TextInput::make('order')

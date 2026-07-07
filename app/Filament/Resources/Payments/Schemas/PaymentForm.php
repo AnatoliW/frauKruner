@@ -26,10 +26,12 @@ class PaymentForm
                 TextInput::make('amount')
                     ->required()
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->suffix(' €'),
                 TextInput::make('tax')
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->suffix(' €'),
                 Textarea::make('response_body')
                     ->columnSpanFull(),
             ]);

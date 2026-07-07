@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -31,22 +32,25 @@ class OrderForm
                 TextInput::make('federal_state'),
                 TextInput::make('po_box'),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label('E-Mail-Adresse')
                     ->email(),
                 TextInput::make('discount')
                     ->numeric(),
                 TextInput::make('discount_code'),
                 TextInput::make('subtotal')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 TextInput::make('tax')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 TextInput::make('shipping_cost')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
                 TextInput::make('shipping_method'),
                 TextInput::make('tracking_Id'),
                 TextInput::make('total')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 Textarea::make('wearing_time')
                     ->columnSpanFull(),
                 Textarea::make('finishings')
@@ -68,12 +72,16 @@ class OrderForm
                     ->numeric()
                     ->default(0),
                 TextInput::make('vendor_total')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 TextInput::make('commission')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 TextInput::make('photo'),
                 TextInput::make('video'),
-                DateTimePicker::make('shipping_date'),
+                DatePicker::make('shipping_date')
+                    ->label('Versanddatum')
+                    ->displayFormat('d.m.Y'),
                 TextInput::make('send_shipping_email')
                     ->email()
                     ->numeric(),

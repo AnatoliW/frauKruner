@@ -27,12 +27,12 @@ class PostcatsTable
                     ->label('Slug')
                     ->searchable(),
                 TextColumn::make('parent_id')
-                    ->label('Parent Id')
+                    ->label('Übergeordnete ID')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
             ])
             ->filters([

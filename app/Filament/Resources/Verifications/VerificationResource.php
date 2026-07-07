@@ -21,6 +21,10 @@ class VerificationResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Verifizierungen';
+
+    protected static ?string $modelLabel = 'Verifizierung';
+
+    protected static ?string $pluralModelLabel = 'Verifizierungen';
     protected static string|\UnitEnum|null $navigationGroup = 'Nutzer';
 
     public static function form(Schema $schema): Schema

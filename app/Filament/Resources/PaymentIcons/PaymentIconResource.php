@@ -20,6 +20,10 @@ class PaymentIconResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Zahlungsmethoden';
+
+    protected static ?string $modelLabel = 'Zahlungsmethode';
+
+    protected static ?string $pluralModelLabel = 'Zahlungsmethoden';
     protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     public static function form(Schema $schema): Schema

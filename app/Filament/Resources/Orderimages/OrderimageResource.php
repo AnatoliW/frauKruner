@@ -18,6 +18,12 @@ class OrderimageResource extends BaseAdminResource
 {
     protected static ?string $model = Orderimage::class;
 
+    protected static ?string $navigationLabel = 'Bestellbilder';
+
+    protected static ?string $modelLabel = 'Bestellbild';
+
+    protected static ?string $pluralModelLabel = 'Bestellbilder';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

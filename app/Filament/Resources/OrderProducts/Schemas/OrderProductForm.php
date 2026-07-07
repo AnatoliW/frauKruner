@@ -20,7 +20,7 @@ class OrderProductForm
                     ->numeric(),
                 TextInput::make('price')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
                 Textarea::make('variation')
                     ->columnSpanFull(),
             ]);

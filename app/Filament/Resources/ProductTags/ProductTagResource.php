@@ -18,6 +18,12 @@ class ProductTagResource extends BaseAdminResource
 {
     protected static ?string $model = ProductTag::class;
 
+    protected static ?string $navigationLabel = 'Produkt-Tags';
+
+    protected static ?string $modelLabel = 'Produkt-Tag';
+
+    protected static ?string $pluralModelLabel = 'Produkt-Tags';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Payouts\Tables;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Order;
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
@@ -33,11 +32,11 @@ class PayoutsTable
                             ? '<div style="margin-top:10px;padding:8px 10px;border-left:3px solid #9ca3af;"><span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;">IBAN</span><span style="font-weight:600;word-break:break-all;">' . e($iban) . '</span></div>'
                             : '<div style="margin-top:10px;padding:8px 10px;border:1px dashed #d1d5db;border-radius:8px;">Keine Bank hinterlegt</div>';
 
-                        return '<div style="min-width:220px;line-height:1.35;">' . $nameBlock . $bankBlock . '</div>';
+                        return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">' . $nameBlock . $bankBlock . '</div>';
                     })
                     ->wrap()
                     ->extraAttributes([
-                        'style' => 'min-width: 230px;',
+                        'style' => 'display:flex;flex-direction:column;align-items:flex-start;white-space:normal;',
                     ]),
                 TextColumn::make('buyer_product')
                     ->label('Käufer/in - Produkt')
@@ -80,11 +79,11 @@ class PayoutsTable
                             . '<div style="font-weight:600;">' . e($categoryName) . '</div>'
                             . '</div>';
 
-                        return '<div style="min-width:300px;line-height:1.35;">' . $html . '</div>';
+                        return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">' . $html . '</div>';
                     })
                     ->wrap()
                     ->extraAttributes([
-                        'style' => 'min-width: 320px; display: block;',
+                        'style' => 'display:flex;flex-direction:column;align-items:flex-start;white-space:normal;',
                     ])
                     ->searchable(query: function ($query, string $search): void {
                         $query->where(function ($q) use ($search): void {
@@ -106,9 +105,13 @@ class PayoutsTable
                         $shippingMethod = (string) ($record->shipping_method ?? '');
                         $trackingId = (string) ($record->tracking_Id ?? '');
 
+                        $itemStyle = 'display:flex;flex-direction:column;gap:2px;margin-bottom:8px;';
+                        $labelStyle = 'display:block;font-size:11px;text-transform:uppercase;letter-spacing:.02em;color:#6b7280;';
+                        $valueStyle = 'display:block;font-weight:600;word-break:break-word;';
+
                         $rows = [];
-                        $rows[] = '<div style="margin-bottom:8px;"><span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.02em;">Versandmethode</span><span style="font-weight:600;color:' . ($shippingMethod !== '' ? '#15803d' : '') . ';">' . e($shippingMethod !== '' ? $shippingMethod : 'Keine Versandmethode festgelegt') . '</span></div>';
-                        $rows[] = '<div style="margin-bottom:8px;"><span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.02em;">Tracking ID</span><span style="font-weight:600;color:' . ($trackingId !== '' ? '#15803d' : '') . ';">' . e($trackingId !== '' ? $trackingId : 'Keine Tracking ID vorhanden') . '</span></div>';
+                        $rows[] = '<div style="' . $itemStyle . '"><span style="' . $labelStyle . '">Versandmethode</span><span style="' . $valueStyle . 'color:' . ($shippingMethod !== '' ? '#15803d' : '#374151') . ';">' . e($shippingMethod !== '' ? $shippingMethod : 'Keine Versandmethode festgelegt') . '</span></div>';
+                        $rows[] = '<div style="' . $itemStyle . '"><span style="' . $labelStyle . '">Tracking ID</span><span style="' . $valueStyle . 'color:' . ($trackingId !== '' ? '#15803d' : '#374151') . ';">' . e($trackingId !== '' ? $trackingId : 'Keine Tracking ID vorhanden') . '</span></div>';
 
                         if (! empty($record->shipping_date)) {
                             $date = $record->shipping_date;
@@ -117,17 +120,23 @@ class PayoutsTable
                                 $date = \Carbon\Carbon::parse((string) $date);
                             }
 
-                            $rows[] = '<div style="margin-bottom:8px;"><span style="display:block;font-size:11px;;text-transform:uppercase;letter-spacing:.02em;">Versanddatum</span><span style="font-weight:600;color:#15803d;">' . e($date->format('d. m. Y')) . '</span></div>';
+                            $rows[] = '<div style="' . $itemStyle . '"><span style="' . $labelStyle . '">Versanddatum</span><span style="' . $valueStyle . 'color:#15803d;">' . e($date->format('d.m.Y')) . '</span></div>';
                         } else {
-                            $rows[] = '<div style="margin-bottom:8px;"><span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.02em;">Versanddatum</span><span style="font-weight:600;">Kein Versanddatum eingegeben</span></div>';
+                            $rows[] = '<div style="' . $itemStyle . '"><span style="' . $labelStyle . '">Versanddatum</span><span style="' . $valueStyle . '">Kein Versanddatum eingegeben</span></div>';
                         }
 
+                        $badges = [];
+
                         if (($record->video && Storage::exists($record->video)) && (int) ($record->status ?? 0) !== 3) {
-                            $rows[] = '<div style="margin-bottom:8px;"><span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:600;">Video versendet</span></div>';
+                            $badges[] = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:600;">Video versendet</span>';
                         }
 
                         if ($record->orderimages->isNotEmpty() && (int) ($record->status ?? 0) !== 3) {
-                            $rows[] = '<div style="margin-bottom:8px;"><span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:600;">Foto versendet</span></div>';
+                            $badges[] = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:600;">Foto versendet</span>';
+                        }
+
+                        if ($badges !== []) {
+                            $rows[] = '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-bottom:8px;">' . implode('', $badges) . '</div>';
                         }
 
                         $trackingUrl = null;
@@ -146,18 +155,19 @@ class PayoutsTable
                         }
 
                         if ($shippingMethod === 'Deutsche Post') {
-                            $rows[] = '<div style="margin-top:8px;"><a class="fi-btn fi-btn-size-sm fi-color-gray" target="_blank" href="https://www.deutschepost.de/sendung/simpleQuery.html">Zur Seite der DP</a></div>';
+                            $rows[] = '<a class="fi-btn fi-btn-size-sm fi-color-gray" style="display:flex;flex-direction:column;align-items:flex-start;margin-top:4px;" target="_blank" href="https://www.deutschepost.de/sendung/simpleQuery.html">Zur Seite der DP</a>';
                         } elseif ($shippingMethod === 'Anderes') {
-                            $rows[] = '<div style="margin-top:8px;color:#4b5563;">Versendet mit: Anderes, kein Tracking möglich</div>';
+                            $rows[] = '<div style="margin-top:4px;color:#4b5563;">Versendet mit: Anderes, kein Tracking möglich</div>';
                         } elseif ($trackingUrl) {
-                            $rows[] = '<div style="margin-top:8px;"><a class="fi-btn fi-btn-size-sm fi-color-gray" target="_blank" href="' . e($trackingUrl) . '">Ansehen</a></div>';
+                            $rows[] = '<a class="fi-btn fi-btn-size-sm fi-color-gray" style="display:flex;flex-direction:column;align-items:flex-start;margin-top:4px;" target="_blank" href="' . e($trackingUrl) . '">Ansehen</a>';
                         }
 
-                        return '<div style="min-width:240px;line-height:1.35;">' . implode('', $rows) . '</div>';
+                        return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">' . implode('', $rows) . '</div>';
                     })
                     ->wrap()
+                    ->grow(false)
                     ->extraAttributes([
-                        'style' => 'min-width: 260px;',
+                        'style' => 'display:flex;flex-direction:column;align-items:flex-start;white-space:normal;',
                     ]),
                 TextColumn::make('payment_info')
                     ->label('Zahlungsinformationen')
@@ -179,11 +189,11 @@ class PayoutsTable
                             return '<span style="">-</span>';
                         }
 
-                        return '<div style="min-width:210px;line-height:1.35;">' . implode('', $rows) . '</div>';
+                        return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">' . implode('', $rows) . '</div>';
                     })
                     ->wrap()
                     ->extraAttributes([
-                        'style' => 'min-width: 220px;',
+                        'style' => 'display:flex;flex-direction:column;align-items:flex-start;white-space:normal;',
                     ]),
                 TextColumn::make('message')
                     ->label('Nachricht')
@@ -199,45 +209,44 @@ class PayoutsTable
                 //
             ])
             ->recordActions([
-                ActionGroup::make([
-                    Action::make('view')
-                        ->label('Ansehen')
-                        ->color('warning')
-                        ->icon('heroicon-m-eye')
-                        ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
-                    Action::make('payout')
-                        ->label('Auszahlen')
-                        ->color('success')
-                        ->icon('heroicon-m-wallet')
-                        ->requiresConfirmation()
-                        ->modalHeading('Auszahlung bestätigen')
-                        ->modalDescription('Bist du sicher, dass du die Bestellung als ausgezahlt markieren möchtest?')
-                        ->action(function (Order $record): void {
-                            $record->update(['payouts_status' => 1]);
+                Action::make('payout')
+                    ->label('Auszahlen')
+                    ->button()
+                    ->size('sm')
+                    ->color('success')
+                    ->icon('heroicon-m-wallet')
+                    ->requiresConfirmation()
+                    ->modalHeading('Auszahlung bestätigen')
+                    ->modalDescription('Bist du sicher, dass du die Bestellung als ausgezahlt markieren möchtest?')
+                    ->action(function (Order $record): void {
+                        $record->update(['payouts_status' => 1]);
 
-                            Notification::make()
-                                ->title('Auszahlung erfolgreich!')
-                                ->success()
-                                ->send();
-                        })
-                        ->visible(fn (Order $record): bool => (int) ($record->payouts_status ?? 0) === 0),
-                    Action::make('cancel')
-                        ->label('Stornieren')
-                        ->color('danger')
-                        ->icon('heroicon-m-x-circle')
-                        ->requiresConfirmation()
-                        ->modalHeading('Bestellung stornieren')
-                        ->modalDescription('Bist du sicher, dass du die Bestellung stornieren möchtest?')
-                        ->url(fn (Order $record): string => route('admin.order.cancel', $record))
-                        ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
-                    Action::make('cancelled')
-                        ->label('Storniert')
-                        ->color('gray')
-                        ->disabled()
-                        ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) === 3),
-                ])
-                    ->label('Aktionen')
-                    ->icon('heroicon-m-ellipsis-vertical'),
+                        Notification::make()
+                            ->title('Auszahlung erfolgreich!')
+                            ->success()
+                            ->send();
+                    })
+                    ->visible(fn (Order $record): bool => (int) ($record->payouts_status ?? 0) === 0),
+                Action::make('view')
+                    ->label('Ansehen')
+                    ->link()
+                    ->color('warning')
+                    ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
+                Action::make('cancel')
+                    ->label('Stornieren')
+                    ->link()
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Bestellung stornieren')
+                    ->modalDescription('Bist du sicher, dass du die Bestellung stornieren möchtest?')
+                    ->url(fn (Order $record): string => route('admin.order.cancel', $record))
+                    ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
+                Action::make('cancelled')
+                    ->label('Storniert')
+                    ->link()
+                    ->color('gray')
+                    ->disabled()
+                    ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) === 3),
             ])
             ->toolbarActions([]);
     }

@@ -10,6 +10,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class OrdersTable
 {
@@ -37,34 +38,37 @@ class OrdersTable
                     ->searchable(),
                 TextColumn::make('total')
                     ->label('Gesamt')
-                    ->numeric()
+                    ->money()
                     ->sortable(),
                 TextColumn::make('vendor.name')
                     ->label('Verkaeuferin')
                     ->searchable(),
                 TextColumn::make('payouts_status')
-                    ->label('Status der Auszahlung')
+                    ->label(new HtmlString('Status der<br>Auszahlung'))
+                    ->wrapHeader()
                     ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Ausgezahlt' : 'Nicht ausgezahlt')
                     ->badge()
                     ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'primary')
                     ->sortable(),
                 TextColumn::make('vendor_total')
-                    ->label('Verkaeuferin bekommt')
-                    ->numeric()
+                    ->label(new HtmlString('Verkaeuferin<br>bekommt'))
+                    ->wrapHeader()
+                    ->money()
                     ->sortable(),
                 TextColumn::make('commission')
                     ->label('Komision')
-                    ->numeric()
+                    ->money()
                     ->sortable(),
                 TextColumn::make('shipping_date')
                     ->label('Versanddatum')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('payment_id')
                     ->label('Zahlungs-ID')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->label('Bestelldatum')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
             ->filters([

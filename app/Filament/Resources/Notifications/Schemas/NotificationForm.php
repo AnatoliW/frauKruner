@@ -20,7 +20,7 @@ class NotificationForm
                     ->image(),
                 TextInput::make('price')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
                 TextInput::make('user_id')
                     ->numeric(),
                 TextInput::make('product_id')

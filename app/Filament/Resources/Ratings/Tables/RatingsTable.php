@@ -22,7 +22,7 @@ class RatingsTable
             ->columns([
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
-                    ->dateTime('Y-m-d H:i:s')
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('rating')
                     ->label('Sterne')

@@ -3,17 +3,22 @@
 namespace App\Providers\Filament;
 
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SetAdminLocale;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use App\Filament\Pages\Dashboard;
 use App\Filament\Widgets\DashboardOverviewWidget;
-use Filament\Pages\Dashboard;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Table;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -25,6 +30,25 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        Table::configureUsing(function (Table $table): void {
+            $table
+                ->defaultCurrency('eur')
+                ->defaultNumberLocale('de_DE')
+                ->defaultDateDisplayFormat('d.m.Y')
+                ->defaultDateTimeDisplayFormat('d.m.Y');
+        });
+
+        DatePicker::configureUsing(function (DatePicker $picker): void {
+            $picker->displayFormat('d.m.Y');
+        });
+
+        DateTimePicker::configureUsing(function (DateTimePicker $picker): void {
+            $picker->displayFormat('d.m.Y');
+        });
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -32,9 +56,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Frau Kruner')
+            ->brandLogo(asset('assets/img/icons/FxxK-Logo.svg'))
+            ->brandLogoHeight('36px')
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->maxContentWidth(Width::Full)
             ->renderHook(
                 'panels::head.start',
                 fn() => <<<'HTML'
@@ -114,6 +142,103 @@ class AdminPanelProvider extends PanelProvider
             .fi-resource-orders .fi-tabs .fi-tabs-item-btn.fi-active {
                 background: rgba(59, 130, 246, 0.18);
                 color: #dbeafe;
+            }
+
+            /* Keep table columns compact on wide layouts. */
+            .fi-ta-table {
+                width: 100%;
+                table-layout: auto;
+            }
+
+            .fi-ta-table .fi-ta-header-cell,
+            .fi-ta-table .fi-ta-cell {
+                width: auto;
+            }
+
+            .fi-ta-table .fi-ta-header-cell.fi-growable {
+                width: auto;
+            }
+
+            .fi-ta-table .fi-ta-col,
+            .fi-ta-table .fi-ta-text {
+                width: auto;
+            }
+
+            .fi-ta-table th.fi-ta-header-cell {
+                width: 1%;
+                white-space: nowrap;
+            }
+
+            .fi-ta-table td.fi-ta-cell:not(:has(.fi-wrapped)) {
+                width: 1%;
+                white-space: nowrap;
+            }
+
+            .fi-ta-table .fi-ta-header-cell {
+                padding: 0.5rem 0.625rem;
+            }
+
+            .fi-ta-table .fi-ta-text:not(.fi-inline) {
+                padding: 0.5rem 0.625rem;
+            }
+
+            .fi-ta-table .fi-ta-header-cell:first-of-type {
+                padding-inline-start: 1rem;
+            }
+
+            .fi-ta-table .fi-ta-header-cell:last-of-type {
+                padding-inline-end: 1rem;
+            }
+
+            .fi-ta-table .fi-ta-cell:first-of-type .fi-ta-text:not(.fi-inline) {
+                padding-inline-start: 1rem;
+            }
+
+            .fi-ta-table .fi-ta-cell:last-of-type .fi-ta-text:not(.fi-inline) {
+                padding-inline-end: 1rem;
+            }
+
+            .fi-ta-record-content .fi-ta-col.fi-growable {
+                flex: 0 1 auto;
+                width: auto;
+            }
+
+            .fi-resource-payouts a.fi-ta-col,
+            .fi-resource-payouts .fi-ta-cell-shipping-status,
+            .fi-resource-payouts .fi-ta-cell-shipping-status .fi-ta-text,
+            .fi-resource-payouts .fi-ta-cell-shipping-status .fi-ta-col,
+            .fi-resource-payouts .fi-ta-cell-buyer-product .fi-ta-col,
+            .fi-resource-payouts .fi-ta-cell-buyer-product .fi-ta-text,
+            .fi-resource-payouts .fi-ta-cell-seller-info .fi-ta-col,
+            .fi-resource-payouts .fi-ta-cell-seller-info .fi-ta-text,
+            .fi-resource-payouts .fi-ta-cell-payment-info .fi-ta-col,
+            .fi-resource-payouts .fi-ta-cell-payment-info .fi-ta-text {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                white-space: normal !important;
+                width: auto !important;
+            }
+
+            .fi-resource-payouts a.fi-ta-col {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .fi-resource-payouts .fi-ta-cell-shipping-status a.fi-btn {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                width: auto !important;
+            }
+
+            .fi-resource-payouts .fi-ta-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+                gap: 0.35rem !important;
+                flex-wrap: nowrap !important;
             }
 
             /* Keep row actions and collapse button pinned to top for tall records. */
@@ -273,6 +398,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                SetAdminLocale::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

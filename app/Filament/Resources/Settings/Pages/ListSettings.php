@@ -20,7 +20,7 @@ class ListSettings extends Page
 
     protected string $view = 'filament.resources.settings.pages.list-settings';
 
-    public string $activeGroup = 'Site';
+    public string $activeGroup = 'Website';
 
     /**
      * @var array<string, array<int, array<string, mixed>>>
@@ -87,7 +87,7 @@ class ListSettings extends Page
         $this->loadSettings();
 
         Notification::make()
-            ->title('Settings wurden gespeichert.')
+            ->title('Einstellungen wurden gespeichert.')
             ->success()
             ->send();
     }
@@ -102,7 +102,7 @@ class ListSettings extends Page
         $grouped = [];
 
         foreach ($settings as $setting) {
-            $group = (string) ($setting->group ?: 'General');
+            $group = (string) ($setting->group ?: 'Allgemein');
 
             $grouped[$group][] = [
                 'id' => (int) $setting->id,

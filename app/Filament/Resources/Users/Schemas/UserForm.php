@@ -20,7 +20,7 @@ class UserForm
                     ->required(),
                 TextInput::make('last_name'),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label('E-Mail-Adresse')
                     ->email()
                     ->required(),
                 TextInput::make('avatar')

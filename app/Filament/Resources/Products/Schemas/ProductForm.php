@@ -25,9 +25,10 @@ class ProductForm
                 TextInput::make('slug'),
                 TextInput::make('price')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
                 TextInput::make('saleprice')
-                    ->numeric(),
+                    ->numeric()
+                    ->suffix(' €'),
                 Textarea::make('details')
                     ->columnSpanFull(),
                 TextInput::make('quantity')
@@ -54,7 +55,7 @@ class ProductForm
                     ->columnSpanFull(),
                 TextInput::make('shipping_cost')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
                 TextInput::make('featured')
                     ->numeric(),
                 TextInput::make('discount')

@@ -22,6 +22,10 @@ class PackageResource extends BaseAdminResource
 
     protected static ? string $navigationLabel = 'Push-Optionen';
 
+    protected static ?string $modelLabel = 'Push-Option';
+
+    protected static ?string $pluralModelLabel = 'Push-Optionen';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Push';
 
     public static function form(Schema $schema): Schema

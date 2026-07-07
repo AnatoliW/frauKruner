@@ -18,6 +18,12 @@ class FavoriteResource extends BaseAdminResource
 {
     protected static ?string $model = Favorite::class;
 
+    protected static ?string $navigationLabel = 'Favoriten';
+
+    protected static ?string $modelLabel = 'Favorit';
+
+    protected static ?string $pluralModelLabel = 'Favoriten';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

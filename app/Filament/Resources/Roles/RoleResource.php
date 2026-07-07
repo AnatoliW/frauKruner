@@ -18,11 +18,17 @@ class RoleResource extends BaseAdminResource
 {
     protected static ?string $model = Role::class;
 
+    protected static ?string $navigationLabel = 'Rollen';
+
+    protected static ?string $modelLabel = 'Rolle';
+
+    protected static ?string $pluralModelLabel = 'Rollen';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
      protected static bool $shouldRegisterNavigation = false;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Systemverwaltung';
 
     public static function shouldRegisterNavigation(): bool
     {

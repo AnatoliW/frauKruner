@@ -37,7 +37,7 @@ class PostsTable
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
                 ImageColumn::make('image')
                     ->label('Beitragsbild')

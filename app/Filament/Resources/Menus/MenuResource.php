@@ -22,6 +22,10 @@ class MenuResource extends Resource
 
     protected static ? string $navigationLabel = 'Menüs';
 
+    protected static ?string $modelLabel = 'Menü';
+
+    protected static ?string $pluralModelLabel = 'Menüs';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     protected static ?string $recordTitleAttribute = 'name';

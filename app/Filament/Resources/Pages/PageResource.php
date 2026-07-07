@@ -20,6 +20,10 @@ class PageResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Seiten';
+
+    protected static ?string $modelLabel = 'Seite';
+
+    protected static ?string $pluralModelLabel = 'Seiten';
     protected static string|\UnitEnum|null $navigationGroup = 'Einstellungen';
 
     public static function form(Schema $schema): Schema

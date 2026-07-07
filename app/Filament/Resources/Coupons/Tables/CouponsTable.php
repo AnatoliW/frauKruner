@@ -29,7 +29,7 @@ class CouponsTable
                     ->sortable(),
                 TextColumn::make('expire_at')
                     ->label('Läuft ab am')
-                    ->date()
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('limit')
                     ->label('Limit')
@@ -37,11 +37,11 @@ class CouponsTable
                     ->sortable(),
                 TextColumn::make('minimum_cart')
                     ->label('Minimaler Warenkorbwert')
-                    ->numeric()
+                    ->money()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('used')
                     ->label('Genutzt')

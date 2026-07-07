@@ -21,6 +21,10 @@ class FinishingResource extends BaseAdminResource
 
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ? string $navigationLabel = 'Veredlungen';
+
+    protected static ?string $modelLabel = 'Veredelung';
+
+    protected static ?string $pluralModelLabel = 'Veredelungen';
     protected static string|\UnitEnum|null $navigationGroup = 'Produkte';
 
     public static function form(Schema $schema): Schema

@@ -17,16 +17,16 @@ class ContactsTable
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('E-Mail-Adresse')
                     ->searchable(),
                 TextColumn::make('subject')
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

@@ -18,6 +18,12 @@ class BrandResource extends BaseAdminResource
 {
     protected static ?string $model = Brand::class;
 
+    protected static ?string $navigationLabel = 'Marken';
+
+    protected static ?string $modelLabel = 'Marke';
+
+    protected static ?string $pluralModelLabel = 'Marken';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

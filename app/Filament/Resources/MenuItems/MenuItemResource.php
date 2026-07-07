@@ -21,9 +21,13 @@ class MenuItemResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static bool $shouldRegisterNavigation = false;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Systemverwaltung';
 
-    protected static ?string $navigationLabel = 'Menu Items';
+    protected static ?string $navigationLabel = 'Menüpunkte';
+
+    protected static ?string $modelLabel = 'Menüpunkt';
+
+    protected static ?string $pluralModelLabel = 'Menüpunkte';
 
     protected static ?string $recordTitleAttribute = 'title';
 

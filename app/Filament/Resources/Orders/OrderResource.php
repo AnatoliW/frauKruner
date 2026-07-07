@@ -24,6 +24,10 @@ class OrderResource extends BaseAdminResource
 
     protected static ?string $navigationLabel = 'Bestellungen';
 
+    protected static ?string $modelLabel = 'Bestellung';
+
+    protected static ?string $pluralModelLabel = 'Bestellungen';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Zahlungen';
 
     public static function form(Schema $schema): Schema

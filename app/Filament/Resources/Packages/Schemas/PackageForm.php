@@ -15,7 +15,7 @@ class PackageForm
                 TextInput::make('name'),
                 TextInput::make('price')
                     ->numeric()
-                    ->prefix('$'),
+                    ->suffix(' €'),
                 TextInput::make('days')
                     ->numeric(),
                 TextInput::make('status')

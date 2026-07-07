@@ -18,6 +18,12 @@ class LogResource extends BaseAdminResource
 {
     protected static ?string $model = Log::class;
 
+    protected static ?string $navigationLabel = 'Protokolle';
+
+    protected static ?string $modelLabel = 'Protokoll';
+
+    protected static ?string $pluralModelLabel = 'Protokolle';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

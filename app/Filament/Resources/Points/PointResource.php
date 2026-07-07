@@ -18,6 +18,12 @@ class PointResource extends BaseAdminResource
 {
     protected static ?string $model = Point::class;
 
+    protected static ?string $navigationLabel = 'Punkte';
+
+    protected static ?string $modelLabel = 'Punkt';
+
+    protected static ?string $pluralModelLabel = 'Punkte';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

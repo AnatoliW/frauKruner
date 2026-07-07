@@ -17,14 +17,14 @@ class MenuItemsTable
                 TextColumn::make('id')
                     ->sortable(),
                 TextColumn::make('menu.name')
-                    ->label('Menu')
+                    ->label('Menü')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('parent.title')
-                    ->label('Parent')
+                    ->label('Übergeordnet')
                     ->toggleable(),
                 TextColumn::make('order')
                     ->numeric()
@@ -36,7 +36,7 @@ class MenuItemsTable
                     ->limit(30)
                     ->toggleable(),
                 TextColumn::make('updated_at')
-                    ->dateTime('Y-m-d H:i')
+                    ->date('d.m.Y')
                     ->sortable(),
             ])
             ->filters([

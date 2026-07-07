@@ -25,6 +25,10 @@ class ProductResource extends BaseAdminResource
 
         protected static ? string $navigationLabel = 'Katalog';
 
+    protected static ?string $modelLabel = 'Produkt';
+
+    protected static ?string $pluralModelLabel = 'Katalog';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Produkte';
 
     public static function form(Schema $schema): Schema
