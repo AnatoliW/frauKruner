@@ -33,7 +33,12 @@ class PostsTable
                     ->searchable(),
                 TextColumn::make('status')
                     ->label('Status')
-                    ->formatStateUsing(fn ($state): string => strtolower((string) $state))
+                    ->formatStateUsing(fn ($state): string => match (strtoupper((string) $state)) {
+                        'PUBLISHED' => 'Veröffentlicht',
+                        'DRAFT' => 'Entwurf',
+                        'PENDING' => 'Ausstehend',
+                        default => strtolower((string) $state),
+                    })
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')

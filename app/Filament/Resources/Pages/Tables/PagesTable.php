@@ -23,9 +23,17 @@ class PagesTable
                 TextColumn::make('title')
                     ->label('Titel')
                     ->searchable(),
+                TextColumn::make('slug')
+                    ->label('Slug')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')
                     ->label('Status')
-                    ->formatStateUsing(fn ($state): string => strtoupper((string) $state))
+                    ->formatStateUsing(fn ($state): string => match (strtoupper((string) $state)) {
+                        'ACTIVE' => 'Aktiv',
+                        'INACTIVE' => 'Inaktiv',
+                        default => strtoupper((string) $state),
+                    })
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')

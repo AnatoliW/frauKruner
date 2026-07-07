@@ -7,6 +7,8 @@
 @endif
 @section('content')
 
+    <x-invoice.customer-header-styles />
+
     <div class="container mt-5 mb-5">
         <div class="row justify-content-center">
             <div class="col-md-10">
@@ -19,6 +21,18 @@
 
                     <div class="card-body {{ $order->status == 3 ? 'storniert' : '' }}" id="printableArea"
                         style="overflow-x:auto;">
+
+                        @if (Auth()->user()->role_id == 3)
+                            <x-invoice.header
+                                title="Gutschrift"
+                                :subtitle="'Gutschrift-Nr. FK' . $order->created_at->year . '-' . $order->id . '-' . $order->vendor->id . ' · ' . $order->created_at->format('d.m.Y')"
+                            />
+                        @else
+                            <x-invoice.header
+                                title="Rechnung"
+                                :subtitle="'Rechnungs-Nr. FK' . $order->created_at->year . '-' . $order->id . ' · ' . $order->created_at->format('d.m.Y')"
+                            />
+                        @endif
 
                         @if (Auth()->user()->role_id == 3)
                             @if ($order->status == 3)
