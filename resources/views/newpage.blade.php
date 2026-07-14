@@ -64,7 +64,7 @@
                     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollabled">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <p class="h5 modal-title" id="kategorienModalLabel">Kategorien</p>
+                                <p class="h5 modal-title text-secondary" id="kategorienModalLabel">Kategorien</p>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                             </div>
@@ -108,7 +108,7 @@
                     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollabled">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <p class="h5 modal-title" id="filterModalLabel">Filter <span style="margin-left:15px;"><a
+                                <p class="h5 modal-title text-secondary" id="filterModalLabel">Filter <span style="margin-left:15px;"><a
                                             href="{{ route('shop') }}">zurücksetzen</a></span></p>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>

@@ -195,7 +195,6 @@ abstract class BaseAdminResource extends Resource
             'orderimages' => 22,
             'payments' => 23,
             'shippings' => 24,
-            'coupons' => 25,
             'products' => 30,
             'categories' => 31,
             'tags' => 32,

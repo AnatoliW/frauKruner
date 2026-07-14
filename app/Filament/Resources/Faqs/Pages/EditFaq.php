@@ -10,6 +10,11 @@ class EditFaq extends EditRecord
 {
     protected static string $resource = FaqResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Frage bearbeiten';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

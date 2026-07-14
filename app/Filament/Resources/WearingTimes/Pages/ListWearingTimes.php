@@ -10,10 +10,16 @@ class ListWearingTimes extends ListRecords
 {
     protected static string $resource = WearingTimeResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Tragedauer';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Erstellen'),
         ];
     }
 }

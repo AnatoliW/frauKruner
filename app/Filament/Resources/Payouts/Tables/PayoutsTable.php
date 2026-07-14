@@ -29,7 +29,7 @@ class PayoutsTable
                             : '<div style="font-weight:700;color:#b91c1c;">Namen nicht gefunden</div>';
 
                         $bankBlock = $iban !== ''
-                            ? '<div style="margin-top:10px;padding:8px 10px;border-left:3px solid #9ca3af;"><span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;">IBAN</span><span style="font-weight:600;word-break:break-all;">' . e($iban) . '</span></div>'
+                            ? '<div style="margin-top:10px;"><span style="display:block;font-size:8px;text-transform:uppercase;letter-spacing:.03em;">IBAN</span><span style="font-weight:600;word-break:break-all;font-size:12px;">' . e($iban) . '</span></div>'
                             : '<div style="margin-top:10px;padding:8px 10px;border:1px dashed #d1d5db;border-radius:8px;">Keine Bank hinterlegt</div>';
 
                         return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">' . $nameBlock . $bankBlock . '</div>';
@@ -69,7 +69,7 @@ class PayoutsTable
                         }
 
                         if ($email !== '') {
-                            $html .= '<div style="margin-top:6px;"><a href="mailto:' . e($email) . '" target="_blank" style="color:#0f766e;font-weight:600;text-decoration:none;">' . e($email) . '</a></div>';
+                            $html .= '<div style="margin-top:6px;"><a href="mailto:' . e($email) . '" target="_blank" style="font-weight:600;text-decoration:none;">' . e($email) . '</a></div>';
                         }
 
                         $html .= '<div style="margin-top:10px;padding:8px 10px; border-left:3px solid #9ca3af;">'

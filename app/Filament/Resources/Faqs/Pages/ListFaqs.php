@@ -10,6 +10,11 @@ class ListFaqs extends ListRecords
 {
     protected static string $resource = FaqResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Häufige Fragen';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

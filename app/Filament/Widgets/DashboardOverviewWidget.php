@@ -23,7 +23,10 @@ class DashboardOverviewWidget extends Widget
     public function getProductsCount(): int
     {
         return class_exists(\App\Product::class)
-            ? \App\Product::query()->count()
+            ? \App\Product::query()
+                ->whereNull('parent_id')
+                ->where('status', 1)
+                ->count()
             : 0;
     }
 

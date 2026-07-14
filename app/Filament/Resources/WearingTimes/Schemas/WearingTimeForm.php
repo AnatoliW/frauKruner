@@ -11,12 +11,22 @@ class WearingTimeForm
     {
         return $schema
             ->components([
-                TextInput::make('name'),
-                TextInput::make('slug'),
+                TextInput::make('name')
+                    ->label('Name')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('slug')
+                    ->label('Slug')
+                    ->required()
+                    ->maxLength(255)
+                    ->helperText('URL-Kurzname, z. B. 3-tage oder 1-woche.'),
                 TextInput::make('days')
+                    ->label('Tage')
                     ->required()
                     ->numeric()
-                    ->default(1),
+                    ->default(1)
+                    ->minValue(1)
+                    ->helperText('Anzahl der Tragetage für diese Option.'),
             ]);
     }
 }

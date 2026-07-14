@@ -10,10 +10,16 @@ class EditWearingTime extends EditRecord
 {
     protected static string $resource = WearingTimeResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Tragedauer bearbeiten';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->label('Löschen'),
         ];
     }
 }

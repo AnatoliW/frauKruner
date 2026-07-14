@@ -243,11 +243,11 @@
                     </div>
 
                     <h3 class="dashboard-card-title">
-                        {{ $this->getProductsCount() }} Produkte
+                        {{ $this->getProductsCount() }} aktive Produkte
                     </h3>
 
                     <p class="dashboard-card-text">
-                        Sie haben {{ $this->getProductsCount() }} Produkte in Ihrer Datenbank.
+                        Sie haben {{ $this->getProductsCount() }} aktive Produkte in Ihrer Datenbank.
                     </p>
 
                     <div class="dashboard-card-action">
@@ -255,7 +255,7 @@
                             href="{{ $this->getProductsUrl() }}"
                             class="dashboard-card-button"
                         >
-                            Alle Produkte anzeigen
+                            Produkte anzeigen
                         </a>
                     </div>
                 </div>

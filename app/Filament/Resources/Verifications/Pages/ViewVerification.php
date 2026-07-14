@@ -89,18 +89,20 @@ class ViewVerification extends ViewRecord
 
         $this->deleteVerificationImages($verification);
 
-        Mail::to($user->email)->send(new UserNotifyEmail([
+        $mailSent = $this->sendVerificationMail($user->email, [
             'subject' => 'Dein Konto wurde erfolgreich verifiziert',
             'title' => 'Dein Konto wurde erfolgreich verifiziert',
             'body' => 'Du kannst nun deine Produkte einstellen oder Käufe tätigen.<br> Ich wünsche dir viel Spaß und tolle Erlebnisse.',
             'button_link' => route('seller.dashboard'),
             'button_text' => 'Login zum Profil',
-        ]));
+        ]);
 
         Notification::make()
             ->title('Verifizierung bestätigt')
-            ->body('Der Nutzer wurde freigeschaltet und per E-Mail informiert.')
-            ->success()
+            ->body($mailSent
+                ? 'Der Nutzer wurde freigeschaltet und per E-Mail informiert.'
+                : 'Der Nutzer wurde freigeschaltet. Die Bestätigungs-E-Mail konnte nicht versendet werden.')
+            ->color($mailSent ? 'success' : 'warning')
             ->send();
 
         $this->record->refresh()->loadMissing('user');
@@ -129,21 +131,36 @@ class ViewVerification extends ViewRecord
             'status' => 0,
         ]);
 
-        Mail::to($user->email)->send(new UserNotifyEmail([
+        $mailSent = $this->sendVerificationMail($user->email, [
             'subject' => 'Deine Verifizierung wurde abgelehnt',
             'title' => 'Deine Verifizierung wurde abgelehnt',
             'body' => 'Deine Verifizierung ist fehlgeschlagen.',
             'button_link' => route('home'),
             'button_text' => 'Home',
-        ]));
+        ]);
 
         Notification::make()
             ->title('Verifizierung abgelehnt')
-            ->body('Der Nutzer wurde pausiert und per E-Mail informiert.')
+            ->body($mailSent
+                ? 'Der Nutzer wurde pausiert und per E-Mail informiert.'
+                : 'Der Nutzer wurde pausiert. Die Ablehnungs-E-Mail konnte nicht versendet werden.')
             ->warning()
             ->send();
 
         $this->record->refresh()->loadMissing('user');
+    }
+
+    protected function sendVerificationMail(string $email, array $data): bool
+    {
+        try {
+            Mail::to($email)->send(new UserNotifyEmail($data));
+
+            return true;
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return false;
+        }
     }
 
     protected function deleteVerificationImages($verification): void

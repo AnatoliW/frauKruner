@@ -32,13 +32,12 @@ class FaqsTable
                 TextColumn::make('type')
                     ->label('Typ')
                     ->badge()
-                    ->formatStateUsing(fn ($state): string => match ((string) $state) {
-                        '3' => 'Verkäufer/in',
-                        '2' => 'Käufer/in',
-                        '1' => 'Alle',
-                        default => $state ? ucfirst((string) $state) : 'Alle',
+                    ->formatStateUsing(fn ($state): string => match ((int) $state) {
+                        1 => 'Verkäufer/in',
+                        0 => 'Käufer/in',
+                        default => 'Unbekannt',
                     })
-                    ->color(fn ($state): string => (string) $state === '3' ? 'info' : 'gray')
+                    ->color(fn ($state): string => (int) $state === 1 ? 'info' : 'gray')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')

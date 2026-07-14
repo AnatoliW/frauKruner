@@ -63,6 +63,8 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->maxContentWidth(Width::Full)
+            // Globale Suche in der oberen Leiste deaktiviert
+            ->globalSearch(false)
             ->renderHook(
                 'panels::head.start',
                 fn() => <<<'HTML'
@@ -409,6 +411,10 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Neuigkeiten')
                     ->icon(Heroicon::OutlinedNewspaper),
+
+                NavigationGroup::make()
+                    ->label('Gutscheine')
+                    ->icon(Heroicon::OutlinedTicket),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([

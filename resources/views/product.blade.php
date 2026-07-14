@@ -342,7 +342,7 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <p class="h5 modal-title" id="bewertungModalLabel">Erfahrungen</p>
+                                <p class="h5 modal-title text-secondary" id="bewertungModalLabel">Erfahrungen</p>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Schließen"></button>
                             </div>
