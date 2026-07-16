@@ -28,7 +28,6 @@ class ProductsTable
             ->columns([
                 TextColumn::make('user_id')
                     ->label('Nutzer Id')
-                    ->numeric()
                     ->sortable(),
                 TextColumn::make('name')
                     ->label('Name')

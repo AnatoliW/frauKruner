@@ -24,11 +24,11 @@ class CouponResource extends BaseAdminResource
 
     protected static ?string $pluralModelLabel = 'Gutscheine';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Gutscheine';
+    protected static string|\UnitEnum|null $navigationGroup = 'Nutzer';
 
     public static function getNavigationSort(): ?int
     {
-        return 1;
+        return 16;
     }
 
     public static function form(Schema $schema): Schema

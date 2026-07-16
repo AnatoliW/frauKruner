@@ -86,7 +86,7 @@ class OrdersTable
                     ->icon('heroicon-m-x-circle')
                     ->requiresConfirmation()
                     ->modalHeading('Bestellung stornieren')
-                    ->modalDescription('Bist du sicher, dass du die Bestellung stornieren moechtest?')
+                    ->modalDescription('Bist du sicher, dass du die Bestellung stornieren Möchtest?')
                     ->url(fn (Order $record): string => route('admin.order.cancel', $record))
                     ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
                 Action::make('cancelled')

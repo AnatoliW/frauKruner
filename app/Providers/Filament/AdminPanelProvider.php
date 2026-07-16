@@ -79,6 +79,27 @@ class AdminPanelProvider extends PanelProvider
             .fi-sidebar-nav::-webkit-scrollbar {
                 display: none !important; /* Chrome/Safari */
             }
+
+            /* Collapsed sidebar: icon-only on desktop, expand on hover */
+            @media (min-width: 64rem) {
+                .fi-body.fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar {
+                    transition: width 200ms ease, box-shadow 200ms ease !important;
+                }
+
+                .fi-body.fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) {
+                    width: var(--collapsed-sidebar-width) !important;
+                    z-index: 30;
+                }
+
+                .fi-body.fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
+                    padding-inline: 0.5rem;
+                }
+
+                .fi-body.fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar.fi-sidebar-open {
+                    z-index: 40;
+                    box-shadow: 4px 0 24px -4px rgba(15, 23, 42, 0.15);
+                }
+            }
             .fi-sidebar-nav-group {
                 font-weight: bold;
                 color: #4F46E5; /* Example: Indigo */
@@ -90,6 +111,27 @@ class AdminPanelProvider extends PanelProvider
             .fi-sidebar-nav-group-label {
                 font-size: 1.1em;
                 letter-spacing: 0.5px;
+            }
+
+            /* Posts create/edit: centered, large writing area */
+            .fi-resource-posts .fi-post-writing-section {
+                max-width: 52rem;
+                margin-inline: auto;
+                width: 100%;
+            }
+
+            .fi-resource-posts .fi-fo-rich-editor-main {
+                min-height: 60vh;
+            }
+
+            .fi-resource-posts .fi-fo-rich-editor-content {
+                min-height: 60vh;
+                font-size: 1.125rem;
+                line-height: 1.75;
+            }
+
+            .fi-resource-posts .fi-fo-rich-editor-toolbar .fi-fo-rich-editor-tool[data-tool="attachFiles"] {
+                min-width: 2.25rem;
             }
 
             .fi-page-dashboard [data-filament-page-content] {
@@ -269,10 +311,17 @@ class AdminPanelProvider extends PanelProvider
             .fi-resource-payouts .fi-ta-actions {
                 display: flex !important;
                 flex-direction: column !important;
-                align-items: flex-start !important;
+                align-items: stretch !important;
                 justify-content: flex-start !important;
                 gap: 0.35rem !important;
                 flex-wrap: nowrap !important;
+                width: 7.5rem;
+                min-width: 7.5rem;
+            }
+
+            .fi-resource-payouts .fi-ta-actions .fi-btn {
+                width: 100% !important;
+                justify-content: center !important;
             }
 
             /* Keep row actions and collapse button pinned to top for tall records. */
@@ -377,11 +426,89 @@ class AdminPanelProvider extends PanelProvider
                     window.addEventListener('close-modal', () => tryCleanAfterClose());
                     Livewire.on('close-modal', () => tryCleanAfterClose());
                 });
+
+                const initCollapsedSidebarHover = () => {
+                    const DESKTOP_BP = 1024;
+                    const PINNED_KEY = 'sidebar-pinned-open';
+                    let expandedByHover = false;
+
+                    const getStore = () => window.Alpine?.store('sidebar');
+                    const isDesktop = () => window.innerWidth >= DESKTOP_BP;
+
+                    const bindSidebar = () => {
+                        const sidebar = document.querySelector('.fi-main-sidebar');
+                        if (!sidebar || sidebar.dataset.hoverBound) {
+                            return;
+                        }
+
+                        sidebar.dataset.hoverBound = '1';
+
+                        sidebar.addEventListener('mouseenter', () => {
+                            if (!isDesktop()) {
+                                return;
+                            }
+
+                            const store = getStore();
+
+                            if (store && !store.isOpen) {
+                                expandedByHover = true;
+                                store.open();
+                            }
+                        });
+
+                        sidebar.addEventListener('mouseleave', () => {
+                            if (!isDesktop() || !expandedByHover) {
+                                return;
+                            }
+
+                            getStore()?.close();
+                            expandedByHover = false;
+                        });
+                    };
+
+                    document.addEventListener('click', (event) => {
+                        if (event.target.closest('.fi-topbar-open-collapse-sidebar-btn')) {
+                            expandedByHover = false;
+                            localStorage.setItem(PINNED_KEY, '1');
+                        }
+
+                        if (event.target.closest('.fi-topbar-close-collapse-sidebar-btn')) {
+                            expandedByHover = false;
+                            localStorage.removeItem(PINNED_KEY);
+                        }
+                    });
+
+                    document.addEventListener('alpine:initialized', () => {
+                        bindSidebar();
+
+                        const store = getStore();
+
+                        if (!store || !isDesktop()) {
+                            return;
+                        }
+
+                        if (!localStorage.getItem(PINNED_KEY)) {
+                            store.close();
+                        }
+                    });
+
+                    document.addEventListener('livewire:navigated', () => {
+                        const sidebar = document.querySelector('.fi-main-sidebar');
+
+                        if (sidebar) {
+                            delete sidebar.dataset.hoverBound;
+                        }
+
+                        bindSidebar();
+                    });
+                };
+
+                initCollapsedSidebarHover();
             })();
         </script>
     HTML
             )
-            // ->sidebarCollapsibleOnDesktop(true)
+            ->sidebarCollapsibleOnDesktop(true)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -411,10 +538,6 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Neuigkeiten')
                     ->icon(Heroicon::OutlinedNewspaper),
-
-                NavigationGroup::make()
-                    ->label('Gutscheine')
-                    ->icon(Heroicon::OutlinedTicket),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([

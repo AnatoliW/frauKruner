@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\Payouts\Tables;
 
 use App\Filament\Resources\Orders\OrderResource;
+use App\Mail\UserNotifyEmail;
 use App\Order;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class PayoutsTable
@@ -214,10 +216,10 @@ class PayoutsTable
                     ->button()
                     ->size('sm')
                     ->color('success')
-                    ->icon('heroicon-m-wallet')
                     ->requiresConfirmation()
                     ->modalHeading('Auszahlung bestätigen')
                     ->modalDescription('Bist du sicher, dass du die Bestellung als ausgezahlt markieren möchtest?')
+                    ->modalSubmitActionLabel('Ja, auszahlen')
                     ->action(function (Order $record): void {
                         $record->update(['payouts_status' => 1]);
 
@@ -229,21 +231,54 @@ class PayoutsTable
                     ->visible(fn (Order $record): bool => (int) ($record->payouts_status ?? 0) === 0),
                 Action::make('view')
                     ->label('Ansehen')
-                    ->link()
+                    ->button()
+                    ->size('sm')
                     ->color('warning')
                     ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
                 Action::make('cancel')
                     ->label('Stornieren')
-                    ->link()
+                    ->button()
+                    ->size('sm')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading('Bestellung stornieren')
                     ->modalDescription('Bist du sicher, dass du die Bestellung stornieren möchtest?')
-                    ->url(fn (Order $record): string => route('admin.order.cancel', $record))
+                    ->modalSubmitActionLabel('Ja, stornieren')
+                    ->action(function (Order $record): void {
+                        $record->update(['status' => 3]);
+
+                        if ($record->product?->selloption == true) {
+                            $record->product->update(['status' => true]);
+                        }
+
+                        $year = now()->format('Y');
+
+                        Mail::to($record->email)->send(new UserNotifyEmail([
+                            'subject' => 'Storno Bestellung FK' . $year . '-' . $record->id,
+                            'title' => 'Storno Bestellung FK' . $year . '-' . $record->id,
+                            'body' => 'Hey du,<br><br>leider musste ich deinen Einkauf stornieren. Für die Unannehmlichkeit entschuldige ich mich.<br><br>Weitere Informationen erhälst du per E-Mail.',
+                            'button_link' => route('shop'),
+                            'button_text' => 'ein anderes Produkt bestellen',
+                        ]));
+
+                        Mail::to($record->vendor->email)->send(new UserNotifyEmail([
+                            'subject' => 'Storno Bestellung FK' . $year . '-' . $record->id,
+                            'title' => 'Storno Bestellung FK' . $year . '-' . $record->id,
+                            'body' => 'Hallo,<br><br> da du deiner Vertragspflicht als Produzentin nicht nachgekommen bist und auch auf Fristen nicht reagiert hast, habe ich deinen Verkauf storniert.<br><br> Dein Konto auf FrauKruner.de wurde gelöscht.<br><br>',
+                            'button_link' => '',
+                            'button_text' => '',
+                        ]));
+
+                        Notification::make()
+                            ->title('Bestellung storniert')
+                            ->success()
+                            ->send();
+                    })
                     ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) !== 3),
                 Action::make('cancelled')
                     ->label('Storniert')
-                    ->link()
+                    ->button()
+                    ->size('sm')
                     ->color('gray')
                     ->disabled()
                     ->visible(fn (Order $record): bool => (int) ($record->status ?? 0) === 3),

@@ -25,9 +25,8 @@ class PostsTable
                     ->label('Titel')
                     ->wrap()
                     ->searchable(),
-                TextColumn::make('short_description')
-                    ->label('Kurzbeschreibung')
-                    ->formatStateUsing(fn ($state, Post $record): string => $state ?: ((string) ($record->excerpt ?? '')))
+                TextColumn::make('excerpt')
+                    ->label('Auszug')
                     ->limit(120)
                     ->wrap()
                     ->searchable(),

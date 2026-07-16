@@ -76,8 +76,8 @@ class PrepaymentsTable
                     ->color('success')
                     ->icon('heroicon-m-check-circle')
                     ->requiresConfirmation()
-                    ->modalHeading('Bezahlung bestaetigen')
-                    ->modalDescription('Moechtest du diese Bestellung als bezahlt markieren?')
+                    ->modalHeading('Bezahlung bestätigen')
+                    ->modalDescription('Möchtest du diese Bestellung als bezahlt markieren?')
                     ->action(function (Order $record): void {
                         $record->update([
                             'payment_status' => 1,

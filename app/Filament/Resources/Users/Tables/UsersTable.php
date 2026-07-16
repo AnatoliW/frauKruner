@@ -64,8 +64,8 @@ class UsersTable
                 TextColumn::make('boosted')
                     ->label('Gepusht')
                     ->badge()
-                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Gepusht' : 'Pausiert')
-                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'info')
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Gepusht' : '-')
+                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'gray')
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('Status')

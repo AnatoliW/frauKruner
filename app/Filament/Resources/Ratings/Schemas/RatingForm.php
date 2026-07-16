@@ -18,20 +18,19 @@ class RatingForm
         return $schema
             ->components([
                 Section::make('Bewertung')
-                    ->description('Sterne und Bewertungstext.')
                     ->schema([
                         Select::make('rating')
                             ->label('Sterne')
                             ->options([
-                                '5' => '5 Sterne – Sehr gut',
-                                '4.5' => '4,5 Sterne – Sehr gut',
-                                '4' => '4 Sterne – Gut',
-                                '3.5' => '3,5 Sterne – Gut',
-                                '3' => '3 Sterne – Befriedigend',
-                                '2.5' => '2,5 Sterne – Ausreichend',
-                                '2' => '2 Sterne – Ausreichend',
-                                '1.5' => '1,5 Sterne – Mangelhaft',
-                                '1' => '1 Stern – Mangelhaft',
+                                '5' => '5 Sterne',
+                                '4.5' => '4,5 Sterne',
+                                '4' => '4 Sterne',
+                                '3.5' => '3,5 Sterne',
+                                '3' => '3 Sterne',
+                                '2.5' => '2,5 Sterne',
+                                '2' => '2 Sterne',
+                                '1.5' => '1,5 Sterne',
+                                '1' => '1 Stern',
                             ])
                             ->required()
                             ->native(false)
@@ -40,13 +39,11 @@ class RatingForm
                             ->label('Bewertungstext')
                             ->rows(5)
                             ->columnSpanFull()
-                            ->maxLength(65535)
-                            ->helperText('Der Text, der im Profil des Verkäufers angezeigt wird.'),
+                            ->maxLength(65535),
                     ])
                     ->columns(2),
 
                 Section::make('Beteiligte')
-                    ->description('Käufer/in bewertet Verkäufer/in-Profil.')
                     ->schema([
                         Select::make('user_id')
                             ->label('Bewertender')
@@ -61,8 +58,7 @@ class RatingForm
                             ->searchable(['username', 'name', 'last_name', 'email'])
                             ->preload()
                             ->nullable()
-                            ->placeholder('Kein verknüpfter Nutzer')
-                            ->helperText('Das Nutzerkonto, von dem die Bewertung stammt (in der Regel ein/e Käufer/in).'),
+                            ->placeholder('Kein verknüpfter Nutzer'),
                         Select::make('vendor_id')
                             ->label('Bewerteter Verkäufer/in')
                             ->relationship(
@@ -76,23 +72,19 @@ class RatingForm
                             ->getOptionLabelFromRecordUsing(fn (User $record): string => self::formatUserLabel($record))
                             ->searchable(['username', 'name', 'last_name', 'email'])
                             ->preload()
-                            ->required()
-                            ->helperText('Der Verkäufer, dessen Profil bewertet wurde.'),
+                            ->required(),
                     ])
                     ->columns(2),
 
                 Section::make('Gastdaten')
-                    ->description('Nur relevant, wenn die Bewertung ohne Nutzerkonto abgegeben wurde.')
                     ->schema([
                         TextInput::make('name')
                             ->label('Anzeigename')
-                            ->maxLength(255)
-                            ->helperText('Wird angezeigt, wenn kein Nutzerkonto verknüpft ist.'),
+                            ->maxLength(255),
                         TextInput::make('email')
                             ->label('E-Mail-Adresse')
                             ->email()
-                            ->maxLength(255)
-                            ->helperText('Kontakt-E-Mail bei Gastbewertungen.'),
+                            ->maxLength(255),
                     ])
                     ->columns(2)
                     ->collapsible()
