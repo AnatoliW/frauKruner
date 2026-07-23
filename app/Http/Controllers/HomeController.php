@@ -116,9 +116,9 @@ class HomeController extends Controller
         ]);
         return redirect()->route('seller.verification')->with('success', 'Thank, you your email verification was successfull');
     }
-    public function verifyMassage(User $user)
+    public function verifyMassage()
     {
-        return view('verify_massage', compact('user'));
+        return view('verify_massage', ['user' => auth()->user()]);
     }
     public function userActive(User $user)
     {

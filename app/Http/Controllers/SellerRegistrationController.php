@@ -9,6 +9,7 @@ use App\Services\Turnstile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -75,8 +76,6 @@ class SellerRegistrationController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role_id' => 3,
-            'vat' => $request->input('meta.vat'),
-            'is_pay_vat' => $request->input('meta.is_pay_vat'),
         ]);
 
         Profile::create([
@@ -84,9 +83,22 @@ class SellerRegistrationController extends Controller
             'username' => $request->username,
         ]);
 
+        $user->createMetas([
+            'vat' => $request->input('meta.vat'),
+            'is_pay_vat' => $request->input('meta.is_pay_vat'),
+        ]);
+
         $token = Str::random(60);
         $user->update(['verifi_token' => $token]);
-        Mail::to($user->email)->send(new VerifyEmail($user, $token));
+
+        try {
+            Mail::to($user->email)->send(new VerifyEmail($user, $token));
+        } catch (\Throwable $exception) {
+            Log::warning('Verkäufer-Registrierungs-E-Mail konnte nicht gesendet werden.', [
+                'user_id' => $user->id,
+                'message' => $exception->getMessage(),
+            ]);
+        }
 
         Auth::login($user);
 

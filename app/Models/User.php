@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Order;
 use App\Product;
 use App\Rating;
+use App\Models\Traits\HasMeta;
 use App\Models\Traits\HasPoint;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -19,9 +20,14 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasPoint, Notifiable;
+    use HasFactory, HasMeta, HasPoint, Notifiable;
 
     protected $guarded = [];
+
+    protected array $meta_attributes = [
+        'vat',
+        'is_pay_vat',
+    ];
 
     /**
      * Get the attributes that should be cast.
