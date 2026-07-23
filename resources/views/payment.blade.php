@@ -19,7 +19,7 @@
                     <details data-popover="up">
                         <summary>?</summary>
                         <div class="popoverBody" style="z-index:999">
-                            Sicher mit PayPal(SEPA, giropay, SOFORT) oder ganz bequem mit der Kreditkarte zahlen.
+                            Sicher und bequem mit der Kreditkarte zahlen.
                             Akzeptierte Kreditkartenanbieter: Visa, MasterCard, American Express,
                             Discover.
                         </div>
@@ -33,11 +33,11 @@
                         Mit Kreditkarte zahlen
                     </label> <br>--}}
 
-                    <input value="paypal" name="payment_type" onclick="paymentMethod('paypal')" id="payment_option2"
+                    {{-- <input value="paypal" name="payment_type" onclick="paymentMethod('paypal')" id="payment_option2"
                         type="radio" class="options radio" />
                     <label for="payment_option2" class="mt-3">
                         Mit PayPal, SOFORT, SEPA Lastschrift oder giropay zahlen
-                    </label>
+                    </label> --}}
 
                 </p>
 
@@ -70,7 +70,7 @@
 
 
 
-                <div id="paypal-button-container" style="display: none;z-index:1;"></div>
+                {{-- <div id="paypal-button-container" style="display: none;z-index:1;"></div> --}}
 
 
             </div>
@@ -82,6 +82,7 @@
     </main>
 
     @push('scripts')
+        {{--
         <script src="https://www.paypal.com/sdk/js?client-id={{ setting('site.client_id') }}&currency=EUR"></script>
         <script>
             paypal.Buttons({
@@ -97,24 +98,16 @@
                     });
                 },
                 onApprove: function(data, actions) {
-                    // This function captures the funds from the transaction.
                     return actions.order.capture().then(function(details) {
-                        // This function shows a transaction success message to your buyer.
-
-
                         var form = document.getElementById('payment');
-
-                        console.log(details.id);
-                        var paymentId = document.getElementById('payment_id').value = details.id;
-                        console.log(paymentId);
+                        document.getElementById('payment_id').value = details.id;
                         form.submit();
-
-
                     });
                 },
 
             }).render('#paypal-button-container');
         </script>
+        --}}
 
         <script src="https://js.stripe.com/v3/"></script>
         <script>
@@ -192,17 +185,10 @@
             function paymentMethod(e) {
                 if (e == 'stripe') {
                     document.getElementById('stripe').style.display = "block";
-                    document.getElementById('paypal-button-container').style.display = "none";
                     document.getElementById('pre_payment_container').style.display = "none";
                     document.getElementById('complete-order').style.display = "block";
-                } else if (e == 'paypal') {
-                    document.getElementById('stripe').style.display = "none";
-                    document.getElementById('paypal-button-container').style.display = "block";
-                    document.getElementById('pre_payment_container').style.display = "none";
-                    document.getElementById('complete-order').style.display = "none";
                 } else if (e == 'pre_payment') {
                     document.getElementById('stripe').style.display = "none";
-                    document.getElementById('paypal-button-container').style.display = "none";
                     document.getElementById('pre_payment_container').style.display = "block";
                     document.getElementById('complete-order').disabled = true;
                     document.getElementById('complete-order').style.display = "none";
