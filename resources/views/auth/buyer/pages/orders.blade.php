@@ -73,7 +73,7 @@
                                 : $order->created_at;
                         @endphp
                         @if ($viewDeadline->gte(now()->subWeeks(4)))
-                            @if (Storage::exists($order->video) && $order->status !== 3)
+                            @if (filled($order->video) && Storage::exists($order->video) && $order->status !== 3)
                                 <a class="btn btn-secondary" target="_blank" href="{{ Storage::url($order->video) }}">Video
                                     ansehen</a>
                                 {{-- <a class="btn btn-secondary" target="_blank" href="{{route('buyer.video.player',$order)}}">Video

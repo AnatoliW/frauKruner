@@ -50,7 +50,7 @@ class ProfileController extends Controller
             ]);
 
             if ($request->file('profile_img')) {
-                if (Storage::exists($profile->profile_img)) {
+                if (filled($profile->profile_img) && Storage::exists($profile->profile_img)) {
                     Storage::delete($profile->profile_img);
                 }
                 $profile->update(['profile_img' => $request->profile_img->store('profile')]);
@@ -152,8 +152,8 @@ class ProfileController extends Controller
             'city' => 'nullable|string',
             'zip' => 'required|string',
             'date_of_birth' => 'required|date',
-            'iban' => 'nullable',
-            'bic' => 'nullable',
+            'iban' => 'nullable|string',
+            'bic' => 'nullable|string',
         ];
 
         if ($request->update == '1') {
@@ -162,8 +162,10 @@ class ProfileController extends Controller
             $rules['id_card_back_img'] = 'nullable|image';
         } else {
             $rules['person_id_shot_img'] = 'required|image';
-            $rules['id_card_front_img'] = 'nullable|image';
+            $rules['id_card_front_img'] = 'required|image';
             $rules['id_card_back_img'] = 'required|image';
+            $rules['iban'] = 'required|string';
+            $rules['bic'] = 'required|string';
         }
 
         $request->validate($rules);
@@ -179,7 +181,7 @@ class ProfileController extends Controller
 
             if ($request->files) {
                 if ($request->person_id_shot_img) {
-                    if (Storage::exists($verification->person_id_shot_img)) {
+                    if (filled($verification->person_id_shot_img) && Storage::exists($verification->person_id_shot_img)) {
                         Storage::delete($verification->person_id_shot_img);
                     }
                     $verification->update([
@@ -187,7 +189,7 @@ class ProfileController extends Controller
                     ]);
                 }
                 if ($request->id_card_front_img) {
-                    if (Storage::exists($verification->id_card_front_img)) {
+                    if (filled($verification->id_card_front_img) && Storage::exists($verification->id_card_front_img)) {
                         Storage::delete($verification->id_card_front_img);
                     }
                     $verification->update([
@@ -195,7 +197,7 @@ class ProfileController extends Controller
                     ]);
                 }
                 if ($request->id_card_back_img) {
-                    if (Storage::exists($verification->id_card_back_img)) {
+                    if (filled($verification->id_card_back_img) && Storage::exists($verification->id_card_back_img)) {
                         Storage::delete($verification->id_card_back_img);
                     }
                     $verification->update([
@@ -204,8 +206,16 @@ class ProfileController extends Controller
                 }
             }
 
-            if ($request->has('iban') && $request->has('bic')) {
-                Method::updateOrCreate(['user_id' => auth()->id()], ['iban' => $request->iban, 'bic' => $request->bic]);
+            if ($request->update != '1') {
+                Method::updateOrCreate(['user_id' => auth()->id()], [
+                    'iban' => $request->iban,
+                    'bic' => $request->bic,
+                ]);
+            } elseif (filled($request->iban) && filled($request->bic)) {
+                Method::updateOrCreate(['user_id' => auth()->id()], [
+                    'iban' => $request->iban,
+                    'bic' => $request->bic,
+                ]);
             }
             DB::commit();
 

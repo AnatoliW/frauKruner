@@ -122,7 +122,7 @@
                                 <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#photo" data-bs-whatever="{{ $order->id }}">Foto hochladen</button>
                             @endif
 
-                            @if (!$order->orderimages->isEmpty() || Storage::exists($order->video))
+                            @if (!$order->orderimages->isEmpty() || (filled($order->video) && Storage::exists($order->video)))
                             <a class="text-center no-before small" target="" href="{{ route('seller.photos', $order) }}" style="border:none">Dateien ansehen</a>
                             @endif
                         @endif

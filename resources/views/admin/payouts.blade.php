@@ -155,7 +155,7 @@
                                             @endif
                                             <hr>
 
-                                                @if (Storage::exists($data->video) && $data->status !== 3)
+                                                @if (filled($data->video) && Storage::exists($data->video) && $data->status !== 3)
                                                     <p class="text-success">Es wurde ein Video versendet</p>
                                                     <hr>
                                                 @endif

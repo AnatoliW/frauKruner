@@ -9,6 +9,9 @@ class ExifMetadataService
 {
     public function removeExifMetadata($imagePath)
     {
+        if (! filled($imagePath)) {
+            return false;
+        }
 
         if (!Storage::exists($imagePath)) {
             Log::warning("Image not found: {$imagePath}");

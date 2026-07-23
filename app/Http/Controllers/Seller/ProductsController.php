@@ -120,9 +120,7 @@ class ProductsController extends Controller
                         'nsfw' => @$image['nsfw'] ?? 0
                     ]);
                     $exifServiceImages = app(ExifMetadataService::class);
-                    $imagesImagePath = Storage::path($productImage->image);
-
-                    $processImagesImage = $exifServiceImages->removeExifMetadata($imagesImagePath);
+                    $processImagesImage = $exifServiceImages->removeExifMetadata($productImage->image);
 
                     if ($processImagesImage) {
                         $productImage->update([
@@ -177,7 +175,10 @@ class ProductsController extends Controller
 
             foreach ($removed as $id) {
                 $data = Image::find($id);
-                if (Storage::exists($data->image)) {
+                if (! $data) {
+                    continue;
+                }
+                if (filled($data->image) && Storage::exists($data->image)) {
                     Storage::delete($data->image);
                 }
                 $data->delete();
@@ -188,10 +189,12 @@ class ProductsController extends Controller
 
                     if (isset($image['id'])) {
                         $data = Image::find($image['id']);
-                        if (Storage::disk('s3')->exists($data->image)) {
-                            Storage::disk('s3')->delete($data->image);
+                        if ($data) {
+                            if (filled($data->image) && Storage::disk('s3')->exists($data->image)) {
+                                Storage::disk('s3')->delete($data->image);
+                            }
+                            $data->delete();
                         }
-                        $data->delete();
                     }
                     if (isset($image['image']) && $image['image'] !== null) {
                        $productImage= $product->images()->create([
@@ -199,9 +202,7 @@ class ProductsController extends Controller
                             'nsfw' => @$image['nsfw'] ?? 0
                         ]);
                         $exifServiceImages = app(ExifMetadataService::class);
-                        $imagesImagePath = Storage::path($productImage->image);
-
-                        $processImagesImage = $exifServiceImages->removeExifMetadata($imagesImagePath);
+                        $processImagesImage = $exifServiceImages->removeExifMetadata($productImage->image);
 
                         if ($processImagesImage) {
                             $productImage->update([
@@ -212,9 +213,11 @@ class ProductsController extends Controller
                 } else {
                     if (isset($image['id'])) {
                         $data = Image::find($image['id']);
-                        $data->update([
-                            'nsfw' => @$image['nsfw'] ?? 0
-                        ]);
+                        if ($data) {
+                            $data->update([
+                                'nsfw' => @$image['nsfw'] ?? 0
+                            ]);
+                        }
                     }
                 }
             }
@@ -222,7 +225,10 @@ class ProductsController extends Controller
             $removed = $product->images->pluck('id')->diff([]);
             foreach ($removed as $id) {
                 $data = Image::find($id);
-                if (Storage::exists($data->image)) {
+                if (! $data) {
+                    continue;
+                }
+                if (filled($data->image) && Storage::exists($data->image)) {
                     Storage::delete($data->image);
                 }
                 $data->delete();
@@ -231,7 +237,7 @@ class ProductsController extends Controller
 
         if ($request->thumbnail) {
 
-            if ($product->image) {
+            if (filled($product->image) && Storage::exists($product->image)) {
                 Storage::delete($product->image);
             }
             $path = 'thumbnail' . '/';
@@ -300,13 +306,15 @@ class ProductsController extends Controller
     public function delete(Product $product)
     {
 
-        if (Storage::exists($product->image)) {
+        if (filled($product->image) && Storage::exists($product->image)) {
             Storage::delete($product->image);
         }
         if ($product->images) {
 
             foreach ($product->images as $image) {
-                Storage::delete($image->image);
+                if (filled($image->image) && Storage::exists($image->image)) {
+                    Storage::delete($image->image);
+                }
                 $image->delete();
             }
         }
