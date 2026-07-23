@@ -36,7 +36,9 @@ class ProductForm
                 Textarea::make('description')
                     ->columnSpanFull(),
                 FileUpload::make('image')
-                    ->image(),
+                    ->image()
+                    ->disk('s3')
+                    ->directory('products'),
                 TextInput::make('view')
                     ->numeric()
                     ->default(0),

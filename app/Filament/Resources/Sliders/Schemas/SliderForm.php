@@ -14,7 +14,9 @@ class SliderForm
         return $schema
             ->components([
                 FileUpload::make('image')
-                    ->image(),
+                    ->image()
+                    ->disk('s3')
+                    ->directory('sliders'),
                 TextInput::make('heading'),
                 Textarea::make('paragraph')
                     ->columnSpanFull(),

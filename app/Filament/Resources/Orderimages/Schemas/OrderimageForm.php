@@ -19,6 +19,8 @@ class OrderimageForm
                     ->numeric(),
                 FileUpload::make('image')
                     ->image()
+                    ->disk('s3')
+                    ->directory('orderimages')
                     ->required(),
                 Toggle::make('meta_remove_status')
                     ->required(),

@@ -45,6 +45,7 @@ class PostsTable
                     ->sortable(),
                 ImageColumn::make('image')
                     ->label('Beitragsbild')
+                    ->disk('s3')
                     ->square(),
                 TextColumn::make('category.name')
                     ->label('Kategorie')

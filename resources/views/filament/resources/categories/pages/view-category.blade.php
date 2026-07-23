@@ -48,7 +48,7 @@
             <x-slot name="heading">Bild</x-slot>
 
             @if (! empty($category->image))
-                <img src="{{ asset('storage/' . ltrim($category->image, '/')) }}" alt="{{ $category->name }}" class="max-h-80 rounded-lg border border-gray-200 object-contain" />
+                <img src="{{ media_url($category->image) }}" alt="{{ $category->name }}" class="max-h-80 rounded-lg border border-gray-200 object-contain" />
             @else
                 <p class="text-sm text-gray-500">Kein Bild vorhanden.</p>
             @endif

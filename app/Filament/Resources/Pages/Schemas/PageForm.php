@@ -92,6 +92,7 @@ class PageForm
                         FileUpload::make('image')
                             ->label('Beitragsbild')
                             ->image()
+                            ->disk('s3')
                             ->directory('pages')
                             ->columnSpanFull()
                             ->helperText('Optional. Wird auf den Standard-Seitenlayouts derzeit nicht ausgegeben.'),

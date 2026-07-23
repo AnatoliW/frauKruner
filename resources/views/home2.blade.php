@@ -8,7 +8,7 @@
 	  <div class="carousel-inner">
 	  	@foreach($sliders as $slider)
 		<div class="carousel-item {{$loop->index == 0 ? 'active' : ''}}">
-          <img class="d-block w-100" src="{{Storage::url($slider->image)}}" alt="{{setting('site.title')}}">
+          <img class="d-block w-100" src="{{media_url($slider->image)}}" alt="{{setting('site.title')}}">
 		  @if($slider->heading)
 		  <div class="carousel-caption d-none d-md-block bg-dark rounded p-2" style="opacity:.8">
 		    <h5 class="text-light">{{$slider->heading}}</h5>

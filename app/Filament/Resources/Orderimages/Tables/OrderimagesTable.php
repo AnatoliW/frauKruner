@@ -19,7 +19,8 @@ class OrderimagesTable
                 TextColumn::make('order_id')
                     ->numeric()
                     ->sortable(),
-                ImageColumn::make('image'),
+                ImageColumn::make('image')
+                    ->disk('s3'),
                 TextColumn::make('created_at')
                     ->date('d.m.Y')
                     ->sortable()

@@ -93,6 +93,7 @@ class CategoryForm
                         FileUpload::make('image')
                             ->label('Bild')
                             ->image()
+                            ->disk('s3')
                             ->directory('categories')
                             ->columnSpanFull()
                             ->helperText('Kategoriebild für die Startseite.'),

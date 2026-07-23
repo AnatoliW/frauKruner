@@ -37,7 +37,8 @@ class CategoriesTable
                     ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'gray')
                     ->sortable(),
                 ImageColumn::make('image')
-                    ->label('Bild'),
+                    ->label('Bild')
+                    ->disk('s3'),
                 TextColumn::make('title')
                     ->label('Titel')
                     ->searchable(),

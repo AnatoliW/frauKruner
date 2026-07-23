@@ -22,6 +22,7 @@ class SlidersTable
             ->columns([
                 ImageColumn::make('image')
                     ->label('Bild')
+                    ->disk('s3')
                     ->square(),
                 TextColumn::make('heading')
                     ->label('Überschrift')
