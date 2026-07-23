@@ -110,7 +110,7 @@
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: #e74a3f;
+            color: #6b7280;
         }
 
         .product-detail__value {

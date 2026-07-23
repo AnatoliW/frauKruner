@@ -100,9 +100,22 @@ class AdminPanelProvider extends PanelProvider
                     box-shadow: 4px 0 24px -4px rgba(15, 23, 42, 0.15);
                 }
             }
+            /* Tabellen: Links/Bilder duerfen keinen Browser-Drag starten,
+               sonst zeigt Ziehen mit der Maus das Verboten-Symbol statt Text zu markieren. */
+            .fi-ta a,
+            .fi-ta img {
+                -webkit-user-drag: none;
+            }
+
+            .fi-ta-cell,
+            .fi-ta-text {
+                user-select: text;
+                -webkit-user-select: text;
+            }
+
             .fi-sidebar-nav-group {
                 font-weight: bold;
-                color: #4F46E5; /* Example: Indigo */
+                color: #374151;
                 background: #F3F4F6;
                 border-radius: 6px;
                 margin-bottom: 8px;
@@ -166,7 +179,7 @@ class AdminPanelProvider extends PanelProvider
 
             .fi-page-dashboard .fi-ta-header,
             .fi-page-dashboard .fi-ta-header-toolbar {
-                background: linear-gradient(90deg, rgba(252, 245, 241, 0.9), rgba(251, 238, 229, 0.9));
+                background: rgba(249, 250, 251, 0.9);
             }
 
             /* Orders list: dark segmented tabs similar to requested dashboard style. */
@@ -368,6 +381,14 @@ class AdminPanelProvider extends PanelProvider
         </style>
         <script>
             (() => {
+                // Tabellen: Browser-Drag von Links/Bildern unterbinden, damit
+                // Ziehen mit der Maus Text markiert (Fallback fuer Firefox).
+                document.addEventListener('dragstart', (event) => {
+                    if (event.target instanceof Element && event.target.closest('.fi-ta')) {
+                        event.preventDefault();
+                    }
+                });
+
                 const cleanViewItemsParams = () => {
                     const url = new URL(window.location.href);
 

@@ -39,7 +39,16 @@ class PayoutsTable
                     ->wrap()
                     ->extraAttributes([
                         'style' => 'display:flex;flex-direction:column;align-items:flex-start;white-space:normal;',
-                    ]),
+                    ])
+                    ->searchable(query: function ($query, string $search): void {
+                        $query->whereHas('vendor', function ($q) use ($search): void {
+                            $q->where('name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                                ->orWhereRaw("CONCAT_WS(' ', name, last_name) LIKE ?", ["%{$search}%"])
+                                ->orWhere('username', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        });
+                    }),
                 TextColumn::make('buyer_product')
                     ->label('Käufer/in - Produkt')
                     ->html()
