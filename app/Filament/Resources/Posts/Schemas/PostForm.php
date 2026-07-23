@@ -123,6 +123,7 @@ class PostForm
                         FileUpload::make('image')
                             ->label('Beitragsbild')
                             ->image()
+                            ->disk('s3')
                             ->directory('posts')
                             ->columnSpanFull()
                             ->helperText('Vorschaubild in der Beitragsliste und oben auf der Beitragsseite.'),
