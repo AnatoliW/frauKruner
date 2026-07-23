@@ -114,7 +114,12 @@ class HomeController extends Controller
             'verifi_token' => request('token'),
             'email_verified_at' => now(),
         ]);
-        return redirect()->route('seller.verification')->with('success', 'Thank, you your email verification was successfull');
+
+        $redirectRoute = (int) $user->role_id === 3
+            ? 'seller.verification'
+            : 'buyer.dashboard';
+
+        return redirect()->route($redirectRoute)->with('success', 'Thank, you your email verification was successfull');
     }
     public function verifyMassage()
     {

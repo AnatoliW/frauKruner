@@ -26,15 +26,25 @@ class SellerRegistrationController extends Controller
             return redirect(route('seller.registration'));
         }
 
-        if (auth()->user()->verification) {
+        $user = auth()->user();
+
+        if ((int) $user->role_id !== 3) {
+            if ($user->email_verified_at === null) {
+                return redirect()->route('verify.massage');
+            }
+
+            return redirect()->route('buyer.dashboard');
+        }
+
+        if ($user->verification) {
             return redirect()->route('seller.dashboard')->with('success', 'Du hast dich erfolgreich angemeldet.');
         }
 
-        if (auth()->user()->email_verified_at !== null) {
+        if ($user->email_verified_at !== null) {
             return view('auth.seller.reg_step_second');
         }
 
-        return view('verify_massage', ['user' => auth()->user()]);
+        return view('verify_massage', ['user' => $user]);
     }
 
     public function regStepFirstStore(Request $request)
