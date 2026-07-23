@@ -14,7 +14,7 @@
         <div class="login-section">
             <h1 class="small mb-4">Als Verkäuferin registrieren</h1>
 
-            <form class="login-form" action="{{ route('register') }}" method="POST">
+            <form class="login-form" action="{{ route('seller.registration.step.two') }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-12 ">
