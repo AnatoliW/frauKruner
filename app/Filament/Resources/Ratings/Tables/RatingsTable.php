@@ -19,6 +19,7 @@ class RatingsTable
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->recordUrl(null)
             ->columns([
                 TextColumn::make('created_at')
                     ->label('Erstellt am')
@@ -35,11 +36,32 @@ class RatingsTable
                 TextColumn::make('user.email')
                     ->label('Nutzer')
                     ->formatStateUsing(fn ($state, Rating $record): string => $state ?: ($record->email ?? '-'))
-                    ->searchable(),
+                    ->searchable(query: function ($query, string $search): void {
+                        $query->where(function ($q) use ($search): void {
+                            $q->where('ratings.email', 'like', "%{$search}%")
+                                ->orWhere('ratings.name', 'like', "%{$search}%")
+                                ->orWhereHas('user', function ($q) use ($search): void {
+                                    $q->where('email', 'like', "%{$search}%")
+                                        ->orWhere('name', 'like', "%{$search}%")
+                                        ->orWhere('last_name', 'like', "%{$search}%")
+                                        ->orWhereRaw("CONCAT_WS(' ', name, last_name) LIKE ?", ["%{$search}%"])
+                                        ->orWhere('username', 'like', "%{$search}%");
+                                });
+                        });
+                    }),
                 TextColumn::make('vendor.email')
                     ->label('Verkäufer')
                     ->formatStateUsing(fn ($state): string => $state ?: '-')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(query: function ($query, string $search): void {
+                        $query->whereHas('vendor', function ($q) use ($search): void {
+                            $q->where('email', 'like', "%{$search}%")
+                                ->orWhere('name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                                ->orWhereRaw("CONCAT_WS(' ', name, last_name) LIKE ?", ["%{$search}%"])
+                                ->orWhere('username', 'like', "%{$search}%");
+                        });
+                    }),
             ])
             ->filters([
                 //

@@ -30,10 +30,20 @@ class UsersTable
                     ->searchable(),
                 ImageColumn::make('avatar')
                     ->label('Profilbild')
+                    ->state(function (User $record): string {
+                        if (filled($record->avatar) && $record->avatar !== 'users/default.png') {
+                            return url(media_url($record->avatar));
+                        }
+
+                        if ($record->profile?->profile_img) {
+                            return url(media_url($record->profile->profile_img));
+                        }
+
+                        return asset('images/avatar/04.png');
+                    })
                     ->square()
-                    ->disk('public')
-                    ->size(88)
-                    ->defaultImageUrl(asset('assets/img/user.png')),
+                    ->imageSize(88)
+                    ->defaultImageUrl(asset('images/avatar/04.png')),
                 TextColumn::make('profile.description')
                     ->label('Profilbeschreibung')
                     ->formatStateUsing(function (?string $state): string {

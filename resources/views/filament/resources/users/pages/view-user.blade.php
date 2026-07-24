@@ -78,7 +78,7 @@
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: #e74a3f;
+            color: #6b7280;
         }
 
         .user-detail__value {
@@ -299,6 +299,23 @@
                     <div>
                         <p class="user-detail__label">Zusatz</p>
                         <p class="user-detail__value user-detail__value--multiline">{{ $user->address->additional ?: '-' }}</p>
+                    </div>
+                </div>
+            </x-filament::section>
+        @endif
+
+        @if ((int) $user->role_id === 3 || filled($user->vat))
+            <x-filament::section>
+                <x-slot name="heading">Steuerinformationen</x-slot>
+
+                <div class="user-detail__grid user-detail__grid--3">
+                    <div>
+                        <p class="user-detail__label">Steuernummer</p>
+                        <p class="user-detail__value">{{ $user->vat ?: '-' }}</p>
+                    </div>
+                    <div>
+                        <p class="user-detail__label">Besteuerung</p>
+                        <p class="user-detail__value">{{ (int) $user->is_pay_vat === 1 ? 'Regelbesteuert' : 'Kleinunternehmen' }}</p>
                     </div>
                 </div>
             </x-filament::section>
