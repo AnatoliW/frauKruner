@@ -39,11 +39,11 @@ class UsersTable
                             return url(media_url($record->profile->profile_img));
                         }
 
-                        return asset('images/avatar/04.png');
+                        return asset('assets/img/user.png');
                     })
                     ->square()
                     ->imageSize(88)
-                    ->defaultImageUrl(asset('images/avatar/04.png')),
+                    ->defaultImageUrl(asset('assets/img/user.png')),
                 TextColumn::make('profile.description')
                     ->label('Profilbeschreibung')
                     ->formatStateUsing(function (?string $state): string {
