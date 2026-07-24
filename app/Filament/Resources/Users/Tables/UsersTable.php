@@ -33,7 +33,7 @@ class UsersTable
                     ->square()
                     ->disk('public')
                     ->size(88)
-                    ->defaultImageUrl(asset('images/avatar/04.png')),
+                    ->defaultImageUrl(asset('assets/img/user.png')),
                 TextColumn::make('profile.description')
                     ->label('Profilbeschreibung')
                     ->formatStateUsing(function (?string $state): string {
