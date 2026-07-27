@@ -45,9 +45,7 @@ class ProductsController extends Controller
 
     public function store(Request $request)
     {
-        $fullFilename = null;
         $file = $request->file('thumbnail');
-
 
         $request->validate([
             'name' => ['required', 'max:40'],
@@ -65,7 +63,11 @@ class ProductsController extends Controller
             'thumbnail' => ['required', 'mimes:jpeg,jpg,png,webp']
         ]);
 
-        DB::beginTransaction();
+        $exifService = new ExifMetadataService();
+
+        // Upload the thumbnail and strip its EXIF data before opening a DB
+        // transaction, since both are slow, network-bound operations and
+        // shouldn't hold a DB connection open while they run.
         // $path = 'thumbnail'.'/'.date('F').date('Y').'/';
         $path = 'thumbnail' . '/';
         $filename = basename($file->getClientOriginalName(), '.' . $file->getClientOriginalExtension());
@@ -77,16 +79,32 @@ class ProductsController extends Controller
         $fullPath = $path . $filename . '.' . $file->getClientOriginalExtension();
         $ext = $file->guessClientExtension();
         if (in_array($ext, ['jpeg', 'jpg', 'png',])) {
-            if (Storage::disk(config('filesystems.default'))->putFileAs($path, $file, $filename . '.' . $file->getClientOriginalExtension())) {
-                $status = 'Upload successful';
-                $fullFilename = $fullPath;
-            } else {
-                $status = 'Upload failed';
-            }
+            Storage::disk(config('filesystems.default'))->putFileAs($path, $file, $filename . '.' . $file->getClientOriginalExtension());
         } else {
             $fullPath = $request->thumbnail;
         }
+        $thumbnailMetaRemoved = $exifService->removeExifMetadata($fullPath);
+
+        // Upload and process gallery images the same way, before touching the DB.
+        $galleryImages = [];
+        if ($request->has('images')) {
+            foreach ($request->images as $image) {
+                if (isset($image['image']) && $image['image'] !== null) {
+                    $imagePath = @$image['image']->store('images');
+                    $galleryImages[] = [
+                        'image' => $imagePath,
+                        'nsfw' => @$image['nsfw'] ?? 0,
+                        'meta_remove_status' => $exifService->removeExifMetadata($imagePath) ? 1 : 0,
+                    ];
+                }
+            }
+        }
+
         $uniqueId = substr((string) Str::uuid(), 0, 10);
+        $slug = Str::slug($request->name) . '-' . $uniqueId;
+
+        // Everything from here down is DB-only, so the transaction stays short.
+        DB::beginTransaction();
         $product = Product::create([
             'name' => $request->name,
             'category_id' => $request->category,
@@ -101,40 +119,14 @@ class ProductsController extends Controller
             'user_id' => Auth::id(),
             'image' => $fullPath,
             'selloption' => $request->selloption,
-            'slug' => $uniqueId,
+            'slug' => $slug,
+            'meta_remove_status' => $thumbnailMetaRemoved ? 1 : 0,
         ]);
-        $exifService = new ExifMetadataService();
-        $processImage = $exifService->removeExifMetadata($product->image);
-        if ($processImage) {
-            $product->update([
-                'meta_remove_status' => 1,
-            ]);
-        }
 
-        if ($request->has('images')) {
-
-            foreach ($request->images as $image) {
-                if (isset($image['image']) && $image['image'] !== null) {
-                    $productImage = $product->images()->create([
-                        'image' => @$image['image']->store('images'),
-                        'nsfw' => @$image['nsfw'] ?? 0
-                    ]);
-                    $exifServiceImages = app(ExifMetadataService::class);
-                    $processImagesImage = $exifServiceImages->removeExifMetadata($productImage->image);
-
-                    if ($processImagesImage) {
-                        $productImage->update([
-                            'meta_remove_status' => 1,
-                        ]);
-                    }
-                }
-            }
+        foreach ($galleryImages as $galleryImage) {
+            $product->images()->create($galleryImage);
         }
         DB::commit();
-        $slug = Str::slug($product->name);
-        $product->update([
-            'slug' => $slug . '-' . $uniqueId,
-        ]);
 
         return redirect()->route('seller.products')->with('boost', $product->id);
     }
