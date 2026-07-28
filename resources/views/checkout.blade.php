@@ -227,6 +227,45 @@
                             </span>
                         @enderror
                     </div>
+                    <h5 class="small mt-5 d-flex">
+                        <details data-popover="up">
+                            <summary>?</summary>
+                            <div class="popoverBody">
+                                Der Versanddienstleister kann bei der Zustellung eine Altersprüfung wünschen.
+                            </div>
+                        </details>Geburtsdatum
+                    </h5>
+
+                    <div class="col-sm-4 mt-4 mt-sm-0">
+                        <label for="birthDay" class="visually-hidden">Tag</label>
+                        <select id="birthDay" autocomplete="bday-day">
+                            <option value="">Tag</option>
+                            @for ($d = 1; $d <= 31; $d++)
+                                <option value="{{ $d }}">{{ str_pad($d, 2, '0', STR_PAD_LEFT) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+
+                    <div class="col-sm-4 mt-4 mt-sm-0">
+                        <label for="birthMonth" class="visually-hidden">Monat</label>
+                        <select id="birthMonth" autocomplete="bday-month">
+                            <option value="">Monat</option>
+                            @foreach (['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] as $i => $monthName)
+                                <option value="{{ $i + 1 }}">{{ $monthName }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-sm-4 mt-4 mt-sm-0">
+                        <label for="birthYear" class="visually-hidden">Jahr</label>
+                        <select id="birthYear" autocomplete="bday-year">
+                            <option value="">Jahr</option>
+                            @for ($y = (int) date('Y'); $y >= (int) date('Y') - 100; $y--)
+                                <option value="{{ $y }}">{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+
                     {{--
                     <div class="col-12 mt-4">
                         <input type="text" id="postfach" name="po_box" placeholder="Postfach"
@@ -317,6 +356,8 @@
                 <input type="hidden" name="payment_id" id="payment_id" value="">
 
                 <button class="btn btn-primary" type="submit">zur Zahlung</button>
+
+                <p class="text-danger mt-3 mb-0 d-none" id="date_of_birth_error" role="alert"></p>
                 </form>
 
             </div>
@@ -325,5 +366,74 @@
 
 
     </main>
+
+    <script>
+        (function() {
+            var form = document.getElementById('payment');
+            if (!form) return;
+
+            var daySel = document.getElementById('birthDay');
+            var monthSel = document.getElementById('birthMonth');
+            var yearSel = document.getElementById('birthYear');
+            var errorEl = document.getElementById('date_of_birth_error');
+
+            function calcAge(day, month, year) {
+                var birth = new Date(year, month - 1, day);
+                // Ungültige Daten wie 31.02. abfangen
+                if (birth.getFullYear() !== year || birth.getMonth() !== month - 1 || birth.getDate() !== day) return null;
+                var now = new Date();
+                if (birth > now) return null;
+                var age = now.getFullYear() - birth.getFullYear();
+                var m = now.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+                return age;
+            }
+
+            function showError(msg) {
+                if (!errorEl) return;
+                errorEl.textContent = msg;
+                errorEl.classList.remove('d-none');
+                errorEl.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+
+            function clearError() {
+                if (errorEl) errorEl.classList.add('d-none');
+            }
+
+            [daySel, monthSel, yearSel].forEach(function(sel) {
+                if (sel) sel.addEventListener('change', clearError);
+            });
+
+            form.addEventListener('submit', function(e) {
+                var day = parseInt(daySel && daySel.value, 10);
+                var month = parseInt(monthSel && monthSel.value, 10);
+                var year = parseInt(yearSel && yearSel.value, 10);
+
+                if (isNaN(day) || isNaN(month) || isNaN(year)) {
+                    e.preventDefault();
+                    showError('Bitte gib dein vollständiges Geburtsdatum an.');
+                    return;
+                }
+
+                var age = calcAge(day, month, year);
+                if (age === null) {
+                    e.preventDefault();
+                    showError('Dieses Datum gibt es leider nicht. Bitte prüfe deine Eingabe.');
+                    return;
+                }
+
+                if (age < 18) {
+                    e.preventDefault();
+                    showError('Sie müssen mindestens 18 Jahre alt sein, um bei Frau Kruner zu shoppen.');
+                    return;
+                }
+
+                clearError();
+            });
+        })();
+    </script>
 
 </x-front_app>
