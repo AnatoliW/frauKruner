@@ -53,49 +53,16 @@
                                 <a href="{{ route('seller.product.active', $product) }}" class="me-3 text-success" title="Zum aktivieren des Produktes klicken">Aktiv</a>
                                 @endif -->
 
-                            <label class="switch" @if (!auth()->user()->status) style="pointer-events: none; opacity: 0.6; cursor: not-allowed;" @endif>
-                                <input type="checkbox" id="productStatusSwitch{{ $product->id }}"
+                            <label class="switch product-status-switch"
+                                @if (!auth()->user()->status) style="pointer-events: none; opacity: 0.6; cursor: not-allowed;" @endif>
+                                <input type="checkbox" class="product-status-toggle"
+                                    id="productStatusSwitch{{ $product->id }}"
+                                    data-product-id="{{ $product->id }}"
+                                    aria-label="Produkt {{ $product->name }} aktivieren oder pausieren"
                                     @if ($product->status == 1) checked @endif
                                     @if (!auth()->user()->status) disabled @endif>
-                                <span class="slider round pauseitem {{ $product->id }}" data-product-id="{{ $product->id }}"></span>
+                                <span class="slider round pauseitem" aria-hidden="true"></span>
                             </label>
-                            @push('scripts')
-                                <script>
-                                    $(document).ready(function() {
-                                        // Attach the event listener to the specific element once
-                                        $('.slider.round.pauseitem.{{ $product->id }}').one('click', function() {
-                                            const productId = $(this).data('product-id');
-                                            const url = `/seller/dashboard/product-active/${productId}`;
-
-                                            $.ajax({
-                                                url: url,
-                                                type: 'GET',
-                                                cache: false, // Disable caching
-                                                headers: {
-                                                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                                                    'Pragma': 'no-cache',
-                                                    'Expires': '0',
-                                                    'X-Requested-With': 'XMLHttpRequest'
-                                                },
-                                                success: function(response) {
-                                                    // Suppose the server returns the new product status in response.status
-                                                    console.log('Updated product ID:', productId, 'Response:', response);
-
-                                                    @if ($product->boosted || !auth()->user()->status || !$product->status)
-                                                        pushBtn.prop('disabled', true);
-                                                    @else
-                                                        pushBtn.prop('disabled', false);
-                                                    @endif
-                                                },
-                                                error: function(error) {
-                                                    console.error('Error:', error);
-                                                    alert('Es hat leider nicht geklappt. Bitte versuche es später erneut.');
-                                                }
-                                            });
-                                        });
-                                    });
-                                </script>
-                            @endpush
 
 
 
@@ -138,8 +105,9 @@
                         
                            @if (auth()->user()->status==false || auth()->user()->visibiliti_status==false  || auth()->user()->verified==false)
                            @else
-                        <button type="button" id="pushButton{{ $product->id }}" data-bs-toggle="modal" data-id="{{ $product->id }}" 
+                        <button type="button" id="pushButton{{ $product->id }}" data-bs-toggle="modal" data-id="{{ $product->id }}"
                             data-bs-target="#modalBoostProduct" class="btn btn-boost w-100 d-750-none product-boost"
+                            data-boosted="{{ $product->boosted ? 1 : 0 }}"
                              {{ ($product->boosted || !auth()->user()->status || !$product->status) ? 'disabled' : '' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="8.242" height="12.592"
                                 viewBox="0 0 8.242 12.592">
@@ -221,7 +189,8 @@
                         @else
                         <button type="button" data-bs-toggle="modal" data-bs-target="#modalBoostProduct"
                             data-id="{{ $product->id }}" class="btn btn-boost product-boost"
-                            {{ $product->boosted ? 'disabled' : '' }}  {{auth()->user()->status ? '' : 'disabled'}}>
+                            data-boosted="{{ $product->boosted ? 1 : 0 }}"
+                            {{ ($product->boosted || !auth()->user()->status || !$product->status) ? 'disabled' : '' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="8.242" height="12.592"
                                 viewBox="0 0 8.242 12.592">
                                 <g id="Gruppe_1640" data-name="Gruppe 1640" transform="translate(-199.42 -554.341)">
@@ -248,6 +217,31 @@
 
 
     </div>
+    @push('css')
+        <style>
+            /* Mobile: keep the toggle a reliable tap target and stop iOS from
+               swallowing/delaying the tap on the switch. */
+            .card-fields-produkte .card-item .card-item__main-info .col-prod-price .switch,
+            .card-fields-produkte .card-item .card-item__main-info .col-prod-price .slider {
+                -ms-touch-action: manipulation;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            .card-fields-produkte .card-item .card-item__main-info .col-prod-price .switch {
+                -ms-flex-negative: 0;
+                flex-shrink: 0;
+            }
+
+            .product-status-switch.is-busy {
+                opacity: 0.5;
+            }
+        </style>
+    @endpush
     @push('scripts')
         @if (session()->has('boost'))
             <script>
@@ -264,10 +258,60 @@
         <script>
             $(document).ready(function() {
 
-                $(".product-boost").click(function() {
+                // Namespaced + delegated so the handlers exist exactly once, even if this
+                // block ends up in the page twice, and keep working after every toggle.
+                $(document).off('.productBoost').on('click.productBoost', '.product-boost', function() {
                     var url = "{{ route('seller.boost.store') }}";
                     var route = url + '/' + $(this).data('id');
                     $("#boost-form").attr("action", route);
+                });
+
+                var toggleUrl = "{{ route('seller.product.active', ['product' => '__ID__']) }}";
+
+                // Listen on the checkbox itself: tapping the label fires "change" natively on
+                // every mobile browser, whereas a "click" bound to the decorative <span> is
+                // unreliable on touch devices.
+                $(document).off('.productStatus').on('change.productStatus', '.product-status-toggle', function() {
+                    var $input = $(this);
+                    var productId = $input.data('product-id');
+
+                    if (!productId || $input.data('busy')) {
+                        return;
+                    }
+
+                    var isActive = $input.is(':checked');
+
+                    $input.data('busy', true).prop('disabled', true);
+                    $input.closest('.product-status-switch').addClass('is-busy');
+
+                    $.ajax({
+                            url: toggleUrl.replace('__ID__', productId),
+                            type: 'GET',
+                            cache: false, // Disable caching
+                            headers: {
+                                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                'Pragma': 'no-cache',
+                                'Expires': '0',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .done(function() {
+                            // Boosting only makes sense for an active, not-yet-boosted product.
+                            $('.product-boost[data-id="' + productId + '"]').each(function() {
+                                var $btn = $(this);
+                                $btn.prop('disabled', !isActive || $btn.data('boosted') == 1);
+                            });
+                        })
+                        .fail(function(xhr) {
+                            // Roll the switch back so it never shows a state the server rejected.
+                            $input.prop('checked', !isActive);
+                            console.error('Error:', xhr);
+                            alert('Es hat leider nicht geklappt. Bitte versuche es später erneut.');
+                        })
+                        .always(function() {
+                            $input.data('busy', false).prop('disabled', false);
+                            $input.closest('.product-status-switch').removeClass('is-busy');
+                        });
                 });
             });
         </script>

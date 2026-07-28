@@ -1278,7 +1278,10 @@
 
                 @yield('js')
                 @stack('js')
-                @stack('scripts')
+                {{-- 'scripts' is already rendered above (right after jQuery). Rendering the
+                     stack a second time duplicated every pushed script, which bound every
+                     handler twice — e.g. the product pause toggle fired two requests and
+                     flipped the status straight back. --}}
 
 
     </footer>
