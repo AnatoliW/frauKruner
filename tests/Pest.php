@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Tests\Concerns\UsesUploadSchema;
+use Tests\Support\UploadTestHelpers;
 use Tests\TestCase;
 
 /*
@@ -17,6 +20,10 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
  // ->use(RefreshDatabase::class)
     ->in('Feature');
+
+// Die Upload-Tests brauchen zusätzlich das Alt-Schema in der SQLite-Test-DB.
+// (Als eigenes uses() pro Datei, da Pest keine überlappenden extend()-Pfade erlaubt.)
+uses(UsesUploadSchema::class)->in('Feature/Uploads');
 
 /*
 |--------------------------------------------------------------------------
@@ -48,3 +55,44 @@ function something()
 {
     // ..
 }
+
+/**
+ * Kurzform für Tests\Support\UploadTestHelpers, damit die Upload-Tests
+ * lesbar bleiben: uploads()->seller(), uploads()->video(), ...
+ */
+function uploads(): UploadTestHelpers
+{
+    return new UploadTestHelpers;
+}
+
+/**
+ * Prüft, dass ein Request mit 403 abgelehnt wird – ohne die Fehlerseite zu
+ * rendern. Das Frontend-Layout der Fehlerseiten fragt Tabellen ab, die im
+ * schlanken Test-Schema nicht existieren; die Ausnahme selbst ist die
+ * aussagekräftigere Zusicherung.
+ */
+function expectForbidden(Closure $request): void
+{
+    test()->withoutExceptionHandling();
+
+    try {
+        $request();
+    } catch (HttpExceptionInterface $e) {
+        expect($e->getStatusCode())->toBe(403);
+
+        return;
+    } finally {
+        test()->withExceptionHandling();
+    }
+
+    test()->fail('Der Zugriff wurde nicht mit 403 abgelehnt.');
+}
+
+/**
+ * Default-Disks, gegen die jeder Speicher-Test gefahren wird.
+ * Produktiv läuft die Seite auf s3, lokal/Staging häufig auf local.
+ */
+dataset('disks', [
+    'default disk = local' => 'local',
+    'default disk = s3' => 's3',
+]);
