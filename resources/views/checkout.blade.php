@@ -265,6 +265,9 @@
                             @endfor
                         </select>
                     </div>
+                    <div class="col-12 mt-2">
+                        <p class="text-muted small">Der Versanddienstleister kann bei der Zustellung eine Altersprüfung wünschen.</p>
+                    </div>
 
                     {{--
                     <div class="col-12 mt-4">
