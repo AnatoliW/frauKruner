@@ -44,10 +44,10 @@ class VerificationsTable
                     ->label('Geburtsdatum')
                     ->date('d.m.Y')
                     ->sortable(),
-                TextColumn::make('status')
+                TextColumn::make('user.verified')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Verifiziert' : 'Ausstehend')
+                    ->formatStateUsing(fn ($state): string => (int) $state === 1 ? 'Verifiziert' : 'Nicht verifiziert')
                     ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'warning')
                     ->sortable(),
                 TextColumn::make('created_at')

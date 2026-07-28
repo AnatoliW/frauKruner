@@ -26,9 +26,9 @@ class PrepaymentsTable
                 TextColumn::make('buyer')
                     ->label('Käufer')
                     ->html()
-                    ->formatStateUsing(function (Order $record): string {
+                    ->state(function (Order $record): string {
                         $name = trim(($record->first_name ?? '') . ' ' . ($record->last_name ?? ''));
-                        $email = (string) ($record->email ?? '');
+                        $email = trim((string) ($record->email ?? ''));
 
                         if ($email === '') {
                             return e($name);

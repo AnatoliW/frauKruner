@@ -40,7 +40,12 @@ class VerificationResource extends BaseAdminResource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['user.role']);
+        // Wie im alten Voyager-Backend (data_type scope "deleted"): nur offene
+        // Verifizierungen (status = 1) anzeigen. Bearbeitete/verifizierte
+        // Einträge werden auf status = 0 gesetzt und verschwinden aus der Liste.
+        return parent::getEloquentQuery()
+            ->where('verifications.status', 1)
+            ->with(['user.role']);
     }
 
     public static function getRelations(): array

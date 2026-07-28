@@ -204,6 +204,12 @@ class ProfileController extends Controller
                         'id_card_back_img' => $request->id_card_back_img->store('verifcation'),
                     ]);
                 }
+
+                // Neu eingereichte Ausweisdokumente stellen den Antrag zurück in die
+                // Prüf-Liste im Adminbereich (dort werden nur status = 1 angezeigt).
+                if ($request->person_id_shot_img || $request->id_card_front_img || $request->id_card_back_img) {
+                    $verification->update(['status' => 1]);
+                }
             }
 
             if ($request->update != '1') {

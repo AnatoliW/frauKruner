@@ -83,8 +83,10 @@ class ViewVerification extends ViewRecord
             'verified' => 1,
         ]);
 
+        // status = 0 -> Eintrag ist abgearbeitet und verschwindet aus der Liste
+        // (entspricht dem alten Voyager-Scope "deleted" = status 1).
         $verification->update([
-            'status' => 1,
+            'status' => 0,
         ]);
 
         $this->deleteVerificationImages($verification);
@@ -105,7 +107,9 @@ class ViewVerification extends ViewRecord
             ->color($mailSent ? 'success' : 'warning')
             ->send();
 
-        $this->record->refresh()->loadMissing('user');
+        // Der Datensatz ist jetzt aus der gefilterten Resource-Query ausgeschlossen,
+        // daher zurück zur Übersicht statt die Detailseite neu zu laden.
+        $this->redirect(VerificationResource::getUrl('index'));
     }
 
     public function rejectVerification(): void
@@ -127,9 +131,8 @@ class ViewVerification extends ViewRecord
             'verified' => 0,
         ]);
 
-        $verification->update([
-            'status' => 0,
-        ]);
+        // Abgelehnte Anträge bleiben (wie im alten Backend) in der Liste stehen,
+        // damit sie erneut geprüft oder gelöscht werden können.
 
         $mailSent = $this->sendVerificationMail($user->email, [
             'subject' => 'Deine Verifizierung wurde abgelehnt',
