@@ -78,7 +78,7 @@ class ProductsController extends Controller
         }
         $fullPath = $path . $filename . '.' . $file->getClientOriginalExtension();
         $ext = $file->guessClientExtension();
-        if (in_array($ext, ['jpeg', 'jpg', 'png',])) {
+        if (in_array($ext, ['jpeg', 'jpg', 'png', 'webp'])) {
             Storage::disk(config('filesystems.default'))->putFileAs($path, $file, $filename . '.' . $file->getClientOriginalExtension());
         } else {
             $fullPath = $request->thumbnail;

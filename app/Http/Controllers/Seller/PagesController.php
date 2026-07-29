@@ -139,11 +139,17 @@ class PagesController extends Controller
     {
         $request->validate([
             'order_id' => 'required',
+            'upload_photo' => 'nullable|array',
+            'upload_photo.*' => 'image|mimes:jpeg,jpg,png,webp',
         ]);
 
-        // $order=Order::where('id',$request->order_id)->first();
+        $order = Order::find($request->order_id);
+
+        if (! $order || $order->vendor_id != auth()->id()) {
+            return back()->withErrors(['order_id' => 'Unauthorized access.']);
+        }
+
         if ($request->upload_photo) {
-            // if (Storage::exists($order->photo)) Storage::delete($order->photo);
             foreach ($request->upload_photo as $photo) {
                 $orderImage = Orderimage::Create([
                     'image' => $photo->store('upload_photo'),
@@ -171,37 +177,36 @@ class PagesController extends Controller
         set_time_limit(1000);
         $request->validate([
             'order_id' => 'required',
+            // Größe in KB: max. 1 GB, wie in der Oberfläche angegeben.
+            'video' => ['nullable', 'file', 'extensions:mp4', 'max:1048576'],
         ]);
-        if ($request->hasFile('video')) {
 
-            $order = Order::where('id', $request->order_id)->first();
-            if ($order->vendor_id != auth()->id()) {
-                return back()->withError('Unauthorized access.');
-            }
-
-            if ($request->video) {
-                if ($order->video !== null && Storage::disk('s3')->exists($order->video)) {
-                    Storage::disk('s3')->delete($order->video);
-                }
-
-                if ($request->hasFile('video')) {
-                    $order->update([
-                        'video' => $request->video->store('Video'),
-                        'video_uploaded_at' => now(),
-                    ]);
-                }
-
-                // $exifService = new StripeVideoMetaData();
-                // $processImage = $exifService->removeExifMetadata($order->video);
-
-                // if ($processImage) {
-                //     $order->update([
-                //         'meta_remove_status' => 1,
-                //     ]);
-                // }
-            }
+        $order = Order::where('id', $request->order_id)->first();
+        if (! $order || $order->vendor_id != auth()->id()) {
+            return back()->withErrors(['video' => 'Unauthorized access.']);
         }
 
+        if (! $request->hasFile('video')) {
+            return back();
+        }
+
+        if ($order->video !== null && Storage::disk('s3')->exists($order->video)) {
+            Storage::disk('s3')->delete($order->video);
+        }
+
+        $order->update([
+            'video' => $request->video->store('Video'),
+            'video_uploaded_at' => now(),
+        ]);
+
+        // $exifService = new StripeVideoMetaData();
+        // $processImage = $exifService->removeExifMetadata($order->video);
+
+        // if ($processImage) {
+        //     $order->update([
+        //         'meta_remove_status' => 1,
+        //     ]);
+        // }
 
         return back()->with('success', 'Video erfolgreich hochgeladen.');
     }
@@ -228,6 +233,12 @@ class PagesController extends Controller
 
     public function photoDelete(Orderimage $orderimage)
     {
+        $order = Order::find($orderimage->order_id);
+
+        if (! $order || $order->vendor_id != auth()->id()) {
+            return back()->withErrors(['orderimage' => 'Unauthorized access.']);
+        }
+
         Storage::delete($orderimage->image);
         $orderimage->delete();
 
