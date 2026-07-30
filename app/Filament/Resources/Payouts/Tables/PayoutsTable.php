@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Payouts\Tables;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Mail\UserNotifyEmail;
 use App\Order;
+use App\Services\ProductStock;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
@@ -31,8 +32,8 @@ class PayoutsTable
                             : '<div style="font-weight:700;color:#b91c1c;">Namen nicht gefunden</div>';
 
                         $bankBlock = $iban !== ''
-                            ? '<div style="margin-top:10px;"><span style="display:block;font-size:8px;text-transform:uppercase;letter-spacing:.03em;">IBAN</span><span style="font-weight:600;word-break:break-all;font-size:12px;">' . e($iban) . '</span></div>'
-                            : '<div style="margin-top:10px;padding:8px 10px;border:1px dashed #d1d5db;border-radius:8px;">Keine Bank hinterlegt</div>';
+                            ? '<div style="margin-top:6px;white-space:nowrap;font-size:12px;"><span style="font-size:9px;text-transform:uppercase;letter-spacing:.03em;margin-right:6px;">IBAN</span><span style="font-weight:600;">' . e($iban) . '</span></div>'
+                            : '<div style="margin-top:6px;font-size:12px;">Keine Bank hinterlegt</div>';
 
                         return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">' . $nameBlock . $bankBlock . '</div>';
                     })
@@ -213,7 +214,7 @@ class PayoutsTable
                     ->wrap()
                     ->grow(false)
                     ->extraAttributes([
-                        'style' => 'width: 320px; min-width: 280px; max-width: 360px; white-space: normal;',
+                        'style' => 'width: 320px; min-width: 280px; max-width: 360px; white-space: normal; font-size: 11px; line-height: 1.4;',
                     ]),
             ])
             ->filters([
@@ -254,10 +255,13 @@ class PayoutsTable
                     ->modalDescription('Bist du sicher, dass du die Bestellung stornieren möchtest?')
                     ->modalSubmitActionLabel('Ja, stornieren')
                     ->action(function (Order $record): void {
+                        $wasPaid = (int) ($record->payment_status ?? 0) === 1;
+
                         $record->update(['status' => 3]);
 
-                        if ($record->product?->selloption == true) {
-                            $record->product->update(['status' => true]);
+                        // Nur zurückbuchen, wenn der Verkauf auch abgebucht war.
+                        if ($wasPaid) {
+                            ProductStock::releaseSale($record);
                         }
 
                         $year = now()->format('Y');

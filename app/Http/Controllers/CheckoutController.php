@@ -12,6 +12,7 @@ use App\Models\Log;
 use App\Order;
 use App\Product;
 use App\Services\Payouts;
+use App\Services\ProductStock;
 use App\Services\Turnstile;
 use Error;
 use Exception;
@@ -175,7 +176,6 @@ class CheckoutController extends Controller
                 'product_name' => $item->model->name,
             ]);
 
-            $order->product->increment('sale_count');
             $this->logs($order);
         }
         $this->logs($parent_order);
@@ -198,24 +198,21 @@ class CheckoutController extends Controller
             $ord->payment_gateway = $peyment_gayway;
 
             $ord->save();
-            $product = $ord->product;
-            $product->increment('sale_count');
-            $product->update(['quantity' => $product->quantity - 1]);
 
             if ($peyment_gayway == 'pre_payment') {
-                // Mail::to($ord->email)->send(new UserPrepaymentOrder($ord));
-            // Mail::to('k@fraukruner.de')->send(new AdminPrepaymentOrder($ord));
-            } else {
-                Mail::to($ord->email)->send(new UserOrderEmail($ord));
-                // Mail::to('k@fraukruner.de')->send(new OrderPlaced($ord));
-                Mail::to($ord->vendor->email)->send(new VendorOrderEmail($ord));
+                // Vorkasse reserviert nichts: Das Produkt bleibt bis zum Zahlungseingang
+                // im Shop sichtbar und kaufbar. Abgebucht wird es erst, wenn die
+                // Bestellung im Admin als bezahlt markiert wird (Order::markAsPaid()).
+                // Die Zahlungsinformationen gehen per UserPrepaymentOrder raus.
+                // Mail::to('k@fraukruner.de')->send(new AdminPrepaymentOrder($ord));
+                continue;
             }
 
-            if ($ord->product->selloption == false) {
-                $ord->product->update([
-                    'status' => 0,
-                ]);
-            }
+            ProductStock::bookSale($ord);
+
+            Mail::to($ord->email)->send(new UserOrderEmail($ord));
+            // Mail::to('k@fraukruner.de')->send(new OrderPlaced($ord));
+            Mail::to($ord->vendor->email)->send(new VendorOrderEmail($ord));
         }
     }
 
@@ -265,7 +262,6 @@ class CheckoutController extends Controller
             $this->childrenOrder($order, 'pre_payment');
         }
 
-        $this->decreaseQuantities();
         if ($order->payment_gateway == 'pre_payment') {
             Mail::to($order->email)->send(new UserPrepaymentOrder($order));
             return redirect()->route('pre.thankyou', $order)->with('thank', 'Vielen Dank! Ihre Zahlung wurde erfolgreich akzeptiert!');
@@ -287,15 +283,6 @@ class CheckoutController extends Controller
         $paypal_body = json_decode($paypal_status->body());
 
         return $paypal_body;
-    }
-
-    protected function decreaseQuantities()
-    {
-        foreach (\Cart::getContent() as $item) {
-            $product = Product::find($item->model->id);
-            $product->increment('sale_count');
-            $product->update(['quantity' => $product->quantity - $item->quantity]);
-        }
     }
 
     protected function productsAreNoLongerAvailable()

@@ -2,12 +2,15 @@
 
 namespace App;
 
+use App\Mail\VendorOrderEmail;
 use App\Models\Orderimage;
 use App\Models\Traits\HasMeta;
+use App\Services\ProductStock;
 use Illuminate\Database\Eloquent\Model;
 use App\Product;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class Order extends Model
@@ -148,6 +151,37 @@ class Order extends Model
     public function scopePaid($query)
     {
         return $query->where('payment_status', 1);
+    }
+
+    /**
+     * Markiert die Bestellung als bezahlt und bucht erst dann das Produkt ab.
+     *
+     * Gibt false zurück, wenn die Bestellung bereits als bezahlt markiert war,
+     * damit Bestand und Verkäufer-Mail nicht doppelt ausgelöst werden.
+     */
+    public function markAsPaid(): bool
+    {
+        if ((int) $this->payment_status === 1) {
+            return false;
+        }
+
+        $this->update([
+            'payment_status' => 1,
+            'status' => 1,
+        ]);
+
+        $this->parent?->update([
+            'payment_status' => 1,
+            'status' => 1,
+        ]);
+
+        ProductStock::bookSale($this);
+
+        if (filled($this->vendor->email)) {
+            Mail::to($this->vendor->email)->send(new VendorOrderEmail($this));
+        }
+
+        return true;
     }
 
 

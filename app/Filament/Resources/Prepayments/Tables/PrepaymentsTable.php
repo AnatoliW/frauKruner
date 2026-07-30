@@ -2,13 +2,11 @@
 
 namespace App\Filament\Resources\Prepayments\Tables;
 
-use App\Mail\VendorOrderEmail;
 use App\Order;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Mail;
 
 class PrepaymentsTable
 {
@@ -77,21 +75,16 @@ class PrepaymentsTable
                     ->icon('heroicon-m-check-circle')
                     ->requiresConfirmation()
                     ->modalHeading('Bezahlung bestätigen')
-                    ->modalDescription('Möchtest du diese Bestellung als bezahlt markieren?')
+                    ->modalDescription('Möchtest du diese Bestellung als bezahlt markieren? Das Produkt wird jetzt aus dem Shop genommen, falls es ein Einzelstück ist.')
                     ->action(function (Order $record): void {
-                        $record->update([
-                            'payment_status' => 1,
-                            'status' => 1,
-                        ]);
+                        if (! $record->markAsPaid()) {
+                            Notification::make()
+                                ->title('Bestellung war bereits als bezahlt markiert')
+                                ->warning()
+                                ->send();
 
-                        if ($record->parent) {
-                            $record->parent->update([
-                                'payment_status' => 1,
-                                'status' => 1,
-                            ]);
+                            return;
                         }
-
-                        Mail::to($record->vendor->email)->send(new VendorOrderEmail($record));
 
                         Notification::make()
                             ->title('Bestellung als bezahlt markiert')
