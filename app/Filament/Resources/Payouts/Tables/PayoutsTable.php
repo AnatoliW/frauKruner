@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Storage;
 
 class PayoutsTable
 {
+    /** Breite der Nachrichten-Spalte – hier zentral anpassbar. */
+    private const NOTE_WIDTH = '160px';
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -32,7 +35,7 @@ class PayoutsTable
                             : '<div style="font-weight:700;color:#b91c1c;">Namen nicht gefunden</div>';
 
                         $bankBlock = $iban !== ''
-                            ? '<div style="margin-top:6px;white-space:nowrap;font-size:12px;"><span style="font-size:9px;text-transform:uppercase;letter-spacing:.03em;margin-right:6px;">IBAN</span><span style="font-weight:600;">' . e($iban) . '</span></div>'
+                            ? '<div style="margin-top:6px;white-space:nowrap;font-size:12px;"><span style="font-size:9px;text-transform:uppercase;letter-spacing:.03em;margin-right:6px;">IBAN</span><br><span style="font-weight:600;">' . e($iban) . '</span></div>'
                             : '<div style="margin-top:6px;font-size:12px;">Keine Bank hinterlegt</div>';
 
                         return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">' . $nameBlock . $bankBlock . '</div>';
@@ -210,11 +213,22 @@ class PayoutsTable
                 TextColumn::make('message')
                     ->label('Nachricht')
                     ->html()
-                    ->formatStateUsing(fn (Order $record): string => (string) ($record->message ?: '<p>Keine Sonderwünsche</p>'))
+                    ->formatStateUsing(function (Order $record): string {
+                        $message = trim((string) ($record->message ?? ''));
+
+                        // Schriftgröße inline setzen, damit sie die Filament-Klassen der Zelle überschreibt.
+                        return '<div style="font-size:10px;line-height:1.35;white-space:normal;word-break:break-word;overflow-wrap:anywhere;">'
+                            . ($message !== '' ? $message : 'Keine Sonderwünsche')
+                            . '</div>';
+                    })
                     ->wrap()
                     ->grow(false)
+                    ->width(self::NOTE_WIDTH)
+                    ->extraCellAttributes([
+                        'style' => 'width:' . self::NOTE_WIDTH . ';max-width:' . self::NOTE_WIDTH . ';',
+                    ])
                     ->extraAttributes([
-                        'style' => 'width: 320px; min-width: 280px; max-width: 360px; white-space: normal; font-size: 11px; line-height: 1.4;',
+                        'style' => 'display:block;max-width:' . self::NOTE_WIDTH . ';white-space:normal;font-size:10px;line-height:1.35;',
                     ]),
             ])
             ->filters([
