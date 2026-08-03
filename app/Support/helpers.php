@@ -49,7 +49,7 @@ if (! function_exists('media_url')) {
             return $path;
         }
 
-        if (Str::startsWith($path, ['assets/', 'images/'])) {
+        if (Str::startsWith($path, 'assets/')) {
             return asset($path);
         }
 
