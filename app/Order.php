@@ -234,17 +234,34 @@ class Order extends Model
         }
 
         return (object) [
-            'f_name' => $vendor->first_name ?? $vendor->name ?? $vendor->verification?->name,
-            'l_name' => $vendor->last_name ?? $vendor->address?->last_name ?? $vendor->verification?->last_name,
-            'street' => $vendor->street ?? $vendor->address?->street ?? $vendor->verification?->street,
-            'house_no' => $vendor->house_no ?? $vendor->address?->house_no ?? $vendor->verification?->house_no,
-            'zip' => $vendor->zip ?? $vendor->address?->zip ?? $vendor->verification?->zip,
-            'federal_state' => $vendor->federal_state ?? $vendor->address?->federal_state ?? $vendor->verification?->city,
+            'f_name' => static::firstFilled($vendor->first_name, $vendor->name, $vendor->verification?->name),
+            'l_name' => static::firstFilled($vendor->last_name, $vendor->address?->last_name, $vendor->verification?->last_name),
+            'street' => static::firstFilled($vendor->street, $vendor->address?->street, $vendor->verification?->street),
+            'house_no' => static::firstFilled($vendor->house_no, $vendor->address?->house_no, $vendor->verification?->house_no),
+            'zip' => static::firstFilled($vendor->zip, $vendor->address?->zip, $vendor->verification?->zip),
+            'federal_state' => static::firstFilled($vendor->federal_state, $vendor->address?->federal_state, $vendor->verification?->city),
             'email' => $vendor->email,
             'vat_number' => $vendor->vat ?? null,
             'is_pay_vat' => (int) ($vendor->is_pay_vat ?? 0),
             'vat_perchatage' => (float) (setting('finance.vat') ?: 19),
         ];
+    }
+
+    /**
+     * Liefert den ersten Wert, der weder null noch ein leerer String ist.
+     *
+     * Ersetzt die bisherigen ??-Ketten: ?? greift nur bei null, sodass ein
+     * leerer String aus der Datenbank die Fallback-Kette abbrechen liess.
+     */
+    public static function firstFilled(...$values): ?string
+    {
+        foreach ($values as $value) {
+            if (filled($value)) {
+                return (string) $value;
+            }
+        }
+
+        return null;
     }
     
     public function setSellerInfoAttribute($value)

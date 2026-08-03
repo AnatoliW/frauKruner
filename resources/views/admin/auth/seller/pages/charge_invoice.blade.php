@@ -27,13 +27,14 @@
                                             <div class="col-12 col-md-6">
                                                 <p><b>Kundeninformation</b></p>
 
+                                                @php($sellerUser = auth()->user())
                                                 <p>
-                                                    {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}<br>
-                                                    {{ auth()->user()->address ? auth()->user()->address->street : '' }}
-                                                    {{ auth()->user()->address ? auth()->user()->address->house_no : '' }}<br>
-                                                    {{ auth()->user()->address ? auth()->user()->address->zip : '' }}
-                                                    {{ auth()->user()->address ? auth()->user()->address->federal_state : '' }}
-                                                    {{ auth()->user()->vat}}
+                                                    {{ \App\Order::firstFilled($sellerUser->first_name, $sellerUser->name) }} {{ $sellerUser->last_name }}<br>
+                                                    {{ \App\Order::firstFilled($sellerUser->address?->street, $sellerUser->verification?->street) }}
+                                                    {{ \App\Order::firstFilled($sellerUser->address?->house_no, $sellerUser->verification?->house_no) }}<br>
+                                                    {{ \App\Order::firstFilled($sellerUser->address?->zip, $sellerUser->verification?->zip) }}
+                                                    {{ \App\Order::firstFilled($sellerUser->address?->federal_state, $sellerUser->verification?->city) }}
+                                                    {{ $sellerUser->vat }}
                                                 </p>
                                             </div>
 

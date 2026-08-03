@@ -38,9 +38,9 @@
                     <p class="invoice-document__label">Käufer</p>
                     <p class="invoice-document__address">
                         {{ trim($buyerFirstName . ' ' . $buyerLastName) }}<br>
-                        {{ $boost->user_info->street ?? $boost->user?->street ?? '-' }} {{ $boost->user_info->house_no ?? $boost->user?->house_no ?? '' }}<br>
-                        {{ $boost->user_info->zip ?? $boost->user?->zip ?? '-' }} {{ $boost->user_info->federal_state ?? $boost->user?->federal_state ?? '' }}<br>
-                        {{ $boost->user_info->email ?? $boost->user?->email ?? '-' }}
+                        {{ \App\Order::firstFilled($boost->user_info->street ?? null, $boost->user?->address?->street, $boost->user?->verification?->street) ?: '-' }} {{ \App\Order::firstFilled($boost->user_info->house_no ?? null, $boost->user?->address?->house_no, $boost->user?->verification?->house_no) }}<br>
+                        {{ \App\Order::firstFilled($boost->user_info->zip ?? null, $boost->user?->address?->zip, $boost->user?->verification?->zip) ?: '-' }} {{ \App\Order::firstFilled($boost->user_info->federal_state ?? null, $boost->user?->address?->federal_state, $boost->user?->verification?->city) }}<br>
+                        {{ \App\Order::firstFilled($boost->user_info->email ?? null, $boost->user?->email) ?: '-' }}
                     </p>
 
                     @if (!empty($boost->user_info->vat_number ?? null))

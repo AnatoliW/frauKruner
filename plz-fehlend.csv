@@ -1,0 +1,272 @@
+beleg_id,datum,vendor_id,name,hat_adresse,hat_verifizierung
+61,2022-12-14,95,,nein,nein
+62,2023-01-03,95,,nein,nein
+63,2023-01-09,95,,nein,nein
+64,2023-02-01,95,,nein,nein
+65,2023-02-03,95,,nein,nein
+66,2023-02-07,2528,,nein,nein
+72,2023-02-23,2678,,nein,nein
+73,2023-02-27,106,,nein,nein
+75,2023-02-28,4809,,nein,nein
+78,2023-03-03,5049,,nein,nein
+79,2023-03-03,3035,"Nelly Ettling",nein,nein
+80,2023-03-03,3377,,nein,nein
+82,2023-03-05,4432,,nein,nein
+84,2023-03-06,5071,,nein,nein
+85,2023-03-07,3363,,nein,nein
+86,2023-03-07,4809,,nein,nein
+87,2023-03-09,5034,,nein,nein
+88,2023-03-13,3628,,nein,nein
+89,2023-03-15,5153,,nein,nein
+93,2023-03-25,4194,,nein,nein
+94,2023-03-27,4936,"Nina Engels",ja,nein
+95,2023-03-27,254,,nein,nein
+98,2023-03-31,5153,,nein,nein
+101,2023-04-08,4809,,nein,nein
+102,2023-04-08,2528,,nein,nein
+103,2023-04-08,5958,,nein,nein
+104,2023-04-10,5999,"Jennifer Rettig",nein,nein
+107,2023-04-13,104,"Kimberly Plistermann",ja,nein
+108,2023-04-14,2853,"Alischa Krock",ja,nein
+115,2023-04-17,3904,,nein,nein
+121,2023-04-18,5394,,nein,nein
+122,2023-04-18,5394,,nein,nein
+124,2023-04-19,2678,,nein,nein
+126,2023-04-20,4163,,nein,nein
+128,2023-04-20,5394,,nein,nein
+133,2023-04-20,3629,"Jessica Freudenthal",ja,nein
+135,2023-04-21,4550,,nein,nein
+137,2023-04-22,6206,,nein,nein
+144,2023-04-24,6206,,nein,nein
+146,2023-04-25,3428,,nein,nein
+148,2023-04-25,2678,,nein,nein
+159,2023-04-27,4895,"Lisa River",ja,nein
+177,2023-05-08,6263,,nein,nein
+179,2023-05-08,6095,,nein,nein
+181,2023-05-08,6095,,nein,nein
+189,2023-05-10,3628,,nein,nein
+193,2023-05-11,6201,,nein,nein
+199,2023-05-13,6330,,nein,nein
+205,2023-05-17,106,,nein,nein
+211,2023-05-18,5153,,nein,nein
+217,2023-05-19,4809,,nein,nein
+246,2023-06-03,6330,,nein,nein
+254,2023-06-05,4432,,nein,nein
+260,2023-06-06,3471,,nein,nein
+268,2023-06-07,5153,,nein,nein
+272,2023-06-09,5153,,nein,nein
+306,2023-06-27,6201,,nein,nein
+329,2023-07-04,106,,nein,nein
+336,2023-07-04,5964,,nein,nein
+344,2023-07-05,657,,nein,nein
+346,2023-07-06,5153,,nein,nein
+353,2023-07-08,5682,,nein,nein
+385,2023-07-12,104,"Kimberly Plistermann",ja,nein
+387,2023-07-12,6201,,nein,nein
+402,2023-07-17,4809,,nein,nein
+412,2023-07-18,6263,,nein,nein
+428,2023-07-24,106,,nein,nein
+434,2023-07-24,6551,,nein,nein
+437,2023-07-25,6551,,nein,nein
+443,2023-07-25,6201,,nein,nein
+445,2023-07-25,95,,nein,nein
+466,2023-07-30,6302,,nein,nein
+468,2023-07-30,6201,,nein,nein
+476,2023-07-31,6356,,nein,nein
+481,2023-07-31,6661,,nein,nein
+483,2023-08-01,201,,nein,nein
+484,2023-08-01,201,,nein,nein
+495,2023-08-02,5071,,nein,nein
+513,2023-08-05,6573,,nein,nein
+531,2023-08-07,104,"Kimberly Plistermann",ja,nein
+546,2023-08-09,6263,,nein,nein
+548,2023-08-09,3524,,nein,nein
+550,2023-08-10,2528,,nein,nein
+564,2023-08-11,4837,"Anna Erfurth",nein,nein
+600,2023-08-14,5899,,nein,nein
+608,2023-08-15,2814,,nein,nein
+610,2023-08-15,104,"Kimberly Plistermann",ja,nein
+614,2023-08-15,6806,,nein,nein
+630,2023-08-17,104,"Kimberly Plistermann",ja,nein
+632,2023-08-17,5049,,nein,nein
+634,2023-08-17,6806,,nein,nein
+637,2023-08-18,5049,,nein,nein
+638,2023-08-18,4167,,nein,nein
+639,2023-08-18,3108,,nein,nein
+644,2023-08-19,6101,,nein,nein
+645,2023-08-19,6101,,nein,nein
+647,2023-08-20,5805,,nein,nein
+667,2023-08-23,104,"Kimberly Plistermann",ja,nein
+673,2023-08-24,3088,,nein,nein
+690,2023-08-26,104,"Kimberly Plistermann",ja,nein
+693,2023-08-27,6808,,nein,nein
+716,2023-09-01,4842,,nein,nein
+755,2023-09-07,3357,,nein,nein
+777,2023-09-12,4254,,nein,nein
+826,2023-09-22,7166,,nein,nein
+835,2023-09-24,6695,,nein,nein
+844,2023-09-26,5597,"Leonie Beissner",nein,nein
+866,2023-09-28,3071,,nein,nein
+877,2023-10-01,4163,,nein,nein
+916,2023-10-04,3461,,nein,nein
+969,2023-10-10,6806,,nein,nein
+1002,2023-10-12,6265,,nein,nein
+1007,2023-10-13,7207,,nein,nein
+1015,2023-10-13,4682,,nein,nein
+1087,2023-10-24,4550,,nein,nein
+1094,2023-10-25,7573,,nein,nein
+1462,2023-11-02,5485,,nein,nein
+1524,2023-11-12,104,"Kimberly Plistermann",ja,nein
+1531,2023-11-13,3628,,nein,nein
+1544,2023-11-14,7532,,nein,nein
+1560,2023-11-16,7540,,nein,nein
+1571,2023-11-19,5377,,nein,nein
+1581,2023-11-20,104,"Kimberly Plistermann",ja,nein
+1619,2023-11-26,1848,,nein,nein
+1621,2023-11-26,7540,,nein,nein
+1627,2023-11-26,2875,,nein,nein
+1707,2023-12-10,104,"Kimberly Plistermann",ja,nein
+1724,2023-12-11,4034,,nein,nein
+1745,2023-12-15,104,"Kimberly Plistermann",ja,nein
+1756,2023-12-16,7879,,nein,nein
+1770,2023-12-18,104,"Kimberly Plistermann",ja,nein
+1823,2023-12-28,6189,,nein,nein
+1829,2023-12-28,104,"Kimberly Plistermann",ja,nein
+1856,2023-12-30,8410,,nein,nein
+1885,2024-01-01,4034,,nein,nein
+1903,2024-01-04,6754,,nein,nein
+1925,2024-01-05,7879,,nein,nein
+1927,2024-01-05,256,,nein,nein
+1931,2024-01-07,8410,,nein,nein
+1943,2024-01-08,3709,,nein,nein
+1956,2024-01-09,8410,,nein,nein
+1974,2024-01-12,104,"Kimberly Plistermann",ja,nein
+1976,2024-01-14,8683,,nein,nein
+1988,2024-01-15,8683,,nein,nein
+1996,2024-01-16,8410,,nein,nein
+1998,2024-01-16,8682,,nein,nein
+2027,2024-01-18,8410,,nein,nein
+2032,2024-01-21,5899,,nein,nein
+2051,2024-01-23,8410,,nein,nein
+2052,2024-01-23,8410,,nein,nein
+2054,2024-01-23,8410,,nein,nein
+2068,2024-01-24,8410,,nein,nein
+2083,2024-01-25,3589,,nein,nein
+2084,2024-01-25,3615,,nein,nein
+2086,2024-01-26,8683,,nein,nein
+2100,2024-01-29,104,"Kimberly Plistermann",ja,nein
+2108,2024-01-29,5797,,nein,nein
+2124,2024-02-01,8959,,nein,nein
+2142,2024-02-02,8410,,nein,nein
+2144,2024-02-02,4635,,nein,nein
+2145,2024-02-02,4635,,nein,nein
+2159,2024-02-04,104,"Kimberly Plistermann",ja,nein
+2180,2024-02-07,6201,,nein,nein
+2202,2024-02-08,8410,,nein,nein
+2218,2024-02-11,104,"Kimberly Plistermann",ja,nein
+2226,2024-02-11,3746,,nein,nein
+2227,2024-02-11,4895,"Lisa River",ja,nein
+2232,2024-02-12,2694,,nein,nein
+2269,2024-02-16,104,"Kimberly Plistermann",ja,nein
+2300,2024-02-20,8862,,nein,nein
+2331,2024-02-27,7491,,nein,nein
+2333,2024-02-27,9185,,nein,nein
+2336,2024-02-27,104,"Kimberly Plistermann",ja,nein
+2338,2024-02-27,8410,,nein,nein
+2341,2024-02-27,8410,,nein,nein
+2348,2024-02-28,7491,,nein,nein
+2349,2024-02-28,9202,,nein,nein
+2387,2024-03-03,8862,,nein,nein
+2410,2024-03-06,8410,,nein,nein
+2420,2024-03-08,2797,,nein,nein
+2426,2024-03-09,8410,,nein,nein
+2434,2024-03-10,8410,,nein,nein
+2445,2024-03-10,104,"Kimberly Plistermann",ja,nein
+2447,2024-03-10,8410,,nein,nein
+2449,2024-03-10,8410,,nein,nein
+2457,2024-03-12,104,"Kimberly Plistermann",ja,nein
+2459,2024-03-12,8862,,nein,nein
+2461,2024-03-12,104,"Kimberly Plistermann",ja,nein
+2477,2024-03-13,6201,,nein,nein
+2481,2024-03-13,7491,,nein,nein
+2493,2024-03-17,2797,,nein,nein
+2495,2024-03-18,2797,,nein,nein
+2509,2024-03-19,8410,,nein,nein
+2519,2024-03-21,7491,,nein,nein
+2561,2024-03-25,1828,,nein,nein
+2563,2024-03-25,4068,,nein,nein
+2579,2024-03-26,4602,,nein,nein
+2613,2024-03-27,9414,,nein,nein
+2614,2024-03-27,2648,,nein,nein
+2617,2024-03-27,9414,,nein,nein
+2639,2024-03-30,8410,,nein,nein
+2656,2024-04-01,8410,,nein,nein
+2671,2024-04-01,8410,,nein,nein
+2672,2024-04-01,8410,,nein,nein
+2675,2024-04-01,9414,,nein,nein
+2690,2024-04-01,9414,,nein,nein
+2691,2024-04-01,3953,"Alexandra Schob",ja,nein
+2695,2024-04-01,4571,,nein,nein
+2718,2024-04-02,9414,,nein,nein
+2758,2024-04-04,6152,,nein,nein
+2775,2024-04-05,9496,,nein,nein
+2807,2024-04-08,281,,nein,nein
+2816,2024-04-08,8862,,nein,nein
+2838,2024-04-09,8410,,nein,nein
+2840,2024-04-09,2800,,nein,nein
+2841,2024-04-09,3775,,nein,nein
+2845,2024-04-09,5067,,nein,nein
+2853,2024-04-10,9496,,nein,nein
+2857,2024-04-11,9496,,nein,nein
+2878,2024-04-14,9499,,nein,nein
+2879,2024-04-14,9499,,nein,nein
+2932,2024-04-18,2369,,nein,nein
+2934,2024-04-18,2369,,nein,nein
+2962,2024-04-21,4261,,nein,nein
+3014,2024-04-30,9496,,nein,nein
+3031,2024-05-01,2967,,nein,nein
+3138,2024-05-10,145,,nein,nein
+3179,2024-05-13,9496,,nein,nein
+3258,2024-05-20,10037,,nein,nein
+3260,2024-05-21,9496,,nein,nein
+3283,2024-05-24,10062,,nein,nein
+3293,2024-05-24,9414,,nein,nein
+3342,2024-05-27,8410,,nein,nein
+3354,2024-05-28,8410,,nein,nein
+3373,2024-05-30,8862,,nein,nein
+3405,2024-06-01,8862,,nein,nein
+3418,2024-06-01,8410,,nein,nein
+3454,2024-06-04,9202,,nein,nein
+3459,2024-06-05,8410,,nein,nein
+3475,2024-06-06,9496,,nein,nein
+3527,2024-06-11,8410,,nein,nein
+3632,2024-06-21,11189,,nein,nein
+3729,2024-06-30,104,"Kimberly Plistermann",ja,nein
+3730,2024-06-30,104,"Kimberly Plistermann",ja,nein
+3750,2024-07-02,11520,,nein,nein
+3786,2024-07-06,5945,,nein,nein
+3920,2024-07-15,10063,,nein,nein
+3929,2024-07-15,9414,,nein,nein
+3972,2024-07-18,8683,,nein,nein
+4033,2024-07-21,9414,,nein,nein
+4047,2024-07-22,104,"Kimberly Plistermann",ja,nein
+4123,2024-07-26,9496,,nein,nein
+4147,2024-07-26,8410,,nein,nein
+4165,2024-07-28,9414,,nein,nein
+4212,2024-07-30,3628,,nein,nein
+4273,2024-08-03,5050,,nein,nein
+4275,2024-08-04,8683,,nein,nein
+4277,2024-08-04,9106,,nein,nein
+4322,2024-08-06,8410,,nein,nein
+4373,2024-08-10,4219,"Nicole Melzer",nein,nein
+4379,2024-08-10,4219,"Nicole Melzer",nein,nein
+4381,2024-08-10,4219,"Nicole Melzer",nein,nein
+4533,2024-08-22,104,"Kimberly Plistermann",ja,nein
+4642,2024-08-29,9205,,nein,nein
+4684,2024-09-02,6288,,nein,nein
+4958,2024-10-18,104,"Kimberly Plistermann",ja,nein
+4960,2024-10-18,104,"Kimberly Plistermann",ja,nein
+4966,2024-10-22,104,"Kimberly Plistermann",ja,nein
+4970,2024-10-23,104,"Kimberly Plistermann",ja,nein
+4972,2024-10-30,104,"Kimberly Plistermann",ja,nein
+4974,2024-10-30,104,"Kimberly Plistermann",ja,nein
