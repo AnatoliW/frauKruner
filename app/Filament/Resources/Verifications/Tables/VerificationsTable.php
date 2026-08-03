@@ -12,6 +12,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class VerificationsTable
 {
@@ -20,10 +21,18 @@ class VerificationsTable
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('user.username')
+                TextColumn::make('user.name')
                     ->label('Name')
-                    ->formatStateUsing(fn ($state, Verification $record): string => $state ?: ($record->user?->name ?? '-'))
-                    ->searchable(),
+                    // Vor- und Nachname anzeigen, Nutzername nur als Fallback.
+                    ->formatStateUsing(fn ($state, Verification $record): string => trim(($record->user?->name ?? '') . ' ' . ($record->user?->last_name ?? ''))
+                        ?: (trim($record->user?->username ?? '') ?: '-'))
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
+                        'user',
+                        fn (Builder $userQuery): Builder => $userQuery
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%"),
+                    )),
                 TextColumn::make('user.role.display_name')
                     ->label('Rolle')
                     ->formatStateUsing(fn ($state, Verification $record): string => $state ?: ((int) ($record->user?->role_id ?? 0) === 3 ? 'Verkäufer/in' : ((int) ($record->user?->role_id ?? 0) === 2 ? 'Käufer/in' : 'Administrator')))
