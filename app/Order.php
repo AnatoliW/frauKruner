@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Mail\UserOrderEmail;
 use App\Mail\VendorOrderEmail;
 use App\Models\Orderimage;
 use App\Models\Traits\HasMeta;
@@ -157,7 +158,7 @@ class Order extends Model
      * Markiert die Bestellung als bezahlt und bucht erst dann das Produkt ab.
      *
      * Gibt false zurück, wenn die Bestellung bereits als bezahlt markiert war,
-     * damit Bestand und Verkäufer-Mail nicht doppelt ausgelöst werden.
+     * damit Bestand sowie Käufer- und Verkäufer-Mail nicht doppelt ausgelöst werden.
      */
     public function markAsPaid(): bool
     {
@@ -176,6 +177,12 @@ class Order extends Model
         ]);
 
         ProductStock::bookSale($this);
+
+        // Der Käufer bekommt jetzt dieselbe Bestellbestätigung wie bei PayPal/Stripe –
+        // bei Vorkasse aber erst nach dem Zahlungseingang.
+        if (filled($this->email)) {
+            Mail::to($this->email)->send(new UserOrderEmail($this));
+        }
 
         if (filled($this->vendor->email)) {
             Mail::to($this->vendor->email)->send(new VendorOrderEmail($this));
