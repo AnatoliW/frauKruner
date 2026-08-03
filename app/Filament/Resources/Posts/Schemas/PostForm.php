@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Filament\Forms\Components\RichEditorLink;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -36,7 +37,7 @@ class PostForm
                             ->rows(3)
                             ->columnSpanFull()
                             ->helperText('Kurzer Text unter dem Titel auf /Neuigkeiten – optional, aber empfohlen.'),
-                        RichEditor::make('body')
+                        RichEditorLink::applyTo(RichEditor::make('body'))
                             ->label('Beitragstext')
                             ->required()
                             ->columnSpanFull()

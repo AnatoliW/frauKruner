@@ -525,6 +525,49 @@ class AdminPanelProvider extends PanelProvider
                 };
 
                 initCollapsedSidebarHover();
+
+                // Rich-Editor (Beitraege): Nach dem Anlegen eines Links wurde jedes
+                // weitere Zeichen am Linkende Teil des Links – man kam aus dem Link
+                // nicht mehr heraus. Grund: TipTap setzt den Link-Mark auf
+                // "inclusive", solange autolink aktiv ist, und Filament aktiviert
+                // autolink fest. Wir setzen den Mark im ProseMirror-Schema auf
+                // nicht-inklusiv, sobald ein Editor den Fokus bekommt.
+                const initRichEditorLinkFix = () => {
+                    const makeLinkMarkExclusive = (element) => {
+                        if (!element || element.dataset.linkMarkExclusive) {
+                            return;
+                        }
+
+                        let editor = null;
+
+                        try {
+                            editor = window.Alpine?.$data(element)?.getEditor?.() ?? null;
+                        } catch (error) {
+                            return;
+                        }
+
+                        const linkMark = editor?.schema?.marks?.link;
+
+                        if (!linkMark?.spec) {
+                            return;
+                        }
+
+                        linkMark.spec.inclusive = false;
+                        element.dataset.linkMarkExclusive = '1';
+                    };
+
+                    document.addEventListener('focusin', (event) => {
+                        const wrapper = event.target?.closest?.('.fi-fo-rich-editor');
+
+                        if (!wrapper) {
+                            return;
+                        }
+
+                        makeLinkMarkExclusive(wrapper.querySelector(':scope > [x-data]'));
+                    });
+                };
+
+                initRichEditorLinkFix();
             })();
         </script>
     HTML
