@@ -133,7 +133,9 @@ class User extends Authenticatable implements FilamentUser
     }
     public function getZipAttribute()
     {
-        return $this->address->zip ?? '';
+        // Muss null liefern (nicht ''), sonst brechen die ??-Fallback-Ketten
+        // auf die Verifizierungsadresse ab und die PLZ fehlt auf den Belegen.
+        return filled($this->address?->zip) ? $this->address->zip : null;
     }
     public function getFirstNameAttribute()
     {

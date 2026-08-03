@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\VendorOrderEmail;
 use App\Models\Boost;
 use App\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 
 class AdminController extends Controller
@@ -32,15 +30,12 @@ class AdminController extends Controller
 
     public function payemntCheckUpdate(Order $order)
     {
-        $order->update([
-            'payment_status' => 1,
-            'status' => 1,
-        ]);
-        $order->parent->update([
-            'payment_status' => 1,
-            'status' => 1,
-        ]);
-        Mail::to($order->vendor->email)->send(new VendorOrderEmail($order));
+        if (! $order->markAsPaid()) {
+            return redirect()->back()->with([
+                'message' => 'Bestellung war bereits als bezahlt markiert',
+                'alert-type' => 'warning',
+            ]);
+        }
 
         return redirect()->back()->with([
             'message' => 'Bestellunge als bezahlt markiert',

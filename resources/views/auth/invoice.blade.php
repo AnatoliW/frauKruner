@@ -58,13 +58,13 @@
                                                         <p>
                                                          
 
-                                                            {{ $order->seller_info->f_name ?? ($order->vendor->first_name ?? ($order->vendor->name ?? ($order->vendor->verification->name ?? null))) }}
-                                                            {{ $order->seller_info->l_name ?? ($order->vendor->last_name ?? ($order->vendor->last_name ?? ($order->vendor->verification->last_name ?? null))) }}<br>
-                                                            {{ $order->seller_info->street ?? ($order->vendor->address->street ?? ($order->vendor->verification->street ?? null)) }}
-                                                            {{ $order->seller_info->house_no ?? ($order->vendor->address->house_no ?? ($order->vendor->verification->house_no ?? null)) }}<br>
-                                                            {{ !empty($order->seller_info->zip) ? $order->seller_info->zip : ($order->vendor->address->zip ?? $order->vendor->verification->zip ?? null) }}
-                        
-                                                            {{ $order->seller_info->federal_state ?? ($order->vendor->address->federal_state ?? ($order->vendor->verification->city ?? null)) }}<br>
+                                                            {{ \App\Order::firstFilled($order->seller_info->f_name ?? null, $order->vendor?->first_name, $order->vendor?->name, $order->vendor?->verification?->name) }}
+                                                            {{ \App\Order::firstFilled($order->seller_info->l_name ?? null, $order->vendor?->last_name, $order->vendor?->verification?->last_name) }}<br>
+                                                            {{ \App\Order::firstFilled($order->seller_info->street ?? null, $order->vendor?->address?->street, $order->vendor?->verification?->street) }}
+                                                            {{ \App\Order::firstFilled($order->seller_info->house_no ?? null, $order->vendor?->address?->house_no, $order->vendor?->verification?->house_no) }}<br>
+                                                            {{ \App\Order::firstFilled($order->seller_info->zip ?? null, $order->vendor?->address?->zip, $order->vendor?->verification?->zip) }}
+
+                                                            {{ \App\Order::firstFilled($order->seller_info->federal_state ?? null, $order->vendor?->address?->federal_state, $order->vendor?->verification?->city) }}<br>
                  
 
                                                         </p>

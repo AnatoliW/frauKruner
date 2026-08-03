@@ -11,7 +11,8 @@
         };
 
         $isVerified = $this->isUserVerified();
-        $displayName = trim($user?->username ?: trim(($user?->name ?? '') . ' ' . ($user?->last_name ?? '')));
+        // Vor- und Nachname bevorzugen, Nutzername nur als Fallback.
+        $displayName = trim(($user?->name ?? '') . ' ' . ($user?->last_name ?? '')) ?: trim($user?->username ?? '');
     @endphp
 
     <style>

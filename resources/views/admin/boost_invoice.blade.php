@@ -72,12 +72,12 @@
                                     <b>Käufer</b>
                        
                                     <br>
-                                    {{ @$dataTypeContent->user_info->f_name ??  @$dataTypeContent->user->name  }} {{ @$dataTypeContent->user_info->l_name ??  @$dataTypeContent->user->last_name}}<br>
-                                    {{ @$dataTypeContent->user_info->street ??  @$dataTypeContent->user->street }}
-                                    {{ @$dataTypeContent->user_info->house_no ?? @$dataTypeContent->user->house_no }}<br>
-                                    {{ @$dataTypeContent->user_info->zip ??  @$dataTypeContent->user->zip }}
-                                    {{ @$dataTypeContent->user_info->federal_state ?? @$dataTypeContent->user->federal_state  }}<br>
-                                    {{ @$dataTypeContent->user_info->email ??  @$dataTypeContent->user->email }}
+                                    {{ \App\Order::firstFilled(@$dataTypeContent->user_info->f_name, $dataTypeContent->user?->first_name, $dataTypeContent->user?->name) }} {{ \App\Order::firstFilled(@$dataTypeContent->user_info->l_name, $dataTypeContent->user?->last_name) }}<br>
+                                    {{ \App\Order::firstFilled(@$dataTypeContent->user_info->street, $dataTypeContent->user?->address?->street, $dataTypeContent->user?->verification?->street) }}
+                                    {{ \App\Order::firstFilled(@$dataTypeContent->user_info->house_no, $dataTypeContent->user?->address?->house_no, $dataTypeContent->user?->verification?->house_no) }}<br>
+                                    {{ \App\Order::firstFilled(@$dataTypeContent->user_info->zip, $dataTypeContent->user?->address?->zip, $dataTypeContent->user?->verification?->zip) }}
+                                    {{ \App\Order::firstFilled(@$dataTypeContent->user_info->federal_state, $dataTypeContent->user?->address?->federal_state, $dataTypeContent->user?->verification?->city) }}<br>
+                                    {{ \App\Order::firstFilled(@$dataTypeContent->user_info->email, $dataTypeContent->user?->email) }}
                                 </p>
 
                                 @if (!is_null(@$dataTypeContent->user_info->vat_number) && @$dataTypeContent->user_info->vat_number !== '')

@@ -608,8 +608,7 @@
     @endphp
     @if (!$hideAgeGate)
         <div class="modal fade" id="ageGateModal" tabindex="-1" aria-labelledby="ageGateModalLabel"
-            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false"
-            data-restricted-url="{{ route('age.restricted') }}">
+            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content py-5">
 
@@ -618,54 +617,14 @@
                         <img class="lazy mb-4 img-fluid" alt="Kinder- und Jugendschutz" style="max-width:110px;"
                             data-src="/assets/img/safe-zone/18plus.svg">
                         <h2 class="modal-title h4 mb-3" id="ageGateModalLabel">Willkommen im Duftparadies</h2>
-                        <p class="mb-4">Diese Welt ist für neugierige Erwachsene gedacht. Bitte gib dein
-                            Geburtsdatum ein, um fortzufahren.</p>
-
-                        <div class="d-flex align-items-end justify-content-center flex-wrap gap-2"
-                            style="max-width:420px;">
-                            <div class="text-start">
-                                <label class="form-label mb-1 small" for="ageGateDay">Tag</label>
-                                <select class="form-select" id="ageGateDay" autocomplete="bday-day">
-                                    <option value="">TT</option>
-                                    @for ($d = 1; $d <= 31; $d++)
-                                        <option value="{{ $d }}">{{ str_pad($d, 2, '0', STR_PAD_LEFT) }}</option>
-                                    @endfor
-                                </select>
-                            </div>
-                            <div class="text-start">
-                                <label class="form-label mb-1 small" for="ageGateMonth">Monat</label>
-                                <select class="form-select" id="ageGateMonth" autocomplete="bday-month">
-                                    <option value="">MM</option>
-                                    @foreach (['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] as $i => $monthName)
-                                        <option value="{{ $i + 1 }}">{{ $monthName }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="text-start">
-                                <label class="form-label mb-1 small" for="ageGateYear">Jahr</label>
-                                <select class="form-select" id="ageGateYear" autocomplete="bday-year">
-                                    <option value="">JJJJ</option>
-                                    @for ($y = (int) date('Y'); $y >= (int) date('Y') - 100; $y--)
-                                        <option value="{{ $y }}">{{ $y }}</option>
-                                    @endfor
-                                </select>
-                            </div>
-                        </div>
-
-                        <p class="text-danger small mt-3 mb-0 d-none" id="ageGateError" role="alert"></p>
+                        <p class="mb-0">Diese Welt ist für neugierige Erwachsene gedacht. Bitte bestätige, dass du
+                            mindestens 18 Jahre alt bist!</p>
                     </div>
                     <div
                         class="modal-footer d-flex align-items-center justify-content-center flex-wrap gap-2 border-0 pt-0">
-                        <button type="button" class="btn btn-primary mb-0 d-inline-flex align-items-center gap-2"
-                            id="ageGateSubmit">
-                            <span>Weiter</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" aria-hidden="true">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </button>
+                        <button type="button" class="btn btn-primary mb-2" id="ageGateAccept">Ich bin 18+</button>
+                        <a href="{{ route('age.restricted') }}" class="btn btn-primary-outline mb-0">Ich bin noch
+                            nicht 18</a>
                     </div>
                 </div>
             </div>
@@ -687,19 +646,6 @@
                     }
                 }
 
-                function calcAge(day, month, year) {
-                    var birth = new Date(year, month - 1, day);
-                    // Ungültige Daten wie 31.02. abfangen
-                    if (birth.getFullYear() !== year || birth.getMonth() !== month - 1 || birth.getDate() !==
-                        day) return null;
-                    var now = new Date();
-                    if (birth > now) return null;
-                    var age = now.getFullYear() - birth.getFullYear();
-                    var m = now.getMonth() - birth.getMonth();
-                    if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
-                    return age;
-                }
-
                 window.addEventListener('load', function() {
                     if (typeof bootstrap === 'undefined' || !bootstrap.Modal) return;
                     var el = document.getElementById('ageGateModal');
@@ -710,53 +656,12 @@
                         keyboard: false
                     });
                     modal.show();
-
-                    var daySel = document.getElementById('ageGateDay');
-                    var monthSel = document.getElementById('ageGateMonth');
-                    var yearSel = document.getElementById('ageGateYear');
-                    var errorEl = document.getElementById('ageGateError');
-                    var submitBtn = document.getElementById('ageGateSubmit');
-
-                    function showError(msg) {
-                        if (!errorEl) return;
-                        errorEl.textContent = msg;
-                        errorEl.classList.remove('d-none');
-                    }
-
-                    function clearError() {
-                        if (errorEl) errorEl.classList.add('d-none');
-                    }
-
-                    [daySel, monthSel, yearSel].forEach(function(sel) {
-                        if (sel) sel.addEventListener('change', clearError);
-                    });
-
-                    if (submitBtn) {
-                        submitBtn.addEventListener('click', function() {
-                            var day = parseInt(daySel && daySel.value, 10);
-                            var month = parseInt(monthSel && monthSel.value, 10);
-                            var year = parseInt(yearSel && yearSel.value, 10);
-
-                            if (isNaN(day) || isNaN(month) || isNaN(year)) {
-                                showError('Bitte gib dein vollständiges Geburtsdatum an.');
-                                return;
-                            }
-
-                            var age = calcAge(day, month, year);
-                            if (age === null) {
-                                showError('Dieses Datum gibt es leider nicht. Bitte prüfe deine Eingabe.');
-                                return;
-                            }
-
-                            if (age < 18) {
-                                window.location.href = el.getAttribute('data-restricted-url');
-                                return;
-                            }
-
+                    var acceptBtn = document.getElementById('ageGateAccept');
+                    if (acceptBtn) {
+                        acceptBtn.addEventListener('click', function() {
                             try {
                                 localStorage.setItem(STORAGE_KEY, String(Date.now()));
                             } catch (e) {}
-                            clearError();
                             modal.hide();
                         });
                     }

@@ -20,7 +20,7 @@ class ViewVerification extends ViewRecord
     public function getTitle(): string
     {
         $user = $this->getRecord()->user;
-        $label = trim($user?->username ?: trim(($user?->name ?? '') . ' ' . ($user?->last_name ?? '')));
+        $label = trim(($user?->name ?? '') . ' ' . ($user?->last_name ?? '')) ?: trim($user?->username ?? '');
 
         return $label !== '' ? "Verifizierung: {$label}" : 'Verifizierung';
     }

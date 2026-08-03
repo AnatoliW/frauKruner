@@ -12,6 +12,40 @@
 </h1>
 @stop
 
+@push('css')
+    <style>
+        /* Bankdaten kompakt: Label und Wert in einer Zeile */
+        .payout-bank {
+            margin: 4px 0 0 0;
+            white-space: nowrap;
+        }
+
+        /* Notizen-Spalte schmal halten */
+        .payout-note-col {
+            width: 100px;
+            max-width: 100px;
+        }
+
+        /* Notizen / Sonderwünsche kleiner darstellen */
+        .payout-note,
+        .payout-note p,
+        .payout-note li,
+        .payout-note span {
+            font-size: 10px;
+            line-height: 1.35;
+        }
+
+        .payout-note {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .payout-note p {
+            margin: 0 0 3px 0;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="page-content browse container-fluid">
         @include('voyager::alerts')
@@ -52,7 +86,7 @@
                                         <th>
                                            Zahlungsinformationen
                                         </th>
-                                        <th>
+                                        <th class="payout-note-col">
                                            Nachricht
                                         </th>
                                         <!-- <th>
@@ -68,7 +102,6 @@
                                     @foreach ($dataTypeContent as $data)
                                         <tr>
                                             <td class="middle">
-                                                <br>
                                                 @if (@$data->vendor)
                                                     {{ $data->vendor->name }}
                                                     {{ $data->vendor->last_name }}
@@ -77,19 +110,16 @@
                                                         Namen nicht gefunden
                                                     </span>
                                                 @endif
-                                                <br><br>
+                                                <br>
                                                 @if(!empty($data->vendor->method))
-                                                    <span style="font-weight: bold;">IBAN:</span>
-                                                    <p >
-                                                        {{ $data->vendor->method->iban }}
-                                                    </p><br>
-                                                    <!-- <span style="font-weight: bold;">BIC:</span>
-                                                    <p>
-                                                        {{ $data->vendor->method->bic }}
+                                                    <p class="payout-bank">
+                                                        <span style="font-weight: bold;">IBAN:</span> {{ $data->vendor->method->iban }}
+                                                    </p>
+                                                    <!-- <p class="payout-bank">
+                                                        <span style="font-weight: bold;">BIC:</span> {{ $data->vendor->method->bic }}
                                                     </p> -->
-                                                    <br><br>
                                                 @else
-                                                    <span style="font-weight: bold;">Keine Bank hinterlegt</span> <br><br>
+                                                    <p class="payout-bank"><span style="font-weight: bold;">Keine Bank hinterlegt</span></p>
                                                 @endif
 
 
@@ -215,7 +245,7 @@
                                                 @endif
 
                                             </td>
-                                            <td  class="middle">
+                                            <td  class="middle payout-note payout-note-col">
                                                 {!! $data->message ? $data->message : "<p>Keine Sonderwünsche</p> "!!}
                                             </td>
 

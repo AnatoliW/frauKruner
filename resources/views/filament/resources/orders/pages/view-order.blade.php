@@ -121,13 +121,13 @@
                 <div>
                     <p class="invoice-document__label">Hersteller*in</p>
                     <p class="invoice-document__address">
-                        {{ $order->seller_info->f_name ?? $order->vendor?->first_name ?? $order->vendor?->name }}
-                        {{ $order->seller_info->l_name ?? $order->vendor?->last_name }}<br>
-                        {{ $order->seller_info->street ?? $order->vendor?->address?->street ?? $order->vendor?->verification?->street }}
-                        {{ $order->seller_info->house_no ?? $order->vendor?->address?->house_no ?? $order->vendor?->verification?->house_no }}<br>
-                        {{ $order->seller_info->zip ?? $order->vendor?->address?->zip ?? $order->vendor?->verification?->zip }}
-                        {{ $order->seller_info->federal_state ?? $order->vendor?->address?->federal_state ?? $order->vendor?->verification?->city }}<br>
-                        {{ $order->seller_info->email ?? $order->vendor?->email }}
+                        {{ \App\Order::firstFilled($order->seller_info->f_name ?? null, $order->vendor?->first_name, $order->vendor?->name) }}
+                        {{ \App\Order::firstFilled($order->seller_info->l_name ?? null, $order->vendor?->last_name) }}<br>
+                        {{ \App\Order::firstFilled($order->seller_info->street ?? null, $order->vendor?->address?->street, $order->vendor?->verification?->street) }}
+                        {{ \App\Order::firstFilled($order->seller_info->house_no ?? null, $order->vendor?->address?->house_no, $order->vendor?->verification?->house_no) }}<br>
+                        {{ \App\Order::firstFilled($order->seller_info->zip ?? null, $order->vendor?->address?->zip, $order->vendor?->verification?->zip) }}
+                        {{ \App\Order::firstFilled($order->seller_info->federal_state ?? null, $order->vendor?->address?->federal_state, $order->vendor?->verification?->city) }}<br>
+                        {{ \App\Order::firstFilled($order->seller_info->email ?? null, $order->vendor?->email) }}
                     </p>
                     @if (!empty($order->vendor?->vat))
                         <p class="invoice-document__meta">Steuernummer: {{ $order->vendor->vat }}</p>

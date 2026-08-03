@@ -12,6 +12,7 @@ use App\Product;
 use App\Mail\OrderPlaced;
 use App\Mail\UserNotifyEmail;
 use App\Models\User as ModelsUser;
+use App\Services\ProductStock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -202,18 +203,18 @@ class HomeController extends Controller
     }
     public function orderCancel(Order $order)
     {
+        $wasPaid = (int) $order->payment_status === 1;
 
         $order->update([
             'status' => 3,
-           
         ]);
-        if($order->product->selloption==true){
-            $order->product->update([
 
-                'status'=>true
-            ]);
+        // Nur zurückbuchen, wenn der Verkauf auch abgebucht war. Eine unbezahlte
+        // Vorkasse-Bestellung hat nie etwas aus dem Shop genommen.
+        if ($wasPaid) {
+            ProductStock::releaseSale($order);
         }
-  
+
         $year = now()->format('Y');
         $mail_data = [
             'subject' => 'Storno Bestellung FK' . $year . '-' . $order->id,

@@ -86,16 +86,17 @@ class ProfileController extends Controller
     public function address(Request $request)
     {
         // dd($request->all());
+        // Ohne PLZ laesst sich kein gueltiger Beleg erzeugen, deshalb ist sie Pflicht.
+        // Die uebrigen Felder bleiben vorerst optional, um bestehende Profile nicht zu blockieren.
         $request->validate([
-            // 'first_name' => 'required|string',
-            // 'last_name' => 'required|string',
-            // 'additional' => 'nullable|string',
-            // 'street' => 'required|string',
-            // 'house_no' => 'required|string',
-            // 'zip' => 'required|string',
-            // 'federal_state' => 'required|string',
-            // 'po_box' => 'required|string',
-            // 'vat_id' => 'nullable|string',
+            'zip' => 'required|string|max:20',
+            'street' => 'nullable|string|max:255',
+            'house_no' => 'nullable|string|max:255',
+            'federal_state' => 'nullable|string|max:255',
+            'additional' => 'nullable|string|max:255',
+            'vat_id' => 'nullable|string|max:255',
+        ], [
+            'zip.required' => 'Bitte gib deine PLZ an – sie wird für die Rechnungsstellung benötigt.',
         ]);
         // try {
             DB::beginTransaction();

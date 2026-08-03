@@ -2,12 +2,16 @@
 
 namespace App;
 
+use App\Mail\UserOrderEmail;
+use App\Mail\VendorOrderEmail;
 use App\Models\Orderimage;
 use App\Models\Traits\HasMeta;
+use App\Services\ProductStock;
 use Illuminate\Database\Eloquent\Model;
 use App\Product;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class Order extends Model
@@ -150,6 +154,43 @@ class Order extends Model
         return $query->where('payment_status', 1);
     }
 
+    /**
+     * Markiert die Bestellung als bezahlt und bucht erst dann das Produkt ab.
+     *
+     * Gibt false zurück, wenn die Bestellung bereits als bezahlt markiert war,
+     * damit Bestand sowie Käufer- und Verkäufer-Mail nicht doppelt ausgelöst werden.
+     */
+    public function markAsPaid(): bool
+    {
+        if ((int) $this->payment_status === 1) {
+            return false;
+        }
+
+        $this->update([
+            'payment_status' => 1,
+            'status' => 1,
+        ]);
+
+        $this->parent?->update([
+            'payment_status' => 1,
+            'status' => 1,
+        ]);
+
+        ProductStock::bookSale($this);
+
+        // Der Käufer bekommt jetzt dieselbe Bestellbestätigung wie bei PayPal/Stripe –
+        // bei Vorkasse aber erst nach dem Zahlungseingang.
+        if (filled($this->email)) {
+            Mail::to($this->email)->send(new UserOrderEmail($this));
+        }
+
+        if (filled($this->vendor->email)) {
+            Mail::to($this->vendor->email)->send(new VendorOrderEmail($this));
+        }
+
+        return true;
+    }
+
 
     public function scopeChildren($query)
     {
@@ -193,17 +234,34 @@ class Order extends Model
         }
 
         return (object) [
-            'f_name' => $vendor->first_name ?? $vendor->name ?? $vendor->verification?->name,
-            'l_name' => $vendor->last_name ?? $vendor->address?->last_name ?? $vendor->verification?->last_name,
-            'street' => $vendor->street ?? $vendor->address?->street ?? $vendor->verification?->street,
-            'house_no' => $vendor->house_no ?? $vendor->address?->house_no ?? $vendor->verification?->house_no,
-            'zip' => $vendor->zip ?? $vendor->address?->zip ?? $vendor->verification?->zip,
-            'federal_state' => $vendor->federal_state ?? $vendor->address?->federal_state ?? $vendor->verification?->city,
+            'f_name' => static::firstFilled($vendor->first_name, $vendor->name, $vendor->verification?->name),
+            'l_name' => static::firstFilled($vendor->last_name, $vendor->address?->last_name, $vendor->verification?->last_name),
+            'street' => static::firstFilled($vendor->street, $vendor->address?->street, $vendor->verification?->street),
+            'house_no' => static::firstFilled($vendor->house_no, $vendor->address?->house_no, $vendor->verification?->house_no),
+            'zip' => static::firstFilled($vendor->zip, $vendor->address?->zip, $vendor->verification?->zip),
+            'federal_state' => static::firstFilled($vendor->federal_state, $vendor->address?->federal_state, $vendor->verification?->city),
             'email' => $vendor->email,
             'vat_number' => $vendor->vat ?? null,
             'is_pay_vat' => (int) ($vendor->is_pay_vat ?? 0),
             'vat_perchatage' => (float) (setting('finance.vat') ?: 19),
         ];
+    }
+
+    /**
+     * Liefert den ersten Wert, der weder null noch ein leerer String ist.
+     *
+     * Ersetzt die bisherigen ??-Ketten: ?? greift nur bei null, sodass ein
+     * leerer String aus der Datenbank die Fallback-Kette abbrechen liess.
+     */
+    public static function firstFilled(...$values): ?string
+    {
+        foreach ($values as $value) {
+            if (filled($value)) {
+                return (string) $value;
+            }
+        }
+
+        return null;
     }
     
     public function setSellerInfoAttribute($value)
