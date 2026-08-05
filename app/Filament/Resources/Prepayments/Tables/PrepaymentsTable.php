@@ -17,10 +17,12 @@ class PrepaymentsTable
             ->columns([
                 TextColumn::make('parent_id')
                     ->label('Haupt ID')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('user_id')
                     ->label('Nutzer ID')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('buyer')
                     ->label('Käufer')
                     ->html()
@@ -43,7 +45,17 @@ class PrepaymentsTable
                     }),
                 TextColumn::make('vendor.name')
                     ->label('Verkäuferin')
-                    ->searchable(),
+                    ->state(function (Order $record): string {
+                        $name = trim(($record->vendor->name ?? '') . ' ' . ($record->vendor->last_name ?? ''));
+
+                        return $name !== '' ? $name : '-';
+                    })
+                    ->searchable(query: function ($query, string $search): void {
+                        $query->whereHas('vendor', function ($q) use ($search): void {
+                            $q->where('name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%");
+                        });
+                    }),
                 TextColumn::make('product')
                     ->label('Produkt')
                     ->html()
