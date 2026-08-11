@@ -25,7 +25,7 @@ class CouponsTable
                     ->searchable(),
                 TextColumn::make('discount')
                     ->label('Rabatt')
-                    ->numeric()
+                    ->money('EUR')
                     ->sortable(),
                 TextColumn::make('expire_at')
                     ->label('Läuft ab am')
@@ -37,7 +37,7 @@ class CouponsTable
                     ->sortable(),
                 TextColumn::make('minimum_cart')
                     ->label('Minimaler Warenkorbwert')
-                    ->money()
+                    ->money('EUR')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Erstellt am')

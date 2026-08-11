@@ -117,7 +117,11 @@ class Cart
     public static function getTotal(): float
     {
         $subtotal = static::getSubTotal();
-        $discount = (float) session()->get('discount', 0);
+
+        // Der Rabatt ist im Gesamtbetrag enthalten. Wer ihn zusätzlich abzieht,
+        // rechnet ihn doppelt – siehe CheckoutController::stripePayment().
+        // Aktuell gehalten wird der Wert von CouponSession::revalidate().
+        $discount = CouponSession::discount();
 
         return max(0, $subtotal - $discount);
     }

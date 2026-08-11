@@ -335,15 +335,15 @@
         </section>
         <section class="bg-lightgrey mt-5">
             <div class="container-cart-summary">
-                @if (session()->has('discount'))
+                @if (Shop::discount() > 0)
                     <div class="delivery-cost-cart">
-                        <span class="delivery-cost-cart__heading">Rabatt <a href="{{ route('coupon.destroy') }}"> (
-                                Löschen )</a></span>
-                        <span class="delivery-cost-cart__price">{{ session()->get('discount') }} €</span>
+                        <span class="delivery-cost-cart__heading">Rabatt
+                            <x-coupon-remove-button /></span>
+                        <span class="delivery-cost-cart__price">- {{ Shop::price(Shop::discount()) }}</span>
                     </div>
                 @endif
                 @php
-                    $total = Cart::getSubTotal() - session()->get('discount');
+                    $total = Cart::getTotal();
                 @endphp
                 <div class="fullsumm-cost-cart">
                     <span class="fullsumm-cost-cart__heading">Gesamtsumme</span>

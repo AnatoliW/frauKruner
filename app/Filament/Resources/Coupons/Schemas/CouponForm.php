@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Coupons\Schemas;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class CouponForm
@@ -19,7 +20,14 @@ class CouponForm
                         TextInput::make('code')
                             ->label('Gutscheincode')
                             ->required()
-                            ->maxLength(255)
+                            ->maxLength(50)
+                            // Beim Verlassen des Feldes trimmen, damit die
+                            // Unique-Prüfung denselben Wert sieht, den das
+                            // Model später speichert. Sonst käme " CODE " durch
+                            // die Validierung und liefe erst in der Datenbank
+                            // gegen den Unique-Index.
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (Set $set, ?string $state) => $set('code', trim((string) $state)))
                             ->unique(ignoreRecord: true)
                             ->helperText('Der Code, den Käufer/innen im Warenkorb eingeben.')
                             ->columnSpanFull(),
@@ -54,11 +62,17 @@ class CouponForm
                             ->label('Mindestbestellwert')
                             ->numeric()
                             ->required()
+                            // Bewusst nur >= 0 und keine Kopplung an den Rabatt:
+                            // "10 € Rabatt ohne Mindestbestellwert" ist eine
+                            // normale Aktion und muss anlegbar bleiben. Dass ein
+                            // Warenkorb nicht auf 0 € fallen darf, prüft
+                            // Coupon::rejectionFor() gegen den echten Warenkorb –
+                            // dort, wo der Betrag tatsächlich feststeht.
                             ->minValue(0)
                             ->step(0.01)
                             ->suffix(' €')
                             ->default(0)
-                            ->helperText('Warenkorbwert, der mindestens erreicht sein muss.'),
+                            ->helperText('Warenkorbwert, der mindestens erreicht sein muss. 0 bedeutet: kein Mindestwert.'),
                     ])
                     ->columns(2),
 

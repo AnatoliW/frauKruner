@@ -57,17 +57,12 @@ class Shop
     }
     public function discount()
     {
-        if (session()->has('discount')) {
-            return session()->get('discount');
-        }
-        return 0;
+        // Gehalten und aktualisiert von App\Support\CouponSession.
+        return \App\Support\CouponSession::discount();
     }
     public function discount_code()
     {
-        if (session()->has('discount_code')) {
-            return session()->get('discount_code');
-        }
-        return null;
+        return \App\Support\CouponSession::code();
     }
     public function shipping_method()
     {

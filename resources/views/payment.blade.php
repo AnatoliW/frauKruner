@@ -92,7 +92,7 @@
                         purchase_units: [{
                             amount: {
                                 currency_code: 'EUR',
-                                value: "{{ Shop::round_num($order->total - $order->discount) }}"
+                                value: "{{ Shop::round_num($order->total) }}"
                             }
                         }]
                     });

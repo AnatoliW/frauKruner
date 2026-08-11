@@ -26,7 +26,9 @@
             return '-';
         };
 
-        $buyerTotal = $order->parent ? ($order->parent->total - ($order->discount > 0 ? $order->discount : 0)) : $order->total;
+        // total der Hauptbestellung kommt aus Cart::getTotal() und ist bereits
+        // um den Rabatt reduziert – hier darf er nicht erneut abgezogen werden.
+        $buyerTotal = $order->parent ? $order->parent->total : $order->total;
     @endphp
 
     <x-invoice.document-styles />

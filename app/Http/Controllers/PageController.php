@@ -15,6 +15,7 @@ use App\Postcat;
 use App\Product;
 use App\Rating;
 use App\Shipping;
+use App\Support\CouponSession;
 use App\Tag;
 use App\WearingTime;
 use Cart;
@@ -172,18 +173,37 @@ class PageController extends Controller
 
     public function cart()
     {
-        return view('cart');
+        // Der Warenkorb kann sich geändert haben, seit der Gutschein eingegeben
+        // wurde. Erst nachrechnen, dann die Ansicht bauen – sonst steht auf der
+        // Seite ein Rabatt, den die Bestellung später nicht mehr gewährt.
+        if (\Cart::isEmpty()) {
+            // Ohne Artikel ist der Gutschein gegenstandslos. Still entfernen:
+            // Eine Fehlermeldung für einen leeren Warenkorb wäre nur Lärm.
+            CouponSession::forget();
+
+            return view('cart');
+        }
+
+        $message = CouponSession::revalidate();
+
+        $view = view('cart');
+
+        return $message ? $view->withErrors($message) : $view;
     }
 
     public function checkout()
     {
         if (\Cart::isEmpty()) {
+            CouponSession::forget();
+
             return redirect('/shop');
         }
 
-        $shippings = Shipping::all();
+        $message = CouponSession::revalidate();
 
-        return view('checkout', compact('shippings'));
+        $view = view('checkout', ['shippings' => Shipping::all()]);
+
+        return $message ? $view->withErrors($message) : $view;
     }
 
     public function thankyou()

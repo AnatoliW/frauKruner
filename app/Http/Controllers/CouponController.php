@@ -1,43 +1,44 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Carbon;
-use Illuminate\Http\Request;
+
 use App\Coupon;
+use App\Support\CouponMessages;
+use App\Support\CouponSession;
 use Cart;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Http\Request;
 
 class CouponController extends Controller
 {
-    public function add(request $request){
-		$coupon = Coupon::where('code',$request->coupon_code)->first();
-		if(!$coupon){
+    public function add(Request $request)
+    {
+        $request->validate([
+            'coupon_code' => 'required|string|max:50',
+        ]);
 
-			return redirect()->back()->withErrors("Falscher Gutscheincode");
-		}
-		if(Carbon::create($coupon->expire_at) < now()){
-			return redirect()->back()->withErrors("Gutschein ist abgelaufen");
-			// session()->flash('errors', collect(['Gutschein ist abgelaufen']));
-			// return back();
-		}
-		if($coupon->limit <= $coupon->used){
-			return redirect()->back()->withErrors("Gutschein ist abgelaufen");
+        $coupon = Coupon::query()->code($request->coupon_code)->first();
 
-		}
-		if(Cart::getSubTotal() < $coupon->minimum_cart){
-			return redirect()->back()->withErrors("Mindesteinkaufswert erforderlich, um diesen Gutschein zu verwenden ".$coupon->minimum_cart);
-			// session()->flash('errors', collect(['Mindesteinkaufswert erforderlich, um diesen Gutschein zu verwenden '.$coupon->minimum_cart]));
-			// return back();
-		}
-		Session::put('discount', $coupon->discount);
-		Session::put('discount_code', $coupon->code);
-		$coupon->increment('used');
+        if (! $coupon) {
+            return redirect()->back()->withErrors(CouponMessages::unknownCode());
+        }
 
-		return back()->with('success', 'Gutschein wurde erfolgreich angewendet');
-	}
-	public function destroy(){
-		session()->forget('discount');
-		session()->forget('discount_code');
-		return back()->with('success', 'Gutschein erfolgreich entfernt');
-	}
+        $subtotal = (float) Cart::getSubTotal();
+
+        if ($reason = $coupon->rejectionFor($subtotal)) {
+            return redirect()->back()->withErrors(CouponMessages::forRejection($coupon, $reason));
+        }
+
+        // Die Einlösung wird erst beim Abschluss der Bestellung gebucht,
+        // damit Anwenden/Entfernen im Warenkorb das Limit nicht aufbraucht.
+        CouponSession::apply($coupon, $subtotal);
+
+        return back()->with('success', 'Gutschein wurde erfolgreich angewendet');
+    }
+
+    public function destroy()
+    {
+        CouponSession::forget();
+
+        return back()->with('success', 'Gutschein erfolgreich entfernt');
+    }
 }

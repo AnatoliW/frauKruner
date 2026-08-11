@@ -14,6 +14,7 @@ use App\Product;
 use App\Services\Payouts;
 use App\Services\ProductStock;
 use App\Services\Turnstile;
+use App\Support\CouponSession;
 use Error;
 use Exception;
 use Illuminate\Http\Request;
@@ -91,12 +92,174 @@ class CheckoutController extends Controller
         // return redirect('thankyou')->with('thank', 'Vielen Dank! Ihre Zahlung wurde erfolgreich akzeptiert!');
     }
 
+    /**
+     * Prüft den im Warenkorb hinterlegten Gutschein erneut (Ablauf, Limit,
+     * Mindestbestellwert), bevor die Bestellung angelegt wird. Passt er nicht
+     * mehr, bricht der Checkout mit einer Meldung ab: Der Kunde hat im
+     * Warenkorb einen Gesamtbetrag gesehen, und der darf sich nicht
+     * stillschweigend erhöhen.
+     *
+     * Gebucht wird die Einlösung erst beim Abschluss der Bestellung, siehe
+     * processPayment().
+     */
+    private function verifyCouponOrFail()
+    {
+        // Dieselbe Prüfung wie beim Aufruf von Warenkorb und Kasse – hier aber
+        // als harter Abbruch statt als Hinweis, weil ab dieser Stelle Beträge
+        // festgeschrieben werden.
+        if ($message = CouponSession::revalidate()) {
+            throw ValidationException::withMessages([
+                'discount_code' => [$message],
+            ]);
+        }
+    }
+
+    /**
+     * Zielseite nach der Bestätigung. Auch ein zweiter Aufruf von
+     * processPayment() landet hier – ohne erneute Mails, aber mit derselben
+     * Danke-Seite, damit ein doppeltes Absenden für die Kundin unauffällig
+     * bleibt.
+     */
+    private function confirmationRedirect(Order $order)
+    {
+        if ($order->payment_gateway == 'pre_payment') {
+            return redirect()->route('pre.thankyou', $order)->with('thank', 'Vielen Dank! Ihre Zahlung wurde erfolgreich akzeptiert!');
+        }
+
+        return redirect('thankyou')->with('thank', 'Vielen Dank! Ihre Zahlung wurde erfolgreich akzeptiert!');
+    }
+
+    /**
+     * Wert einer Warenkorbposition: Stückpreis mal Menge.
+     *
+     * Steht bewusst als eine Funktion da, weil sich Zwischensumme,
+     * Positionsbetrag der Unterbestellung und die Gewichtung der
+     * Rabattaufteilung sonst auseinanderentwickeln – genau daran ist die
+     * Aufteilung vorher gescheitert.
+     */
+    private function lineTotal($item)
+    {
+        return $item->price * $item->quantity;
+    }
+
+    /**
+     * Zieht einen Stückwert aus den Warenkorb-Attributen auf die Menge hoch.
+     *
+     * CartController::add() rechnet tax, commission und vendor_total pro Stück
+     * aus. Alles, was in einer Bestellung landet, ist dagegen ein Positionswert.
+     * Solange Cart::add() fest mit Menge 1 arbeitet, ändert das nichts – aber es
+     * hält Haupt- und Unterbestellung an derselben Definition fest.
+     */
+    private function lineAttribute($item, string $key)
+    {
+        return ($item->attributes[$key] ?? 0) * $item->quantity;
+    }
+
+    /**
+     * Verteilt den Gutscheinbetrag anteilig auf die Positionen.
+     *
+     * Ohne die Aufteilung trägt jede Unterbestellung den vollen Rabatt, und
+     * Rechnung und Käuferübersicht ziehen ihn pro Position erneut ab. Die
+     * Summe der Anteile entspricht exakt dem Rabatt der Hauptbestellung: Es
+     * wird auf ganze Cent abgerundet und der Rest nach der Größe des
+     * Rundungsverlusts verteilt.
+     *
+     * @return array<int|string, float> Anteil je Warenkorb-Position
+     */
+    private function splitDiscount($items, $discount)
+    {
+        $shares = [];
+
+        foreach ($items as $key => $item) {
+            $shares[$key] = 0.0;
+        }
+
+        $base = $items->sum(fn ($item) => $this->lineTotal($item));
+
+        if ($discount <= 0 || $base <= 0) {
+            return $shares;
+        }
+
+        $totalCents = (int) round($discount * 100);
+        $remainders = [];
+        $assigned = 0;
+
+        foreach ($items as $key => $item) {
+            $exact = $totalCents * $this->lineTotal($item) / $base;
+            $cents = (int) floor($exact);
+
+            $shares[$key] = $cents;
+            $remainders[$key] = $exact - $cents;
+            $assigned += $cents;
+        }
+
+        arsort($remainders);
+
+        foreach (array_keys($remainders) as $key) {
+            if ($assigned >= $totalCents) {
+                break;
+            }
+
+            $shares[$key]++;
+            $assigned++;
+        }
+
+        return array_map(fn ($cents) => (float) ($cents / 100), $shares);
+    }
+
     private function processOrder($request, $payment_id = null)
     {
-        $shipping = \Cart::getContent()->sum(function ($item) {
-            return $item->model->shipping_cost;
-        });
+        $this->verifyCouponOrFail();
 
+        // Einmal einlesen: getContent() lädt bei jedem Aufruf die Produkte neu,
+        // und die Rabattaufteilung muss dieselben Positionen sehen wie die
+        // Schleife weiter unten. Aus dem gleichen Grund werden Zwischen- und
+        // Gesamtsumme hier gerechnet statt über \Cart::getSubTotal() bzw.
+        // \Cart::getTotal() – die würden den Warenkorb erneut aus der Datenbank
+        // laden und könnten dabei einen anderen Stand sehen.
+        $items = \Cart::getContent();
+
+        $subtotal = (float) $items->sum(fn ($item) => $this->lineTotal($item));
+        $discount = CouponSession::discount();
+
+        $figures = [
+            'subtotal' => $subtotal,
+            // Identisch zu \Cart::getTotal(): Der Rabatt ist im Gesamtbetrag
+            // der Hauptbestellung bereits enthalten.
+            'total' => max(0, $subtotal - $discount),
+            'discount' => $discount,
+            'discount_code' => CouponSession::code(),
+            'discount_shares' => $this->splitDiscount($items, $discount),
+            // Versand bewusst je Position und nicht je Stück: Mehrere Exemplare
+            // desselben Artikels gehen in einem Paket raus.
+            'shipping' => $items->sum(fn ($item) => $item->model->shipping_cost),
+            'vendor_total' => $items->sum(fn ($item) => $this->lineAttribute($item, 'vendor_total')),
+            'tax' => $items->sum(fn ($item) => $this->lineAttribute($item, 'tax')),
+            'commission' => $items->sum(fn ($item) => $this->lineAttribute($item, 'commission')),
+        ];
+
+        // Haupt- und Unterbestellungen ergeben nur gemeinsam eine gültige
+        // Bestellung. Bricht eine der Einfügungen ab, darf kein halber
+        // Bestand zurückbleiben, auf den Order::redeemCoupon() später einen
+        // Gutschein bucht.
+        $parent_order = DB::transaction(
+            fn () => $this->createOrders($request, $items, $figures, $payment_id)
+        );
+
+        \Cart::clear();
+        CouponSession::forget();
+
+        return $parent_order;
+    }
+
+    /**
+     * Legt die Hauptbestellung und je eine Unterbestellung pro Warenkorbposition
+     * an. Läuft immer innerhalb der Transaktion aus processOrder().
+     *
+     * @param  array  $figures  vorberechnete Beträge aus processOrder()
+     */
+    private function createOrders($request, $items, array $figures, $payment_id = null)
+    {
         $parent_order = Order::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -108,23 +271,23 @@ class CheckoutController extends Controller
             'federal_state' => $request->federal_state,
             'po_box' => $request->po_box,
             'email' => $request->email,
-            'total' => \Cart::getTotal(),
-            'vendor_total' => \Cart::getContent()->pluck('attributes')->sum('vendor_total'),
+            'total' => $figures['total'],
+            'vendor_total' => $figures['vendor_total'],
 
             'user_id' => auth()->user() ? auth()->user()->id : null,
 
-            'shipping_cost' => $shipping,
+            'shipping_cost' => $figures['shipping'],
             'message' => $request->message,
-            'tax' => \Cart::getContent()->pluck('attributes')->sum('tax'),
-            'commission' => \Cart::getContent()->pluck('attributes')->sum('commission'),
-            'subtotal' => \Cart::getSubTotal(),
+            'tax' => $figures['tax'],
+            'commission' => $figures['commission'],
+            'subtotal' => $figures['subtotal'],
             'status' => 0,
             'payment_gateway' => $request->payment_type,
             'payment_id' => $payment_id,
-            'discount_code' => session()->get('discount_code'),
-            'discount' => session()->get('discount'),
+            'discount_code' => $figures['discount_code'],
+            'discount' => $figures['discount'],
         ]);
-        foreach (\Cart::getContent() as $item) {
+        foreach ($items as $itemKey => $item) {
             $seller_info = $this->sellerInfo($item);
 
             if (isset($item->attributes['Tragedauer'])) {
@@ -154,8 +317,8 @@ class CheckoutController extends Controller
                 'federal_state' => $request->federal_state,
                 'po_box' => $request->po_box,
                 'email' => $request->email,
-                'total' => $item->price,
-                'vendor_total' => $item->attributes['vendor_total'],
+                'total' => $this->lineTotal($item),
+                'vendor_total' => $this->lineAttribute($item, 'vendor_total'),
                 'wearing_time' => $Tragedauer,
                 'finishings' => $veredelungen,
                 'addition' => $Zusatzoptionen,
@@ -164,14 +327,18 @@ class CheckoutController extends Controller
                 'product_id' => $item->model->id,
                 'shipping_cost' => $item->model->shipping_cost,
                 'message' => $request->message,
-                'tax' => $item->attributes['tax'],
-                'commission' => $item->attributes['commission'],
-                'subtotal' => $item->model->price,
+                'tax' => $this->lineAttribute($item, 'tax'),
+                'commission' => $this->lineAttribute($item, 'commission'),
+                'subtotal' => $item->model->price * $item->quantity,
                 'status' => 0,
                 'payment_gateway' => $request->payment_type,
                 'payment_id' => $payment_id,
-                'discount_code' => session()->get('discount_code'),
-                'discount' => session()->get('discount'),
+                'discount_code' => $figures['discount_code'],
+                // Anteiliger Rabatt: 'total' ist hier der Bruttopreis der
+                // Position, Rechnung und Käuferübersicht rechnen total - discount.
+                // Beide Werte sind mengenbezogen, damit die Rechnung auch bei
+                // einer Menge über 1 aufgeht.
+                'discount' => $figures['discount_shares'][$itemKey] ?? 0,
                 'seller_info' => $seller_info,
                 'product_name' => $item->model->name,
             ]);
@@ -179,12 +346,6 @@ class CheckoutController extends Controller
             $this->logs($order);
         }
         $this->logs($parent_order);
-
-        // DB::commit();
-
-        \Cart::clear();
-        session()->forget('discount');
-        session()->forget('discount_code');
 
         return $parent_order;
     }
@@ -242,7 +403,6 @@ class CheckoutController extends Controller
                 $order->payment_id = $request->payment_id;
                 $order->payment_gateway = 'paypal';
                 $order->save();
-                $this->childrenOrder($order, 'paypal');
             } else {
                 return redirect()->route('payment', $order)->withErrors('Anscheinend haben wir ein technisches Problem. Bitte versuchen Sie es später erneut');
             }
@@ -255,19 +415,37 @@ class CheckoutController extends Controller
             $order->payment_gateway = 'stripe';
             $order->save();
             // dd($order->payment_gateway);
-            $this->childrenOrder($order, 'stripe');
         } else {
             $order->payment_gateway = 'pre_payment';
             $order->save();
-            $this->childrenOrder($order, 'pre_payment');
         }
+
+        // Ab hier ist die Zahlung geprüft und die Bestellung verbindlich. Alles
+        // Weitere darf pro Bestellung genau einmal passieren: Für Stripe und
+        // PayPal fängt `payment_id|unique` einen zweiten Durchlauf ab, bei
+        // Vorkasse wird nichts validiert – ein erneut abgeschicktes Formular
+        // würde Kundin und Verkäufer dieselben Mails noch einmal schicken.
+        //
+        // Der Anspruch wird bewusst erst hier gestellt und nicht am Anfang:
+        // Eine abgelehnte Karte muss wiederholbar bleiben, sonst wäre die
+        // Bestellung nach dem ersten Fehlversuch dauerhaft blockiert.
+        if (! $order->claimConfirmation()) {
+            return $this->confirmationRedirect($order);
+        }
+
+        $this->childrenOrder($order, $order->payment_gateway);
+
+        // Der Gutschein ist mit dem Abschluss der Bestellung aufgebraucht – für
+        // Vorkasse genauso wie für Stripe und PayPal. Maßgeblich ist die
+        // verbindliche Bestellung, nicht der Zahlungseingang: Eine Vorkasse-
+        // Bestellung, die nie bezahlt wird, hat den Gutschein trotzdem genutzt.
+        $order->redeemCoupon();
 
         if ($order->payment_gateway == 'pre_payment') {
             Mail::to($order->email)->send(new UserPrepaymentOrder($order));
-            return redirect()->route('pre.thankyou', $order)->with('thank', 'Vielen Dank! Ihre Zahlung wurde erfolgreich akzeptiert!');
-        } else {
-            return redirect('thankyou')->with('thank', 'Vielen Dank! Ihre Zahlung wurde erfolgreich akzeptiert!');
         }
+
+        return $this->confirmationRedirect($order);
         // } catch (Exception $e) {
         //     return back()->withErrors('Anscheinend haben wir ein technisches Problem. Bitte versuchen Sie es später erneut');
         // } catch (Error $e) {
@@ -306,7 +484,8 @@ class CheckoutController extends Controller
     {
         $stripe = setting('site.secret_key');
 
-        $amount = doubleval($order->total - $order->discount);
+        // $order->total kommt aus \Cart::getTotal() und enthält den Rabatt bereits.
+        $amount = doubleval($order->total);
         $amount = \Shop::round_num($amount);
         try {
             \Stripe\Stripe::setApiKey($stripe);

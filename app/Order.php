@@ -6,6 +6,7 @@ use App\Mail\UserOrderEmail;
 use App\Mail\VendorOrderEmail;
 use App\Models\Orderimage;
 use App\Models\Traits\HasMeta;
+use App\Coupon;
 use App\Services\ProductStock;
 use Illuminate\Database\Eloquent\Model;
 use App\Product;
@@ -28,6 +29,8 @@ class Order extends Model
     {
         return [
             'shipping_date' => 'datetime',
+            'coupon_redeemed_at' => 'datetime',
+            'confirmed_at' => 'datetime',
         ];
     }
 
@@ -176,6 +179,10 @@ class Order extends Model
             'status' => 1,
         ]);
 
+        // Der Gutschein wird hier bewusst nicht gebucht: Das passiert bereits
+        // beim Abschluss der Bestellung, siehe CheckoutController::processPayment().
+        // Ein Aufruf an dieser Stelle würde eine Vorkasse-Bestellung, die noch
+        // unter der alten Regel angelegt wurde, ein zweites Mal zählen.
         ProductStock::bookSale($this);
 
         // Der Käufer bekommt jetzt dieselbe Bestellbestätigung wie bei PayPal/Stripe –
@@ -191,6 +198,76 @@ class Order extends Model
         return true;
     }
 
+
+    /**
+     * Die Bestellung, an der der Gutschein hängt.
+     *
+     * Der volle Rabatt steht auf der Hauptbestellung; Unterbestellungen tragen
+     * nur ihren Anteil. Gebucht werden darf deshalb ausschließlich oben, sonst
+     * zählt jede Position einzeln als Einlösung.
+     */
+    public function couponOrder(): Order
+    {
+        return $this->parent ?: $this;
+    }
+
+    /**
+     * Bucht die Einlösung des Gutscheins dieser Bestellung – genau einmal.
+     *
+     * Aufgerufen wird das beim Abschluss der Bestellung, also sobald die Kundin
+     * die Zahlungsart bestätigt hat. Nicht erst beim Zahlungseingang: Ein
+     * Gutschein ist mit der verbindlichen Bestellung genutzt, auch wenn eine
+     * Vorkasse-Rechnung am Ende offen bleibt.
+     *
+     * coupon_redeemed_at wird atomar gesetzt: Nur der Aufruf, der die Spalte
+     * von NULL auf jetzt dreht, bucht auch den Zähler hoch. Damit bleibt es bei
+     * einer Einlösung, egal wie oft die Methode aufgerufen wird (mehrere
+     * Unterbestellungen, doppeltes Absenden, Wiederholung nach Abbruch).
+     */
+    public function redeemCoupon(): void
+    {
+        if (! $this->discount_code || $this->discount <= 0) {
+            return;
+        }
+
+        $claimed = static::query()
+            ->whereKey($this->getKey())
+            ->whereNull('coupon_redeemed_at')
+            ->update(['coupon_redeemed_at' => now()]);
+
+        if (! $claimed) {
+            return;
+        }
+
+        $coupon = Coupon::query()->code($this->discount_code)->first();
+
+        if (! $coupon || ! $coupon->redeem()) {
+            // Das Limit wurde zwischen Bestellung und Zahlung ausgeschöpft. Die
+            // Bestellung bleibt zum angezeigten Preis bestehen – nachträglich
+            // teurer machen ist keine Option. Nur protokollieren.
+            logger()->warning('Gutschein konnte nach der Zahlung nicht gebucht werden', [
+                'order_id' => $this->getKey(),
+                'discount_code' => $this->discount_code,
+            ]);
+        }
+    }
+
+    /**
+     * Beansprucht die einmalige Bestätigung dieser Bestellung.
+     *
+     * Gibt nur beim ersten Aufruf true zurück. Alles, was genau einmal pro
+     * Bestellung passieren darf – Unterbestellungen fortschreiben, Mails
+     * verschicken, Gutschein buchen – gehört hinter diese Prüfung.
+     */
+    public function claimConfirmation(): bool
+    {
+        $claimed = static::query()
+            ->whereKey($this->getKey())
+            ->whereNull('confirmed_at')
+            ->update(['confirmed_at' => now()]);
+
+        return (bool) $claimed;
+    }
 
     public function scopeChildren($query)
     {

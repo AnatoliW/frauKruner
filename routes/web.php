@@ -125,7 +125,7 @@ Route::middleware(['auth', 'role:user'])
 
 //cart routes
 Route::post('/add-cart', [CartController::class, 'add'])->name('cart.store');
-Route::post('/add-update', [CartController::class, 'update'])->name('cart.update');
+// cart.update entfernt – siehe Kommentar in CartController.
 Route::get('/cart-destroy/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
 
 //checkout routes
@@ -143,8 +143,12 @@ Route::post('/shipping', [ShopController::class, 'shipping'])->name('shipping');
 
 
 //coupon routes
-Route::post('/add-coupon', [CouponController::class, 'add'])->name('coupon');
-Route::get('/delete-coupon', [CouponController::class, 'destroy'])->name('coupon.destroy');
+// throttle: Gutscheincodes sind kurz und damit durchprobierbar. 10 Versuche pro
+// Minute reichen für jede echte Eingabe und machen das Raten unattraktiv.
+Route::post('/add-coupon', [CouponController::class, 'add'])->name('coupon')->middleware('throttle:10,1');
+// POST statt GET: Das Entfernen ändert den Warenkorb. Als Link konnte jeder
+// Prefetch oder Crawler den Gutschein der Kundin löschen.
+Route::post('/delete-coupon', [CouponController::class, 'destroy'])->name('coupon.destroy');
 
 //rating routes
 Route::post('rating/{user}/{order?}', [PageController::class, 'rating'])->name('rating')->middleware('auth');

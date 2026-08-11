@@ -68,16 +68,12 @@ class CartController extends Controller
 
 
 
-	public function update(Request $request)
-	{
-		Cart::update($request->product_id, array(
-			'quantity' => array(
-				'relative' => false,
-				'value' => $request->quantity
-			),
-		));
-		return back()->with('success_msg', 'Produkt wurde erfolgreich aktualisiert!');
-	}
+	// update() und die Route cart.update sind entfernt. Es gab keine
+	// Oberfläche dafür, der Endpunkt war aber offen erreichbar – und eine Menge
+	// über 1 hätte die Bestellung falsch abgebildet: vendor_total, tax und
+	// commission einer Unterbestellung sind Stückwerte, kein Positionswert.
+	// Solange Cart::add() fest mit Menge 1 arbeitet, kann das nicht auseinanderlaufen.
+
 	public function destroy($id)
 	{
 		Cart::remove($id);
