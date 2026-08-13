@@ -147,6 +147,13 @@ class ProfileController extends Controller
 
     public function verification(Request $request)
     {
+        // Diese Route wird von zwei Formularen genutzt: der Verkaeuferinnen-Registrierung
+        // (reg_step_second) und der Kaeufer-Verifizierung (buyer/pages/verify). Beide
+        // Formulare schicken unterschiedliche Felder, deshalb haengen die Pflichtfelder
+        // an der Rolle und nicht nur am update-Flag.
+        $isSeller = (int) auth()->user()->role_id === 3;
+        $isUpdate = $request->update == '1';
+
         $rules = [
             'street' => 'required|string',
             'house_no' => 'required|string',
@@ -155,18 +162,26 @@ class ProfileController extends Controller
             'date_of_birth' => 'required|date',
             'iban' => 'nullable|string',
             'bic' => 'nullable|string',
+            'person_id_shot_img' => 'nullable|image',
+            'id_card_front_img' => 'nullable|image',
+            'id_card_back_img' => 'nullable|image',
         ];
 
-        if ($request->update == '1') {
-            $rules['person_id_shot_img'] = 'nullable|image';
-            $rules['id_card_front_img'] = 'nullable|image';
-            $rules['id_card_back_img'] = 'nullable|image';
-        } else {
+        if ($isSeller && ! $isUpdate) {
+            // Nur Verkaeuferinnen bekommen Auszahlungen, nur sie brauchen Bankdaten.
+            $rules['iban'] = 'required|string';
+            $rules['bic'] = 'required|string';
             $rules['person_id_shot_img'] = 'required|image';
             $rules['id_card_front_img'] = 'required|image';
             $rules['id_card_back_img'] = 'required|image';
-            $rules['iban'] = 'required|string';
-            $rules['bic'] = 'required|string';
+        }
+
+        if (! $isSeller && ! $isUpdate) {
+            // Das Kaeufer-Formular zeigt nur zwei Uploads: id_card_back_img (Vorderseite)
+            // und person_id_shot_img (Rueckseite). id_card_front_img ist dort ausgeblendet
+            // und darf deshalb nicht erzwungen werden.
+            $rules['person_id_shot_img'] = 'required|image';
+            $rules['id_card_back_img'] = 'required|image';
         }
 
         $request->validate($rules);
@@ -213,12 +228,9 @@ class ProfileController extends Controller
                 }
             }
 
-            if ($request->update != '1') {
-                Method::updateOrCreate(['user_id' => auth()->id()], [
-                    'iban' => $request->iban,
-                    'bic' => $request->bic,
-                ]);
-            } elseif (filled($request->iban) && filled($request->bic)) {
+            // Bankdaten nur schreiben, wenn tatsaechlich welche geschickt wurden. Sonst
+            // legt die Kaeufer-Verifizierung einen leeren Zahlungsdatensatz an.
+            if (filled($request->iban) && filled($request->bic)) {
                 Method::updateOrCreate(['user_id' => auth()->id()], [
                     'iban' => $request->iban,
                     'bic' => $request->bic,

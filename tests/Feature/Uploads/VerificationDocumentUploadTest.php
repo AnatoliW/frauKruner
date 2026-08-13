@@ -147,8 +147,8 @@ it('lässt beim Aktualisieren nicht angefasste Ausweisbilder stehen', function (
 // Validierung
 // ---------------------------------------------------------------------------
 
-it('verlangt beim ersten Antrag alle drei Bilder', function () {
-    $user = uploads()->buyer();
+it('verlangt von Verkäuferinnen beim ersten Antrag alle drei Bilder', function () {
+    $user = uploads()->seller();
 
     $this->actingAs($user)
         ->post(route('verification.update'), verificationPayload())
@@ -159,6 +159,49 @@ it('verlangt beim ersten Antrag alle drei Bilder', function () {
         ]);
 
     expect(Verification::count())->toBe(0);
+});
+
+it('verlangt von Käufern nur die beiden Ausweisseiten aus dem Formular', function () {
+    $user = uploads()->buyer();
+
+    $this->actingAs($user)
+        ->post(route('verification.update'), verificationPayload())
+        ->assertSessionHasErrors([
+            'person_id_shot_img',
+            'id_card_back_img',
+        ])
+        ->assertSessionDoesntHaveErrors('id_card_front_img');
+
+    expect(Verification::count())->toBe(0);
+});
+
+it('lässt Käufer ohne IBAN und BIC verifizieren', function () {
+    $user = uploads()->buyer();
+
+    $this->actingAs($user)
+        ->post(route('verification.update'), [
+            'street' => 'Teststraße',
+            'house_no' => '12a',
+            'city' => 'Berlin',
+            'zip' => '10115',
+            'date_of_birth' => '1990-05-17',
+            'person_id_shot_img' => uploads()->image('selfie.jpg'),
+            'id_card_back_img' => uploads()->image('ausweis-hinten.jpg'),
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect(Verification::where('user_id', $user->id)->exists())->toBeTrue();
+});
+
+it('verlangt von Verkäuferinnen beim ersten Antrag IBAN und BIC', function () {
+    $user = uploads()->seller();
+
+    $this->actingAs($user)
+        ->post(route('verification.update'), array_merge(
+            verificationPayload(verificationDocuments()),
+            ['iban' => '', 'bic' => '']
+        ))
+        ->assertSessionHasErrors(['iban', 'bic']);
 });
 
 it('lehnt Ausweis-Dateien ab, die kein Bild sind', function () {
