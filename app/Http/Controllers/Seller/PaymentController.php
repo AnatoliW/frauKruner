@@ -16,43 +16,57 @@ class PaymentController extends Controller
 {
     public function payment(Payment $payment)
     {
+        // Die Zahlungsnummern sind fortlaufend, die Route kennt nur `auth` und
+        // `role:seller`. Ohne diese Prüfung sähe jede angemeldete Verkäuferin
+        // die Hervorhebungen aller anderen – und bekäme über den signierten
+        // Bezahllink zusätzlich deren Name und E-Mail-Adresse.
+        abort_unless(
+            $payment->payable?->user_id && (int) $payment->payable->user_id === (int) auth()->id(),
+            404
+        );
+
         return view('auth.seller.pages.payment', compact('payment'));
     }
-    public function paymentProcess(Payment $payment)
-    {
-        $res = (new PaymentProcess)->process($payment);
-     
-        return redirect()->away($res);
-    }
-
-    public function success(Request $request, Payment $payment)
-    {
-       
-        $request->validate([
-            'paymentId' => 'required'
-        ]);
-        try {
-            $response = (new PaymentProcess)->paypal($request->paymentId, $payment);
-            // return $response;
-
-            // dd($response);
-            $payment->status = 'PAID';
-            $payment->payment_trnx_id = $request->paymentId;
-            $payment->payment_method = 'paypal';
-            $payment->save();
-
-            $payment->payable->process();
-            return redirect()->route('seller.products')->with('success', 'boosted erfolgreich hochgeladen');
-        } catch (Exception $e) {
-            return $e->getMessage();
-            Log::info($e->getMessage());
-            return redirect()->back()->withErrors($e->getMessage());
-        } catch (Error $e) {
-            // return $e->getMessage();
-            Log::info($e->getMessage());
-            return redirect()->back()->withErrors($e->getMessage());
-        }
-    }
+    // PayPal ist für Hervorhebungen abgeschaltet, weil die Anbindung derzeit
+    // nicht funktioniert. Bezahlt wird ausschließlich per Online-Überweisung,
+    // siehe App\Http\Controllers\MicropaymentController::redirectBoost().
+    //
+    // Zum Reaktivieren zusätzlich einkommentieren:
+    // - routes/seller.php: payment.process und payment.success
+    // - resources/views/auth/seller/pages/payment.blade.php: der PayPal-Button
+    //
+    // public function paymentProcess(Payment $payment)
+    // {
+    //     $res = (new PaymentProcess)->process($payment);
+    //
+    //     return redirect()->away($res);
+    // }
+    //
+    // public function success(Request $request, Payment $payment)
+    // {
+    //     $request->validate([
+    //         'paymentId' => 'required'
+    //     ]);
+    //     try {
+    //         $response = (new PaymentProcess)->paypal($request->paymentId, $payment);
+    //
+    //         $payment->status = 'PAID';
+    //         $payment->payment_trnx_id = $request->paymentId;
+    //         $payment->payment_method = 'paypal';
+    //         $payment->save();
+    //
+    //         $payment->payable->process();
+    //         return redirect()->route('seller.products')->with('success', 'boosted erfolgreich hochgeladen');
+    //     } catch (Exception $e) {
+    //         return $e->getMessage();
+    //         Log::info($e->getMessage());
+    //         return redirect()->back()->withErrors($e->getMessage());
+    //     } catch (Error $e) {
+    //         // return $e->getMessage();
+    //         Log::info($e->getMessage());
+    //         return redirect()->back()->withErrors($e->getMessage());
+    //     }
+    // }
 
     // private function paypalPayment($request)
     // {

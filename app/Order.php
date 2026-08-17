@@ -162,17 +162,37 @@ class Order extends Model
      *
      * Gibt false zurück, wenn die Bestellung bereits als bezahlt markiert war,
      * damit Bestand sowie Käufer- und Verkäufer-Mail nicht doppelt ausgelöst werden.
+     *
+     * Das Setzen ist bewusst ein bedingtes UPDATE und keine Prüfung mit
+     * anschließendem Schreiben: Zwei gleichzeitige Aufrufe – zwei Zustellungen
+     * derselben Micropayment-Benachrichtigung, zwei Klicks auf „als bezahlt
+     * markieren“ im Admin – könnten sonst beide die Prüfung passieren, bevor
+     * einer schreibt. Folge wären doppelte Mails und eine doppelt abgebuchte
+     * Menge. So gewinnt genau einer, und nur der arbeitet weiter.
+     *
+     * Ein leerer payment_status zählt als unbezahlt; die Spalte ist in der
+     * Datenbank nullable.
      */
     public function markAsPaid(): bool
     {
-        if ((int) $this->payment_status === 1) {
+        $claimed = static::query()
+            ->whereKey($this->getKey())
+            ->where(function ($query) {
+                $query->where('payment_status', '!=', 1)
+                    ->orWhereNull('payment_status');
+            })
+            ->update([
+                'payment_status' => 1,
+                'status' => 1,
+            ]);
+
+        if (! $claimed) {
             return false;
         }
 
-        $this->update([
-            'payment_status' => 1,
-            'status' => 1,
-        ]);
+        // Der Datensatz wurde an der Instanz vorbei geschrieben, deshalb hier
+        // nachziehen – nachfolgender Code und Aufrufer lesen die Bestellung.
+        $this->refresh();
 
         $this->parent?->update([
             'payment_status' => 1,

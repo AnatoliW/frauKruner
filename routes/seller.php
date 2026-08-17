@@ -35,8 +35,11 @@ Route::get('/product-active/{product}', [ProductsController::class, 'productActi
 Route::post('boots/store/{product?}', [BoostController::class, 'boostStore'])->name('boost.store');
 
 Route::get('/payment/{payment}', [PaymentController::class, 'payment'])->name('payment');
-Route::get('payment/process/{payment}', [PaymentController::class, 'paymentProcess'])->name('payment.process');
-Route::get('payment/success/{payment}', [PaymentController::class, 'success'])->name('payment.success');
+// PayPal ist abgeschaltet, weil die Anbindung derzeit nicht funktioniert.
+// Hervorhebungen werden ausschließlich per Online-Überweisung bezahlt, siehe
+// payment.micropayment.boost in routes/web.php.
+// Route::get('payment/process/{payment}', [PaymentController::class, 'paymentProcess'])->name('payment.process');
+// Route::get('payment/success/{payment}', [PaymentController::class, 'success'])->name('payment.success');
 
 Route::get('charges', [PagesController::class, 'charges'])->name('charges');
 Route::get('charges/invoice/{boost}', [PagesController::class, 'chargeInvoice'])->name('charges.invoice');

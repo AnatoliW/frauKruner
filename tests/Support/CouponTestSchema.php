@@ -49,7 +49,10 @@ class CouponTestSchema
             $table->string('discount_code', 50)->nullable();
             $table->timestamp('coupon_redeemed_at')->nullable();
             $table->string('payment_gateway', 50)->nullable();
-            $table->integer('payment_status')->default(0);
+            // Wie in der echten Datenbank nullable: dort ist die Spalte
+            // `int(11) NULL DEFAULT '0'`. Ein strengeres Testschema wuerde
+            // verdecken, dass markAsPaid() den leeren Wert behandeln muss.
+            $table->integer('payment_status')->nullable()->default(0);
             $table->timestamp('confirmed_at')->nullable();
             $table->tinyInteger('status')->nullable();
             $table->timestamps();

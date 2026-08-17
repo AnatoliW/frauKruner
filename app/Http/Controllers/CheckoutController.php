@@ -10,6 +10,7 @@ use App\Mail\VendorOrderEmail;
 use App\Models\Address;
 use App\Models\Log;
 use App\Order;
+use App\Payment\MicropaymentGateway;
 use App\Product;
 use App\Services\Payouts;
 use App\Services\ProductStock;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
@@ -65,6 +67,11 @@ class CheckoutController extends Controller
 
         // try {
         $order = $this->processOrder($request);
+
+        // Hält fest, welche Bestellung dieser Besucher gerade bezahlt. Bei einer
+        // Gastbestellung ist das der einzige Nachweis, dass die Bestellung ihm
+        // gehört – siehe mayPayFor().
+        session(['checkout.order_id' => $order->id]);
 
         // return redirect('payment')->with('thank', 'Vielen Dank! Ihre Zahlung wurde erfolgreich akzeptiert!');
         return redirect()->route('payment', $order);
@@ -377,8 +384,59 @@ class CheckoutController extends Controller
         }
     }
 
+    /**
+     * Darf der Besucher, der gerade da ist, diese Bestellung bezahlen?
+     *
+     * `/payment/process` ist ohne Anmeldung erreichbar und von der
+     * CSRF-Prüfung ausgenommen – Gastbestellungen brauchen das. Die
+     * Zahlungsfenster-URL trägt aber Vorname, Nachname und E-Mail-Adresse der
+     * Bestellung, und die Bestellnummern sind fortlaufend. Ohne diese Prüfung
+     * ließen sich diese Daten über eine geratene Nummer abrufen.
+     *
+     * Zwei Wege sind erlaubt, sie decken alle Stellen ab, die auf die
+     * Bezahlseite verlinken:
+     *
+     *  - Die angemeldete Kundin ruft ihre eigene Bestellung auf (Bestellliste,
+     *    Vorkasse-Seite).
+     *  - Die Bestellung wurde in dieser Sitzung angelegt (Gastbestellung, siehe
+     *    store()).
+     */
+    private function mayPayFor(Order $order): bool
+    {
+        if ($order->user_id && (int) $order->user_id === (int) auth()->id()) {
+            return true;
+        }
+
+        return (int) session('checkout.order_id') === (int) $order->id;
+    }
+
     public function processPayment(Request $request)
     {
+        $order = Order::find($request->order_id);
+
+        // Die Online-Überweisung wird hier nicht abgeschlossen, sondern erst
+        // angestoßen: Die Kundin geht zum Zahlungsfenster von Micropayment, der
+        // Zahlungsstatus kommt danach serverseitig über die Benachrichtigung
+        // zurück. Der Zweig steht vor der Prüfung auf payment_id, weil es zu
+        // diesem Zeitpunkt noch keine Transaktion gibt.
+        if ($request->payment_type === MicropaymentGateway::GATEWAY) {
+            // Dieselbe Meldung für „gibt es nicht“ und „gehört dir nicht“: Sonst
+            // verriete die Antwort, welche Bestellnummern vergeben sind.
+            if (! $order || ! $this->mayPayFor($order)) {
+                return back()->withErrors('Die Bestellung wurde nicht gefunden.');
+            }
+
+            // Signiert, weil die Zahlungsfenster-URL Name und E-Mail-Adresse
+            // enthält und Bestellnummern fortlaufend sind. Die halbe Stunde
+            // reicht für den Weg zur Bank und verhindert, dass ein Link
+            // dauerhaft gültig bleibt.
+            return redirect()->to(URL::temporarySignedRoute(
+                'payment.micropayment.order',
+                now()->addMinutes(30),
+                ['order' => $order->id]
+            ));
+        }
+
         if ($request->payment_type !== 'pre_payment') {
             $request->validate([
                 'payment_id' => 'required|unique:orders,payment_id',
@@ -386,7 +444,6 @@ class CheckoutController extends Controller
         }
 
         // try {
-        $order = Order::find($request->order_id);
         if ($request->payment_type == 'paypal') {
             $paypal_body = $this->paypalPayment($request);
 
