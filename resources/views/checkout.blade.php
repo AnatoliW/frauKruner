@@ -327,7 +327,14 @@
                             </div>
                         </details>Mitteilung an den Shop
                     </h5>
-                    <textarea id="mitteilungAnDenVendor" name="message" style="height: 100px;">{{ old('message') }}</textarea>
+                    <textarea id="mitteilungAnDenVendor" name="message" maxlength="400"
+                        style="height: 100px;">{{ old('message') }}</textarea>
+                    <span class="small text-muted" id="mitteilungAnDenVendorCounter">0/400 Zeichen</span>
+                    @error('message')
+                        <span class="text-danger">
+                            {{ $message }}
+                        </span>
+                    @enderror
                 </div>
 
 
@@ -369,6 +376,25 @@
 
 
     </main>
+
+    <script>
+        (function() {
+            var box = document.getElementById('mitteilungAnDenVendor');
+            var counter = document.getElementById('mitteilungAnDenVendorCounter');
+            if (!box || !counter) return;
+
+            var max = parseInt(box.getAttribute('maxlength'), 10) || 400;
+
+            function update() {
+                // [...str] zaehlt wie mb_strlen in PHP, damit Zaehler und
+                // Server-Validierung (max:400) dasselbe Ergebnis liefern.
+                counter.textContent = [...box.value].length + '/' + max + ' Zeichen';
+            }
+
+            box.addEventListener('input', update);
+            update();
+        })();
+    </script>
 
     <script>
         (function() {

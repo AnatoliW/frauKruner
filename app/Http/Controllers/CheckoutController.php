@@ -40,9 +40,13 @@ class CheckoutController extends Controller
             'zip' => 'required|string',
             'federal_state' => 'required|string',
             // 'po_box' => 'required|string',
-            'message' => 'nullable|max:200',
+            'message' => 'nullable|string|max:400',
             'datenschutz' => 'required',
             // 'cf-turnstile-response' => env('CAPTCHA') == true ? 'required' : 'nullable',
+        ], [
+            // Die App laeuft auf locale 'en', die Kasse ist aber deutsch. Das
+            // Limit deckt sich mit maxlength="400" im Textarea.
+            'message.max' => 'Die Mitteilung an den Shop darf höchstens 400 Zeichen lang sein.',
         ]);
         if (env('CAPTCHA') == true) {
             $token = $request->input('cf-turnstile-response');
