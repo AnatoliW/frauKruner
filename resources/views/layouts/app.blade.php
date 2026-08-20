@@ -681,14 +681,19 @@
 
                 <div class="payment-methods">
 
-                    @foreach ($paymentMethods as $data)
+                    <!-- @foreach ($paymentMethods as $data)
                         @if (!is_object($data))
                             @continue
                         @endif
                         <img data-src="{{ media_url(data_get($data, 'logo')) }}" class="lazy"
                             alt="Bezahlmethode Logo">
-                    @endforeach
+                    @endforeach -->
                     <span>VORKASSE</span>
+                    <a class="no-before" href="https://paymentdomain.micropayment.de/payment/service/?project=projectIdentifier&param1Name=param1Value&paramXName=paramXValue" target="_blank"><img src="https://payment-resources.micropayment.de/ui/brands/set-001/sepa/39780" style="border: 0px; width: 120px; max-width: 120px;"></a>
+
+                    <a class="no-before" href="https://paymentdomain.micropayment.de/payment/service/?project=projectIdentifier&param1Name=param1Value&paramXName=paramXValue" target="_blank"><img src="https://payment-resources.micropayment.de/ui/brands/set-001/onlinebanktransfer/39780" style="border: 0px; width: 120px; max-width: 120px;"></a>
+
+                    <a class="no-before" href="https://paymentdomain.micropayment.de/payment/service/?project=projectIdentifier&param1Name=param1Value&paramXName=paramXValue" target="_blank"><img src="https://payment-resources.micropayment.de/ui/brands/set-001/prepay/39780" style="border: 0px; width: 120px; max-width: 120px;"></a>
                 </div>
 
                 <div class="text-center">
