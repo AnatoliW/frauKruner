@@ -138,20 +138,89 @@ function mcpBoostNotify(array $query): array
 
 describe('Referenz der Hervorhebung', function () {
     it('trägt ein eigenes Präfix', function () {
-        [$payment] = mcpBoost();
+        [$payment, $boost] = mcpBoost();
 
         expect((new MicropaymentBoostSubject($payment))->reference())
-            ->toBe('BP'.$payment->created_at->year.'-'.$payment->id);
+            ->toBe('FKP-'.$boost->created_at->format('Y').'-'.$boost->id);
+    });
+
+    /**
+     * Der Grund der ganzen Aenderung: Was Micropayment als Verwendungszweck
+     * bekommt und damit im Kontoauszug steht, ist dieselbe Zeichenkette wie die
+     * Rechnungsnummer auf dem Beleg. Geprueft wird gegeneinander, nicht gegen
+     * eine erwartete Konstante - so faellt auf, wenn sich eine Seite bewegt.
+     */
+    it('ist dieselbe Zeichenkette wie die Rechnungsnummer', function () {
+        [$payment, $boost] = mcpBoost();
+
+        expect((new MicropaymentBoostSubject($payment))->reference())
+            ->toBe($boost->fresh()->invoice_number);
     });
 
     // Bestellung 1 und Hervorhebung 1 dürfen sich nicht verwechseln lassen.
     it('führt zur Hervorhebung und nicht zur gleichnamigen Bestellung', function () {
         [$payment] = mcpBoost();
 
-        $subject = MicropaymentSubject::fromReference('BP'.$payment->created_at->year.'-'.$payment->id);
+        $subject = MicropaymentSubject::fromReference((new MicropaymentBoostSubject($payment))->reference());
 
         expect($subject)->toBeInstanceOf(MicropaymentBoostSubject::class)
             ->and($subject->payment->id)->toBe($payment->id);
+    });
+
+    /**
+     * Abwaertskompatibilitaet, und der wichtigste Test dieser Datei: Eine
+     * Zahlung, die vor der Umstellung ins Zahlungsfenster ging, meldet sich mit
+     * `BP...` zurueck. Loesen wir die nicht mehr auf, ist das Geld eingegangen
+     * und die Hervorhebung bleibt fuer immer gesperrt.
+     */
+    it('löst auch den früheren Verwendungszweck noch auf', function () {
+        [$payment] = mcpBoost();
+
+        $subject = MicropaymentSubject::fromReference(
+            MicropaymentBoostSubject::legacyReference($payment)
+        );
+
+        expect($subject)->toBeInstanceOf(MicropaymentBoostSubject::class)
+            ->and($subject->payment->id)->toBe($payment->id);
+    });
+
+    /**
+     * Die unauffaelligste Falle: Das Merkmal wird aus der Referenz gebildet.
+     * Eine unterwegs befindliche Zahlung traegt das Merkmal aus `BP...`, waehrend
+     * reference() inzwischen `FKP-...` liefert. Ohne die Ausnahme in
+     * tokenMatches() kaeme ihre Benachrichtigung als `Ungueltiges Merkmal`
+     * zurueck - bezahlt, aber nicht freigeschaltet.
+     */
+    it('nimmt das Merkmal aus dem früheren Verwendungszweck an', function () {
+        [$payment] = mcpBoost();
+
+        $subject = new MicropaymentBoostSubject($payment);
+        $legacyToken = substr(hash_hmac(
+            'sha256',
+            'micropayment:'.MicropaymentBoostSubject::legacyReference($payment),
+            (string) config('app.key')
+        ), 0, 32);
+
+        expect($legacyToken)->not->toBe($subject->token())
+            ->and($subject->tokenMatches($legacyToken))->toBeTrue()
+            ->and($subject->tokenMatches($subject->token()))->toBeTrue()
+            ->and($subject->tokenMatches('offensichtlich-falsch'))->toBeFalse();
+    });
+
+    /**
+     * `FKP-` faengt mit `FK` an, dem Praefix der Bestellung. Ginge es als
+     * Bestellung durch, wuerde eine Hervorhebung auf einer fremden Bestellung
+     * gebucht.
+     */
+    it('verwechselt das Präfix nicht mit dem einer Bestellung', function () {
+        [$payment, $boost] = mcpBoost();
+
+        $order = Order::create(['email' => 'x@example.com', 'total' => 59.50]);
+
+        expect(MicropaymentSubject::fromReference('FKP-'.$boost->created_at->format('Y').'-'.$boost->id))
+            ->toBeInstanceOf(MicropaymentBoostSubject::class)
+            ->and(MicropaymentSubject::fromReference('FK'.$order->created_at->year.'-'.$order->id))
+            ->toBeInstanceOf(MicropaymentOrderSubject::class);
     });
 
     it('vergibt ein anderes Merkmal als eine Bestellung mit derselben Nummer', function () {
@@ -222,7 +291,7 @@ describe('Weiterleitung zum Zahlungsfenster', function () {
 
         expect($response->headers->get('Location'))
             ->toStartWith('https://directbanking.micropayment.de/sofort/event/?')
-            ->toContain('title=BP'.$payment->created_at->year.'-'.$payment->id)
+            ->toContain('title='.(new MicropaymentBoostSubject($payment))->reference())
             ->toContain('amount=5950');
 
         // Zahlart festgehalten, Status aber weiterhin offen.

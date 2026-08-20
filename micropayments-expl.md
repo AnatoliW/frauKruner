@@ -111,7 +111,7 @@ Orders and boosts are paid the same way but live in different models. Rather tha
 duplicating the controller, both implement `MicropaymentSubject`:
 
 ```php
-abstract public function reference(): string;      // "FK2026-1234" / "BP2026-3029"
+abstract public function reference(): string;      // "FK2026-1234" / "FKP-2026-1787"
 abstract public function amountInCents(): int;
 abstract public function paytext(): string;
 abstract public function firstName(): string;
@@ -131,12 +131,43 @@ The reference prefix routes a notification back to the right model:
 ```php
 private const KINDS = [
     'FK' => MicropaymentOrderSubject::class,   // shop order
-    'BP' => MicropaymentBoostSubject::class,   // boost payment
+    'FKP' => [MicropaymentBoostSubject::class, 'findByBoostKey'],  // boost, keyed by boost
+    'BP'  => [MicropaymentBoostSubject::class, 'findByKey'],       // boost, legacy, keyed by payment
 ];
 ```
 
-`MicropaymentSubject::fromReference('BP2026-3029')` parses the prefix and the ID
+`MicropaymentSubject::fromReference('FKP-2026-1787')` parses the prefix and the ID
 and loads the record. This is why **one** notification endpoint serves both flows.
+
+### One number for the receipt and the bank statement
+
+A boost's reference is `FKP-<year>-<boost id>` — byte for byte the invoice
+number from `Boost::invoice_number`. It is what Micropayment receives as the
+payment reference, so it is what the customer reads on their bank statement.
+Two numbers for one transaction cannot be reconciled by anyone; that is why the
+format lives in one place and both sides read it.
+
+Orders already worked this way: `FK<year>-<order id>` is both the reference and
+the invoice number.
+
+**`BP<year>-<payment id>` is the earlier boost format and stays supported for
+good.** A payment that entered the payment window before the switch reports back
+with it, and a notification we cannot resolve is money received against a boost
+that never activates. Two things carry that:
+
+- `KINDS` keeps the `BP` prefix, resolving by *payment* id.
+- `MicropaymentBoostSubject::tokenMatches()` also accepts the token derived from
+  the old reference. This is the non-obvious half: the token is an HMAC over the
+  reference, so changing the reference invalidates the token of every payment
+  already in flight. Resolving the reference is not enough on its own.
+
+Both are locked down by tests that fail when either is removed.
+
+Free admin pushes have no payment and therefore no reference; their invoice
+keeps `FKP-<year>-<boost id>` derived from the boost alone. Boosts up to number
+314 carry several payments from the PayPal era, so `findByBoostKey()` picks the
+newest deliberately rather than leaving it to the database. From 315 onward it
+is one payment per boost, which is everything a notification can reach.
 
 ### Adding a third payable thing
 
@@ -244,7 +275,7 @@ Expected response:
 
 ```
 status=ok
-url=…/payment/micropayment/result/completed?ref=BP2026-3029&token=…
+url=…/payment/micropayment/result/completed?ref=FKP-2026-1787&token=…
 target=_self
 forward=1
 ```
@@ -424,7 +455,7 @@ payment.
 | `Benachrichtigungen aus dem Testmodus sind nicht erlaubt.` | `MICROPAYMENT_ALLOW_TESTMODE_NOTIFICATION=false` while testing |
 | `Das Benachrichtigungs-Testwerkzeug ist nicht freigeschaltet.` | `MICROPAYMENT_ALLOW_APICHECK=false` |
 | `Geheimfeld fehlt oder ist ungültig.` | `MICROPAYMENT_SECRET_FIELD_VALUE` differs from the control center |
-| `Unbekannte Referenz \`…\`` | `title` is not a `FK…`/`BP…` reference, or the record is gone |
+| `Unbekannte Referenz \`…\`` | `title` is not a `FK…`/`FKP-…`/`BP…` reference, or the record is gone |
 | `Ungültiges Merkmal für \`…\`` | `orderToken` mismatch — usually a changed `APP_KEY` |
 | `Betrag weicht ab` | amount or currency differs; both values are logged |
 
@@ -504,7 +535,7 @@ sees. It fails against a read-then-write implementation.
 php artisan test --filter=Micropayment
 ```
 
-134 tests, 475 assertions.
+140 tests, 486 assertions.
 
 | File | Covers |
 |---|---|

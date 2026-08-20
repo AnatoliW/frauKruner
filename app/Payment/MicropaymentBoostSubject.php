@@ -2,6 +2,7 @@
 
 namespace App\Payment;
 
+use App\Models\Boost;
 use App\Models\Payment;
 
 /**
@@ -23,9 +24,79 @@ class MicropaymentBoostSubject extends MicropaymentSubject
         return $payment ? new static($payment) : null;
     }
 
+    /**
+     * Verwendungszweck der Hervorhebung - dieselbe Zeichenkette, die als
+     * Rechnungsnummer auf dem Beleg steht (Boost::invoice_number).
+     *
+     * Sie haengt am Boost, nicht an der Zahlung: Der Beleg gehoert zur
+     * Hervorhebung, und die Kundin soll Kontoauszug und Rechnung ohne
+     * Umrechnung zusammenbringen.
+     *
+     * Laesst sich der Boost nicht ermitteln, gilt weiter das fruehere Format.
+     * Lieber ein Verwendungszweck aus der alten Welt als gar keiner - dieser
+     * wird ueber `BP` naemlich weiterhin aufgeloest.
+     */
     public function reference(): string
     {
-        return 'BP'.$this->payment->created_at->year.'-'.$this->payment->id;
+        $boost = $this->payment->payable;
+
+        if ($boost instanceof Boost && $boost->getKey() && $boost->created_at) {
+            return 'FKP-'.$boost->created_at->format('Y').'-'.$boost->getKey();
+        }
+
+        return static::legacyReference($this->payment);
+    }
+
+    /**
+     * Das Format vor der Umstellung, gebildet aus der Zahlung.
+     *
+     * Wird noch an zwei Stellen gebraucht: als Rueckfalloption oben und in
+     * tokenMatches(), damit eine Zahlung, die mit dem alten Verwendungszweck
+     * losgeschickt wurde, ihr altes Merkmal noch vorweisen darf.
+     */
+    public static function legacyReference(Payment $payment): string
+    {
+        return 'BP'.($payment->created_at?->year ?? now()->year).'-'.$payment->getKey();
+    }
+
+    /**
+     * Aufloesung ueber die Boost-Nummer, fuer Referenzen im Format `FKP-...`.
+     *
+     * Bezahlt wird weiterhin der Payment-Datensatz; die Referenz nennt nur den
+     * Boost. Boosts bis Nummer 314 tragen aus der PayPal-Zeit teils mehrere
+     * Zahlungen (ein Bezahlversuch rechnete damals jedes Mal neu ab), ab 315
+     * ist es genau eine. Fuer alles, was je eine Micropayment-Benachrichtigung
+     * bekommen kann, ist die Auswahl damit eindeutig; fuer die Altfaelle wird
+     * sie hier bewusst festgelegt statt dem Zufall der Datenbank ueberlassen.
+     */
+    public static function findByBoostKey(int $key): ?static
+    {
+        $boost = Boost::find($key);
+
+        if (! $boost) {
+            return null;
+        }
+
+        $payment = $boost->payments()->orderByDesc('id')->first();
+
+        return $payment ? new static($payment) : null;
+    }
+
+    /**
+     * Nimmt zusaetzlich das Merkmal aus dem frueheren Verwendungszweck an.
+     *
+     * Eine Zahlung, die vor der Umstellung ins Zahlungsfenster ging, traegt das
+     * Merkmal aus `BP...`. Ihre Benachrichtigung kommt erst danach. Ohne diese
+     * Ausnahme wuerde sie mit `Ungueltiges Merkmal` abgelehnt - das Geld waere
+     * eingegangen, die Hervorhebung nie freigeschaltet.
+     */
+    public function tokenMatches(?string $token): bool
+    {
+        if (parent::tokenMatches($token)) {
+            return true;
+        }
+
+        return hash_equals(static::tokenFor(static::legacyReference($this->payment)), (string) $token);
     }
 
     /**

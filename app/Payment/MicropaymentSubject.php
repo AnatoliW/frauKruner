@@ -25,8 +25,19 @@ abstract class MicropaymentSubject
      * @var array<string, class-string<MicropaymentSubject>>
      */
     private const KINDS = [
-        'FK' => MicropaymentOrderSubject::class,
-        'BP' => MicropaymentBoostSubject::class,
+        // Bestellung im Shop, Schluessel ist die Bestellnummer.
+        'FK' => [MicropaymentOrderSubject::class, 'findByKey'],
+
+        // Hervorhebung, Schluessel ist die Boost-Nummer. Dieses Format traegt
+        // dieselbe Zeichenkette wie die Rechnungsnummer (Boost::invoice_number),
+        // damit Beleg und Kontoauszug zusammenpassen.
+        'FKP' => [MicropaymentBoostSubject::class, 'findByBoostKey'],
+
+        // Frueheres Format der Hervorhebung, Schluessel ist die Zahlungsnummer.
+        // Bleibt dauerhaft bestehen: Zahlungen, die vor der Umstellung
+        // losgeschickt wurden, melden sich noch damit zurueck - und eine
+        // Meldung, die wir nicht aufloesen, ist verlorenes Geld.
+        'BP' => [MicropaymentBoostSubject::class, 'findByKey'],
     ];
 
     /**
@@ -99,17 +110,23 @@ abstract class MicropaymentSubject
      */
     public static function fromReference(?string $reference): ?self
     {
-        if (! $reference || ! preg_match('/^([A-Z]{2})\d{4}-(\d+)$/', trim($reference), $matches)) {
+        // Zwei Schreibweisen: `FK2026-4711` (Praefix direkt am Jahr) und
+        // `FKP-2026-1787` (Praefix mit Bindestrich). Der gierige Quantor nimmt
+        // erst das laengste Praefix, deshalb kann `FKP-...` nie als `FK`
+        // durchgehen: Nach `FK` stuende ein `P`, wo Jahr oder Bindestrich
+        // hingehoeren. Eine Hervorhebung kann so nicht auf einer Bestellung
+        // gebucht werden.
+        if (! $reference || ! preg_match('/^([A-Z]{2,3})-?(\d{4})-(\d+)$/', trim($reference), $matches)) {
             return null;
         }
 
-        $class = self::KINDS[$matches[1]] ?? null;
+        [$class, $resolve] = self::KINDS[$matches[1]] ?? [null, null];
 
         if (! $class) {
             return null;
         }
 
-        return $class::findByKey((int) $matches[2]);
+        return $class::$resolve((int) $matches[3]);
     }
 
     /**
@@ -127,7 +144,22 @@ abstract class MicropaymentSubject
      */
     public function token(): string
     {
-        return substr(hash_hmac('sha256', 'micropayment:'.$this->reference(), (string) config('app.key')), 0, 32);
+        return static::tokenFor($this->reference());
+    }
+
+    /**
+     * Merkmal zu einer beliebigen Referenz.
+     *
+     * Ausgelagert, weil eine Zahlung ihr Merkmal aus der Referenz traegt, mit
+     * der sie losgeschickt wurde. Aendert sich das Referenzformat, muss eine
+     * bereits unterwegs befindliche Zahlung ihr altes Merkmal weiterhin
+     * vorweisen duerfen - sonst kaeme ihre Benachrichtigung als `Ungueltiges
+     * Merkmal` zurueck, obwohl bezahlt wurde. Siehe
+     * MicropaymentBoostSubject::tokenMatches().
+     */
+    protected static function tokenFor(string $reference): string
+    {
+        return substr(hash_hmac('sha256', 'micropayment:'.$reference, (string) config('app.key')), 0, 32);
     }
 
     /**
