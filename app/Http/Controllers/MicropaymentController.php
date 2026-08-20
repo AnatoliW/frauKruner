@@ -230,7 +230,24 @@ class MicropaymentController extends Controller
             throw new \RuntimeException('Parameter `function` fehlt.', 400);
         }
 
-        if ($request->boolean('testmode')) {
+        // Steht bewusst vor der Testmodus-Sperre: Das Werkzeug schickt immer
+        // testmode=1 und kaeme sonst nie hier vorbei.
+        $apicheck = $request->boolean('apicheck');
+
+        if ($apicheck && ! config('micropayment.notification.allow_apicheck')) {
+            throw new \RuntimeException('Das Benachrichtigungs-Testwerkzeug ist nicht freigeschaltet.', 403);
+        }
+
+        // Die Testmodus-Sperre haelt Probebuchungen davon ab, echte Ware
+        // freizugeben. Auf das Testwerkzeug trifft das nicht zu: notify() steigt
+        // bei apicheck aus, bevor irgendetwas gebucht oder freigeschaltet wird.
+        //
+        // Ohne diese Ausnahme waere das Werkzeug ausgerechnet produktiv
+        // unbenutzbar, wo allow_testmode zu Recht auf false steht: Man muesste
+        // zum Pruefen der blossen Erreichbarkeit den Schalter oeffnen, unter dem
+        // eine Testbuchung eine echte Bestellung bezahlt. Abgesichert bleibt der
+        // Aufruf durch allow_apicheck darueber und das Geheimfeld darunter.
+        if ($request->boolean('testmode') && ! $apicheck) {
             if (! config('micropayment.notification.allow_testmode')) {
                 throw new \RuntimeException('Benachrichtigungen aus dem Testmodus sind nicht erlaubt.', 503);
             }
@@ -241,10 +258,6 @@ class MicropaymentController extends Controller
             if (app()->isProduction()) {
                 logger()->warning('Micropayment: Testbuchung wird produktiv als Zahlung angenommen - MICROPAYMENT_ALLOW_TESTMODE_NOTIFICATION=false setzen.');
             }
-        }
-
-        if ($request->boolean('apicheck') && ! config('micropayment.notification.allow_apicheck')) {
-            throw new \RuntimeException('Das Benachrichtigungs-Testwerkzeug ist nicht freigeschaltet.', 403);
         }
 
         // Das Geheimfeld ist die eigentliche Absicherung des Endpunkts. Es wird

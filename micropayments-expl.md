@@ -323,6 +323,21 @@ is unreachable while the flag is off.
 
 This tool answers one question definitively: *can Micropayment reach us at all?*
 
+The tool also sends `testmode=1`. `guardNotification()` therefore checks
+`apicheck` **before** the test-mode lock and exempts the tool from it — an
+`apicheck` call never books, so the lock it would otherwise hit has nothing to
+protect. Without that exemption the tool would be unusable in exactly the place
+it is needed: production, where `MICROPAYMENT_ALLOW_TESTMODE_NOTIFICATION` is
+`false`, and testing mere reachability would mean opening the one switch under
+which a test booking pays for a real order.
+
+The exemption is not a hole. `apicheck=1` only skips the test-mode lock once the
+tool itself is enabled, and the secret field is still checked afterwards — so a
+successful run also proves that `MICROPAYMENT_SECRET_FIELD_VALUE` matches the
+control center. `tests/Feature/MicropaymentNotificationTest.php` locks both
+halves down: the tool answers with a locked test mode, and `apicheck=1` does not
+get past the lock while the tool is disabled.
+
 ---
 
 ## 6. Configuration reference
@@ -335,13 +350,14 @@ All keys live in `config/micropayment.php` and are documented there. Summary:
 | `MICROPAYMENT_ACCESS_KEY` | — | from "Meine Konfiguration"; empty ⇒ preview mode |
 | `MICROPAYMENT_PROJECT` | — | **technical** identifier, e.g. `16r4-reruk-1d20afbe` — not the display name |
 | `MICROPAYMENT_ACCOUNT` | — | account number |
-| `MICROPAYMENT_TESTMODE` | `true` | no money moves while true |
+| `MICROPAYMENT_TESTMODE` | `false` | no money moves while true; the default is deliberately `false`, so a forgotten value fails a payment instead of shipping goods unpaid |
 | `MICROPAYMENT_ONLINE_TRANSFER_URL` | `https://directbanking.micropayment.de/sofort/event/` | see warning below |
 | `MICROPAYMENT_LANGUAGE` | `de` | unsecured parameter |
 | `MICROPAYMENT_THEME` / `_GFX` / `_BGCOLOR` / `_PRODUCTTYPE` | — | appearance, from the control center; empty values are not sent |
 | `MICROPAYMENT_SECRET_FIELD_NAME` | `secretfield` | rename it to improve security |
-| `MICROPAYMENT_SECRET_FIELD_VALUE` | — | **empty disables the check** |
-| `MICROPAYMENT_ALLOW_TESTMODE_NOTIFICATION` | `true` | must be `false` in production |
+| `MICROPAYMENT_SECRET_FIELD_VALUE` | — | **empty rejects every notification** — outside production only when `ALLOW_UNAUTHENTICATED` is set explicitly |
+| `MICROPAYMENT_ALLOW_UNAUTHENTICATED_NOTIFICATION` | `false` | setup only; has no effect at all with `APP_ENV=production` |
+| `MICROPAYMENT_ALLOW_TESTMODE_NOTIFICATION` | `false` | must stay `false` in production; the control-center test tool is exempt, see [§5.5](#55-control-center-notification-test) |
 | `MICROPAYMENT_ALLOW_APICHECK` | `false` | temporary, for the control center test tool |
 | `MICROPAYMENT_CHECK_AMOUNT` | `true` | keep on |
 | `MICROPAYMENT_NOTIFICATION_FORWARD` | `true` | send the customer to the result page |
@@ -488,7 +504,7 @@ sees. It fails against a read-then-write implementation.
 php artisan test --filter=Micropayment
 ```
 
-123 tests, 427 assertions.
+134 tests, 475 assertions.
 
 | File | Covers |
 |---|---|
@@ -517,7 +533,7 @@ does not carry.
 - [ ] `MICROPAYMENT_TESTMODE=false`
 - [ ] `MICROPAYMENT_ALLOW_TESTMODE_NOTIFICATION=false` — otherwise a test booking marks a real order paid
 - [ ] `MICROPAYMENT_ALLOW_UNAUTHENTICATED_NOTIFICATION` removed or `false` — it accepts notifications without the secret field, i.e. anyone who knows an order number and its amount can mark it paid
-- [ ] `MICROPAYMENT_ALLOW_APICHECK=false` — otherwise anyone can trigger an `ok` response
+- [ ] `MICROPAYMENT_ALLOW_APICHECK=false` — the secret field still gates it, but the tool has no business being reachable in normal operation
 - [ ] `MICROPAYMENT_SECRET_FIELD_VALUE` set, matching the control center — without it every notification is rejected
 - [ ] `MICROPAYMENT_CHECK_AMOUNT=true`
 - [ ] `TRUSTED_PROXIES` empty, unless the server genuinely sits behind a proxy

@@ -275,6 +275,49 @@ describe('Benachrichtigung – Abwehr', function () {
         expect($order->fresh()->payment_status)->toBe(0);
     });
 
+    /**
+     * Das Werkzeug schickt immer testmode=1 – produktiv steht allow_testmode
+     * aber zu Recht auf false. Stuende die Testmodus-Sperre vor der
+     * apicheck-Pruefung, waere das Werkzeug genau dort unbenutzbar, wo man es
+     * braucht: Zum Pruefen der blossen Erreichbarkeit muesste man den Schalter
+     * oeffnen, unter dem eine Testbuchung eine echte Bestellung bezahlt.
+     *
+     * Die uebrigen apicheck-Tests laufen mit allow_testmode = true aus dem
+     * beforeEach und koennen das deshalb nicht bemerken.
+     */
+    it('beantwortet das Testwerkzeug auch bei gesperrtem Testmodus', function () {
+        config([
+            'micropayment.notification.allow_apicheck' => true,
+            'micropayment.notification.allow_testmode' => false,
+        ]);
+
+        [$order] = mcpOrderWithChild();
+
+        $result = mcpNotify(mcpNotification($order, ['apicheck' => 1, 'title' => 'Kruner']));
+
+        expect($result['status'])->toBe('ok')
+            ->and($order->fresh()->payment_status)->toBe(0);
+    });
+
+    /**
+     * Die Gegenprobe zur Ausnahme darueber: Sie darf kein Schlupfloch sein.
+     * Ein angehaengtes apicheck=1 hebt die Testmodus-Sperre nur auf, wenn das
+     * Werkzeug ueberhaupt freigeschaltet ist – produktiv ist es das nicht.
+     */
+    it('laesst die Testmodus-Sperre nicht mit apicheck umgehen', function () {
+        config([
+            'micropayment.notification.allow_apicheck' => false,
+            'micropayment.notification.allow_testmode' => false,
+        ]);
+
+        [$order] = mcpOrderWithChild();
+
+        $result = mcpNotify(mcpNotification($order, ['apicheck' => 1]));
+
+        expect($result['status'])->toBe('error')
+            ->and($order->fresh()->payment_status)->toBe(0);
+    });
+
     it('lehnt alles ab, solange die Zahlart abgeschaltet ist', function () {
         config(['micropayment.enabled' => false]);
 
