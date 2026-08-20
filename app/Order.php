@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Closure;
 use App\Mail\UserOrderEmail;
 use App\Mail\VendorOrderEmail;
 use App\Models\Orderimage;
@@ -207,15 +208,55 @@ class Order extends Model
 
         // Der Käufer bekommt jetzt dieselbe Bestellbestätigung wie bei PayPal/Stripe –
         // bei Vorkasse aber erst nach dem Zahlungseingang.
-        if (filled($this->email)) {
-            Mail::to($this->email)->send(new UserOrderEmail($this));
-        }
-
-        if (filled($this->vendor->email)) {
-            Mail::to($this->vendor->email)->send(new VendorOrderEmail($this));
-        }
+        $this->sendPaymentMail($this->email, fn () => new UserOrderEmail($this));
+        $this->sendPaymentMail($this->vendor->email, fn () => new VendorOrderEmail($this));
 
         return true;
+    }
+
+    /**
+     * Verschickt eine Mail zum Zahlungseingang, ohne die Zahlung zu gefährden.
+     *
+     * Der Versand läuft synchron und mitten in einer fremden Anfrage: Bei der
+     * Online-Überweisung ruft der Micropayment-Server dafür
+     * MicropaymentController::notify() auf und wartet auf die Antwort. Eine
+     * durchgereichte Ausnahme hätte dort zwei Folgen, und beide treffen eine
+     * Zahlung, die längst gebucht ist:
+     *
+     *  - Micropayment bekäme `status=error` statt `status=ok` und zeigte der
+     *    Kundin „Die Weiterleitung wurde nicht erlaubt“, obwohl sie bezahlt hat.
+     *  - Die erneute Zustellung der Benachrichtigung verliert das bedingte
+     *    UPDATE am Anfang von markAsPaid(), bricht mit false ab und kommt hier
+     *    gar nicht mehr an. Die Bestätigung wäre endgültig verloren – kein
+     *    Wiederholungsversuch erreicht sie noch.
+     *
+     * Ein gescheiterter Versand darf deshalb weder den Ablauf abbrechen noch
+     * die jeweils andere Mail verhindern. Er wird mit Ausnahme protokolliert,
+     * damit die Bestätigung von Hand nachgeholt werden kann; Bestellnummer und
+     * Empfänger stehen dabei.
+     *
+     * Dasselbe gilt für den Knopf „als bezahlt markieren“ im Adminbereich: Der
+     * Zahlungseingang ist dort ebenso gebucht, bevor die erste Mail rausgeht.
+     *
+     * @param  Closure(): \Illuminate\Mail\Mailable  $mailable  Wird erst
+     *         innerhalb der Absicherung gebaut, damit auch ein Fehler beim
+     *         Erzeugen der Nachricht die Zahlung nicht mitreißt.
+     */
+    private function sendPaymentMail(?string $recipient, Closure $mailable): void
+    {
+        if (blank($recipient)) {
+            return;
+        }
+
+        try {
+            Mail::to($recipient)->send($mailable());
+        } catch (\Throwable $e) {
+            logger()->error('Bestellbestätigung konnte nicht verschickt werden', [
+                'order_id' => $this->getKey(),
+                'recipient' => $recipient,
+                'exception' => $e,
+            ]);
+        }
     }
 
 

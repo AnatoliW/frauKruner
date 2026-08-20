@@ -384,6 +384,30 @@ describe('Benachrichtigung – Zahlungseingang', function () {
         Mail::assertSent(VendorOrderEmail::class, 1);
     });
 
+    /**
+     * Der Mailversand läuft synchron in der Anfrage von Micropayment. Ist der
+     * Mailserver nicht erreichbar, darf er die Zahlung nicht mitreißen: Sie ist
+     * gebucht, bevor die erste Mail rausgeht, und die erneute Zustellung käme
+     * wegen des bedingten UPDATE in markAsPaid() nie wieder bis zum Versand.
+     * Ohne Absicherung sähe die Kundin „Die Weiterleitung wurde nicht erlaubt“,
+     * obwohl das Geld angekommen ist.
+     *
+     * `twice()` hält zugleich fest, dass die zweite Mail noch versucht wird,
+     * nachdem die erste geworfen hat – ein Verkäufer soll seine Bestellung auch
+     * dann sehen, wenn die Adresse der Käuferin den Mailserver ärgert.
+     */
+    it('bucht die Zahlung auch dann, wenn der Mailversand scheitert', function () {
+        [$order] = mcpOrderWithChild();
+
+        Mail::shouldReceive('to')->twice()->andReturnSelf();
+        Mail::shouldReceive('send')->twice()->andThrow(new RuntimeException('SMTP nicht erreichbar'));
+
+        $fields = mcpNotify(mcpNotification($order));
+
+        expect($fields['status'])->toBe('ok')
+            ->and($order->fresh()->payment_status)->toBe(1);
+    });
+
     it('hält die Bestellung als bestätigt fest', function () {
         [$order] = mcpOrderWithChild();
 
