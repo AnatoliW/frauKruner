@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Order;
 use App\Payment\MicropaymentOrderSubject;
 use App\Product;
+use Illuminate\Support\Facades\Log as LogFacade;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Tests\Support\MicropaymentTestSchema;
@@ -401,6 +402,28 @@ describe('Benachrichtigung – Zahlungseingang', function () {
 
         Mail::shouldReceive('to')->twice()->andReturnSelf();
         Mail::shouldReceive('send')->twice()->andThrow(new RuntimeException('SMTP nicht erreichbar'));
+
+        $fields = mcpNotify(mcpNotification($order));
+
+        expect($fields['status'])->toBe('ok')
+            ->and($order->fresh()->payment_status)->toBe(1);
+    });
+
+    /**
+     * Die Absicherung darf nicht selbst zur Fehlerquelle werden: report() laeuft
+     * durch den Fehler-Handler und wirft, wenn sich kein Protokoll schreiben
+     * laesst – bei nicht beschreibbarem storage/logs also genau nach einem
+     * frischen Ausrollen. Ohne den inneren Schutz kaeme die Ausnahme bis in
+     * notify() zurueck und die Zahlung ginge trotz allem als `status=error`
+     * verloren.
+     */
+    it('bucht die Zahlung auch dann, wenn schon das Protokollieren scheitert', function () {
+        [$order] = mcpOrderWithChild();
+
+        Mail::shouldReceive('to')->twice()->andReturnSelf();
+        Mail::shouldReceive('send')->twice()->andThrow(new RuntimeException('SMTP nicht erreichbar'));
+
+        LogFacade::shouldReceive('error')->andThrow(new RuntimeException('storage/logs nicht beschreibbar'));
 
         $fields = mcpNotify(mcpNotification($order));
 

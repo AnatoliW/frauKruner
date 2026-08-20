@@ -251,11 +251,33 @@ class Order extends Model
         try {
             Mail::to($recipient)->send($mailable());
         } catch (\Throwable $e) {
-            logger()->error('Bestellbestätigung konnte nicht verschickt werden', [
-                'order_id' => $this->getKey(),
-                'recipient' => $recipient,
-                'exception' => $e,
-            ]);
+            try {
+                // Zuerst die Zeile, nach der im Betrieb gesucht wird: Sie benennt
+                // die Bestellung, deren Bestaetigung fehlt, und den Empfaenger, an
+                // den sie von Hand nachzuholen ist.
+                logger()->error('Bestellbestätigung konnte nicht verschickt werden', [
+                    'order_id' => $this->getKey(),
+                    'recipient' => $recipient,
+                ]);
+
+                // report() statt logger()->error($e): Die Ausnahme laeuft damit
+                // durch den Fehler-Handler der Anwendung und erreicht mitsamt
+                // Ablaufverfolgung auch eine spaeter angebundene Ueberwachung,
+                // nicht nur storage/logs/laravel.log.
+                report($e);
+            } catch (\Throwable) {
+                // Auch das Protokollieren darf die Zahlung nicht mitreissen.
+                // report() geht durch den Fehler-Handler und wirft seinerseits,
+                // wenn sich kein Protokoll schreiben laesst - bei nicht
+                // beschreibbarem storage/logs also genau dann, wenn frisch
+                // ausgerollt wurde. Die Ausnahme kaeme bis in notify() zurueck,
+                // und die Zahlung ginge als `status=error` zurueck. Eine
+                // verlorene Protokollzeile ist das kleinere Uebel als eine
+                // Bestaetigung, die keine erneute Zustellung je wieder erreicht.
+                //
+                // Vorbild: MicropaymentController::log() sichert den Eintrag in
+                // die Tabelle `logs` aus demselben Grund ab.
+            }
         }
     }
 
