@@ -427,6 +427,8 @@
                         Wähle ein Push-Paket für
                         <span class="boost-profile-name-inline">{{ $profileName }}</span>.
                         Danach kannst du den Profil-Push starten.
+                        Pushs aus dem Adminbereich sind immer kostenlos – es entsteht
+                        keine Zahlung und keine Rechnung.
                     </p>
                 </div>
 
@@ -496,11 +498,11 @@
                                 <div>
                                     <div class="boost-price-area">
                                         <p class="boost-price">
-                                            {{ $priceFormat($package->price_with_tax) }}
+                                            Kostenlos
                                         </p>
 
                                         <p class="boost-days">
-                                            {{ $package->days }} Tage · inkl. MwSt.
+                                            {{ $package->days }} Tage · Normalpreis {{ $priceFormat($package->price_with_tax) }}
                                         </p>
                                     </div>
 
@@ -529,7 +531,7 @@
 
                         <p class="boost-summary-text">
                             @if ($selectedPackage)
-                                {{ $priceFormat($selectedPackage->price_with_tax) }} · {{ $selectedPackage->days }} Tage · inkl. MwSt.
+                                Kostenlos · {{ $selectedPackage->days }} Tage · Normalpreis {{ $priceFormat($selectedPackage->price_with_tax) }}
                             @else
                                 Bitte wähle zuerst ein Paket aus.
                             @endif

@@ -73,7 +73,8 @@ class Boost extends Model
 
     public function getPaymentStatusAttribute()
     {
-        return $this->payment->statusTranslated;
+        // Pushs aus dem Adminbereich sind kostenlos und haben keine Zahlung.
+        return $this->payment?->statusTranslated ?? 'KOSTENLOS';
     }
 
     public function getPriceAttribute($value)
@@ -98,6 +99,30 @@ class Boost extends Model
         return $this->belongsTo(User::class);
     }
 
+
+    /**
+     * Kostenloser Push aus dem Adminbereich.
+     *
+     * Der Adminbereich pusht immer gratis: Es wird keine Zahlung angelegt, der
+     * Preis ist 0 und der Push startet sofort. Eine Rechnung entsteht dadurch
+     * bewusst nicht - siehe scopePaidOrFree() und getInvoiceNumberAttribute().
+     */
+    public static function freeAdminPush(Model $boostable, Package $package, ?int $adminId = null): self
+    {
+        $boost = $boostable->boosts()->create([
+            'package_id' => $package->id,
+            'user_id' => $adminId ?? auth()->id(),
+            'price' => 0,
+            'base_price' => 0,
+            'tax' => 0,
+            'start_day' => Carbon::now(),
+            'end_day' => Carbon::now()->addDays($package->days),
+        ]);
+
+        $boost->process();
+
+        return $boost;
+    }
 
     public function process()
     {
@@ -127,7 +152,21 @@ class Boost extends Model
     public function scopePaid($query)
     {
        $query->whereHas('payment', function ($q) {
-        return  $q->where('status', 'paid');
+        // In der Datenbank steht 'PAID'; die Schreibweise nicht voraussetzen.
+        return  $q->whereIn('status', ['PAID', 'paid']);
+        });
+    }
+
+    /**
+     * Alles, was im Adminbereich sichtbar sein soll: bezahlte Pushs und die
+     * kostenlosen Pushs aus dem Adminbereich, zu denen es keine Zahlung gibt.
+     */
+    public function scopePaidOrFree($query)
+    {
+        $query->where(function ($q) {
+            $q->whereHas('payment', function ($payment) {
+                $payment->whereIn('status', ['PAID', 'paid']);
+            })->orWhereDoesntHave('payment');
         });
     }
     public function scopeFilter($query)

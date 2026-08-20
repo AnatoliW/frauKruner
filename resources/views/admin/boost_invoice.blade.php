@@ -117,7 +117,7 @@
 
                         <table class="table table-hover no-footer">
                             @php
-                                $tax = $dataTypeContent->payments->first()->tax;
+                                $tax = $dataTypeContent->payments->first()?->tax ?? 0;
 
                             @endphp
                             <thead>

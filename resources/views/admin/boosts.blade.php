@@ -89,7 +89,11 @@
                                         <td>{{$boost->end_day->format('d.m.Y')}}</td>
                                         <td>{{$boost->user?->name}} {{$boost->user?->last_name}}</td>
                                         <td>
-                                            <a class="btn btn-primary" href="{{route('admin.boost.invoice',$boost)}}">Rechnung</a>
+                                            @if ($boost->payment)
+                                                <a class="btn btn-primary" href="{{route('admin.boost.invoice',$boost)}}">Rechnung</a>
+                                            @else
+                                                <span class="label label-default">Kostenlos gepusht</span>
+                                            @endif
                                         </td>
                                     </tr>
                               

@@ -24,7 +24,8 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary">Weiter</button>
+                            <p class="text-muted small">Pushs aus dem Adminbereich sind immer kostenlos &ndash; es entsteht keine Zahlung und keine Rechnung.</p>
+                            <button type="submit" class="btn btn-primary">Push kostenlos starten</button>
                         </form>
                     </div>
                 </div>

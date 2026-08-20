@@ -425,6 +425,8 @@
                         Wähle ein Push-Paket für
                         <span class="boost-product-name-inline">{{ $product->name ?? 'dieses Produkt' }}</span>.
                         Danach kannst du den Push starten.
+                        Pushs aus dem Adminbereich sind immer kostenlos – es entsteht
+                        keine Zahlung und keine Rechnung.
                     </p>
                 </div>
 
@@ -494,11 +496,11 @@
                                 <div>
                                     <div class="boost-price-area">
                                         <p class="boost-price">
-                                            {{ $priceFormat($package->price) }}
+                                            Kostenlos
                                         </p>
 
                                         <p class="boost-days">
-                                            {{ $package->days }} Tage Laufzeit
+                                            {{ $package->days }} Tage Laufzeit · Normalpreis {{ $priceFormat($package->price) }}
                                         </p>
                                     </div>
 
@@ -527,7 +529,7 @@
 
                         <p class="boost-summary-text">
                             @if ($selectedPackage)
-                                {{ $priceFormat($selectedPackage->price) }} · {{ $selectedPackage->days }} Tage
+                                Kostenlos · {{ $selectedPackage->days }} Tage · Normalpreis {{ $priceFormat($selectedPackage->price) }}
                             @else
                                 Bitte wähle zuerst ein Paket aus.
                             @endif

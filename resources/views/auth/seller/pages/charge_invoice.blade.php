@@ -73,7 +73,7 @@
                                         <div class="col-sm-12">
                                             <h3 class="panel-title">Details</h3>
                                             @php
-                                                $tax = $boost->payments->first()->tax;
+                                                $tax = $boost->payments->first()?->tax ?? 0;
 
                                             @endphp
                                             <table class="table table-hover no-footer">

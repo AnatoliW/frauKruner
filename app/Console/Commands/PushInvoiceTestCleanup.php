@@ -33,13 +33,26 @@ class PushInvoiceTestCleanup extends Command
             return self::SUCCESS;
         }
 
-        $boostIds = Boost::where('user_id', $seller->id)->pluck('id');
+        // Auch Pushs, die ein Admin auf das Testkonto gesetzt hat (dort steht der
+        // Admin in user_id, das Testkonto nur als boostable).
+        $boostIds = Boost::where('user_id', $seller->id)
+            ->orWhere(function ($query) use ($seller) {
+                $query->where('boostable_type', User::class)
+                    ->where('boostable_id', $seller->id);
+            })
+            ->pluck('id');
 
         $payments = Payment::where('payable_type', Boost::class)
             ->whereIn('payable_id', $boostIds)
             ->delete();
 
         $boosts = Boost::whereIn('id', $boostIds)->delete();
+
+        $seller->forceFill([
+            'boosted' => 0,
+            'boost_start_date' => null,
+            'boost_end_date' => null,
+        ])->save();
 
         $this->info("Geloescht: {$boosts} Pushs, {$payments} Zahlungen.");
 

@@ -64,6 +64,9 @@ class BoostsTable
                 Action::make('invoice')
                     ->label('Rechnung')
                     ->color('info')
+                    // Kostenlose Pushs aus dem Adminbereich haben keine Zahlung
+                    // und bekommen deshalb auch keine Rechnung.
+                    ->visible(fn (Boost $record): bool => $record->payment !== null)
                     ->url(fn (Boost $record): string => BoostResource::getUrl('invoice', ['record' => $record])),
             ])
             ->toolbarActions([

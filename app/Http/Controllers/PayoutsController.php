@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Filament\Resources\Products\ProductResource;
+use App\Models\Boost;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notification;
@@ -183,17 +184,14 @@ class PayoutsController extends Controller
                 $model = User::find($id);
                 break;
         }
-        $boost = $model->boosts()->create([
-            'package_id' => $package->id,
-            'user_id' => Auth::id(),
-            'price' => $package->price,
-            'base_price' => $package->price,
-            'start_day' => Carbon::now(),
-            'end_day' => Carbon::now()->addDays($package->days),
-        ]);
+        // Ein Push aus dem Adminbereich ist immer kostenlos: Es entsteht keine
+        // Zahlung und keine Rechnung, der Push wird sofort aktiviert.
+        Boost::freeAdminPush($model, $package, Auth::id());
 
-        $payment = $boost->charge($package->price);
-        return redirect()->route('admin.payment', $payment);
+        return redirect()->route('filament.admin.resources.boosts.index')->with([
+            'message'    => 'Push wurde kostenlos aktiviert.',
+            'alert-type' => 'success',
+        ]);
     }
 
 }

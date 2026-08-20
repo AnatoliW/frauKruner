@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Filament\Resources\Boosts\BoostResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Models\Boost;
 use App\Package;
-use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
@@ -69,17 +70,16 @@ class BoostUser extends ViewRecord
             return;
         }
 
-        $boost = $this->record->boosts()->create([
-            'package_id' => $package->id,
-            'user_id' => Auth::id(),
-            'price' => $package->price,
-            'base_price' => $package->price,
-            'start_day' => Carbon::now(),
-            'end_day' => Carbon::now()->addDays($package->days),
-        ]);
+        // Ein Push aus dem Adminbereich ist immer kostenlos: Es entsteht keine
+        // Zahlung und keine Rechnung, der Push wird sofort aktiviert.
+        $boost = Boost::freeAdminPush($this->record, $package, Auth::id());
 
-        $payment = $boost->charge($package->price);
+        Notification::make()
+            ->title('Profil wurde kostenlos gepusht.')
+            ->body('Der Push laeuft bis zum ' . $boost->end_day->format('d.m.Y') . '.')
+            ->success()
+            ->send();
 
-        $this->redirect(route('admin.payment', $payment), navigate: true);
+        $this->redirect(BoostResource::getUrl('index'), navigate: true);
     }
 }

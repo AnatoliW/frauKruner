@@ -44,7 +44,7 @@ class BoostResource extends BaseAdminResource
     {
         return parent::getEloquentQuery()
             ->filter()
-            ->paid()
+            ->paidOrFree()
             ->latest();
     }
 

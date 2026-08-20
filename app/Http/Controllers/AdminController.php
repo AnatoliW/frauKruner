@@ -50,7 +50,7 @@ class AdminController extends Controller
         return view('admin.pre_payments', compact('dataTypeContent'));
     }
     public function boosts() {
-         $boosts=Boost::filter()->paid()->latest()->paginate(15);
+         $boosts=Boost::filter()->paidOrFree()->latest()->paginate(15);
          return view('admin.boosts',compact('boosts'));
     }
     public function boostInvoice(Boost $boost)  {
