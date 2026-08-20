@@ -27,7 +27,9 @@
                                             <div class="col-12 col-md-6">
                                                 <p><b>Kundeninformation</b></p>
 
-                                                @php($sellerUser = auth()->user())
+                                                @php
+                                                    $sellerUser = auth()->user();
+                                                @endphp
                                                 <p>
                                                     {{ \App\Order::firstFilled($sellerUser->first_name, $sellerUser->name) }} {{ $sellerUser->last_name }}<br>
                                                     {{ \App\Order::firstFilled($sellerUser->address?->street, $sellerUser->verification?->street) }}

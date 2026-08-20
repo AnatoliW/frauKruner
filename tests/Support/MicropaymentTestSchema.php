@@ -21,7 +21,7 @@ class MicropaymentTestSchema
     /**
      * @var list<string>
      */
-    private const TABLES = ['orders', 'products', 'users', 'points', 'logs', 'coupons', 'packages', 'boosts', 'payments'];
+    private const TABLES = ['orders', 'products', 'users', 'points', 'logs', 'coupons', 'packages', 'boosts', 'payments', 'addresses', 'verifications', 'metas'];
 
     public static function create(): void
     {
@@ -141,6 +141,41 @@ class MicropaymentTestSchema
             $table->timestamp('end_day')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->text('user_info')->nullable();
+            $table->timestamps();
+        });
+
+        // Die Rechnung einer Hervorhebung liest die Anschrift der Verkaeuferin
+        // ueber User::address() bzw. User::verification(). Ohne die Tabellen
+        // scheitert schon die Relation, nicht erst die Anzeige.
+        Schema::create('addresses', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('street')->nullable();
+            $table->string('house_no')->nullable();
+            $table->string('zip')->nullable();
+            $table->string('federal_state')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('verifications', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('street')->nullable();
+            $table->string('house_no')->nullable();
+            $table->string('zip')->nullable();
+            $table->string('city')->nullable();
+            $table->string('last_name')->nullable();
+            $table->timestamps();
+        });
+
+        // User nutzt HasMeta: Attribute wie `vat` liegen nicht in der Spalte,
+        // sondern als Zeile in `metas`. Die Rechnung liest sie.
+        Schema::create('metas', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('metable_id')->nullable();
+            $table->string('metable_type')->nullable();
+            $table->string('column_name')->nullable();
+            $table->text('column_value')->nullable();
             $table->timestamps();
         });
 

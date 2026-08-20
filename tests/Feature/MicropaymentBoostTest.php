@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\Verified;
 use App\Models\Boost;
 use App\Models\Payment;
 use App\Models\User;
@@ -426,5 +428,51 @@ describe('Bezahlseite der Hervorhebung', function () {
             ->withoutMiddleware()
             ->get(route('seller.payment', $payment))
             ->assertNotFound();
+    });
+});
+
+describe('Rechnung der Hervorhebung', function () {
+    /**
+     * Dieselbe Luecke wie auf der Bezahlseite, eine Route weiter: Die
+     * Boost-Nummern laufen fortlaufend, und die Rechnung nennt Paketname,
+     * Betraege und Rechnungsnummer. Ohne Pruefung genuegt Durchzaehlen.
+     */
+    it('zeigt einer fremden Verkäuferin nichts an', function () {
+        [, $boost] = mcpBoost();
+
+        $fremde = User::create([
+            'name' => 'Fremde',
+            'last_name' => 'Verkäuferin',
+            'email' => 'fremde-rechnung@example.com',
+            'status' => 1,
+        ]);
+
+        // Gezielt nur Rolle und Verifizierung abschalten. `withoutMiddleware()`
+        // ohne Argumente nimmt auch SubstituteBindings mit - dann bindet die
+        // Route den Datensatz gar nicht mehr, der Controller bekaeme ein leeres
+        // Boost-Objekt und der Test bestuende ohne jede Aussage.
+        $this->actingAs($fremde)
+            ->withoutMiddleware([RoleMiddleware::class, Verified::class])
+            ->get(route('seller.charges.invoice', $boost))
+            ->assertNotFound();
+    });
+
+    /**
+     * Die Gegenprobe: Die Pruefung darf die Eigentuemerin nicht aussperren.
+     * Sie ist der eigentliche Grund fuer diesen Test – eine zu strenge
+     * Bedingung faellt sonst erst im Betrieb auf.
+     */
+    it('zeigt der eigenen Verkäuferin ihre Rechnung', function () {
+        [, $boost] = mcpBoost();
+
+        // Nicht ueber den dritten Rueckgabewert von mcpBoost(): Der ist das
+        // hervorgehobene Objekt und nur bei der Vorgabe `profile` zufaellig
+        // dieselbe Nutzerin.
+        $user = User::findOrFail($boost->user_id);
+
+        $this->actingAs($user)
+            ->withoutMiddleware([RoleMiddleware::class, Verified::class])
+            ->get(route('seller.charges.invoice', $boost))
+            ->assertOk();
     });
 });

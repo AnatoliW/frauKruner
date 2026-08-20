@@ -255,6 +255,25 @@ class PagesController extends Controller
 
     public function chargeInvoice(Boost $boost)
     {
+        // Die Nummern der Hervorhebungen sind fortlaufend, die Route kennt nur
+        // `auth`, `role:seller` und `verified`. Ohne diese Pruefung koennte jede
+        // angemeldete Verkaeuferin die Rechnungen aller anderen durchzaehlen -
+        // mit Paketname, Betraegen und Rechnungsnummer.
+        //
+        // Geprueft wird dieselbe Bedingung, nach der charges() die Liste
+        // aufbaut. Der Link wird nirgends sonst ausgegeben, deshalb sperrt die
+        // Pruefung niemanden aus, der die Seite bisher erreichen konnte. Der
+        // Adminbereich hat mit admin.boost.invoice eine eigene Route; ueber
+        // role:seller kaeme er ohnehin nicht herein, denn RoleMiddleware
+        // vergleicht die Rolle streng.
+        //
+        // 404 statt 403 wie in Seller\PaymentController::payment(): Die Antwort
+        // verraet so nicht, ob die Nummer ueberhaupt vergeben ist.
+        abort_unless(
+            $boost->user_id && (int) $boost->user_id === (int) auth()->id(),
+            404
+        );
+
         return view('auth.seller.pages.charge_invoice', compact('boost'));
     }
 }
