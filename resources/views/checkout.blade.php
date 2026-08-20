@@ -120,6 +120,25 @@
 
             @php
                 $data = auth()->user()->address ?? new App\Models\Address();
+
+                // Das Geburtsdatum wird bei der Verifizierung dauerhaft gespeichert.
+                // Liegt es vor, die Auswahl vorbelegen, damit es niemand erneut eintippen muss.
+                $storedDob = null;
+                $dobRaw = auth()->user()?->verification?->date_of_birth;
+
+                if (filled($dobRaw)) {
+                    try {
+                        $storedDob = \Carbon\Carbon::parse($dobRaw);
+                    } catch (\Throwable $e) {
+                        $storedDob = null;
+                    }
+                }
+
+                // Die Selects werden nicht abgeschickt (reine Altersprüfung im Browser),
+                // deshalb gibt es hier kein old() – nur den gespeicherten Wert.
+                $birthDayValue = $storedDob?->day;
+                $birthMonthValue = $storedDob?->month;
+                $birthYearValue = $storedDob?->year;
             @endphp
             <h3 class="small mt-4">Nutzerinformation</h3>
             <form id="payment" action="{{ route('checkout.store') }}" method="POST">
@@ -241,7 +260,8 @@
                         <select id="birthDay" autocomplete="bday-day">
                             <option value="">Tag</option>
                             @for ($d = 1; $d <= 31; $d++)
-                                <option value="{{ $d }}">{{ str_pad($d, 2, '0', STR_PAD_LEFT) }}</option>
+                                <option value="{{ $d }}" @selected((int) $birthDayValue === $d)>
+                                    {{ str_pad($d, 2, '0', STR_PAD_LEFT) }}</option>
                             @endfor
                         </select>
                     </div>
@@ -251,7 +271,8 @@
                         <select id="birthMonth" autocomplete="bday-month">
                             <option value="">Monat</option>
                             @foreach (['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] as $i => $monthName)
-                                <option value="{{ $i + 1 }}">{{ $monthName }}</option>
+                                <option value="{{ $i + 1 }}" @selected((int) $birthMonthValue === $i + 1)>
+                                    {{ $monthName }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -261,7 +282,7 @@
                         <select id="birthYear" autocomplete="bday-year">
                             <option value="">Jahr</option>
                             @for ($y = (int) date('Y'); $y >= (int) date('Y') - 100; $y--)
-                                <option value="{{ $y }}">{{ $y }}</option>
+                                <option value="{{ $y }}" @selected((int) $birthYearValue === $y)>{{ $y }}</option>
                             @endfor
                         </select>
                     </div>
@@ -327,7 +348,14 @@
                             </div>
                         </details>Mitteilung an den Shop
                     </h5>
-                    <textarea id="mitteilungAnDenVendor" name="message" style="height: 100px;">{{ old('message') }}</textarea>
+                    <textarea id="mitteilungAnDenVendor" name="message" maxlength="400"
+                        style="height: 100px;">{{ old('message') }}</textarea>
+                    <span class="small text-muted" id="mitteilungAnDenVendorCounter">0/400 Zeichen</span>
+                    @error('message')
+                        <span class="text-danger">
+                            {{ $message }}
+                        </span>
+                    @enderror
                 </div>
 
 
@@ -369,6 +397,25 @@
 
 
     </main>
+
+    <script>
+        (function() {
+            var box = document.getElementById('mitteilungAnDenVendor');
+            var counter = document.getElementById('mitteilungAnDenVendorCounter');
+            if (!box || !counter) return;
+
+            var max = parseInt(box.getAttribute('maxlength'), 10) || 400;
+
+            function update() {
+                // [...str] zaehlt wie mb_strlen in PHP, damit Zaehler und
+                // Server-Validierung (max:400) dasselbe Ergebnis liefern.
+                counter.textContent = [...box.value].length + '/' + max + ' Zeichen';
+            }
+
+            box.addEventListener('input', update);
+            update();
+        })();
+    </script>
 
     <script>
         (function() {

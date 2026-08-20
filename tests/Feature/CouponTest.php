@@ -2,6 +2,7 @@
 
 use App\Coupon;
 use App\Http\Controllers\CheckoutController;
+use App\Mail\UserOrderEmail;
 use App\Order;
 use App\Support\CouponMessages;
 use App\Support\CouponSession;
@@ -497,6 +498,47 @@ describe('Order::markAsPaid', function () {
         $order->markAsPaid();
 
         expect(Coupon::query()->code('SOMMER')->first()->used)->toBe(1);
+    });
+
+    /**
+     * Das Rennen zweier gleichzeitiger Aufrufe: zwei Zustellungen derselben
+     * Micropayment-Benachrichtigung oder zwei Klicks auf „als bezahlt
+     * markieren“ im Admin.
+     *
+     * Nachgestellt über eine zweite Instanz derselben Bestellung. Sie trägt
+     * noch den alten Stand – genau wie ein paralleler Aufruf, der die Prüfung
+     * passiert hat, bevor der erste geschrieben hat. Mit einer Prüfung im PHP
+     * würden beide durchlaufen und die Bestätigung zweimal verschicken.
+     */
+    it('läuft bei einem gleichzeitigen zweiten Aufruf nicht noch einmal durch', function () {
+        Mail::fake();
+
+        $order = Order::create([
+            'email' => 'kundin@example.test',
+            'payment_status' => 0,
+        ]);
+
+        $parallel = Order::find($order->id);
+
+        expect($order->markAsPaid())->toBeTrue()
+            ->and((int) $parallel->payment_status)->toBe(0)
+            ->and($parallel->markAsPaid())->toBeFalse();
+
+        Mail::assertSent(UserOrderEmail::class, 1);
+    });
+
+    /**
+     * Ältere Datensätze tragen in payment_status nichts. Das darf nicht als
+     * „schon bezahlt“ gelten, sonst bliebe der Zahlungseingang folgenlos.
+     */
+    it('behandelt einen leeren Zahlungsstatus wie unbezahlt', function () {
+        Mail::fake();
+
+        $order = Order::create(['email' => 'kundin@example.test']);
+        Order::query()->whereKey($order->id)->update(['payment_status' => null]);
+
+        expect($order->fresh()->markAsPaid())->toBeTrue()
+            ->and((int) $order->fresh()->payment_status)->toBe(1);
     });
 });
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\MicropaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SellerRegistrationController;
 use Intervention\Image\Facades\Image as ImageIntervention;
@@ -134,6 +135,17 @@ Route::post('/store-checkout', [CheckoutController::class, 'store'])->name('chec
 Route::get('/payment/{order}', [CheckoutController::class, 'payment'])->name('payment');
 Route::post('/payment/process', [CheckoutController::class, 'processPayment'])->name('payment.process');
 Route::post('/payment/store/{order}', [CheckoutController::class, 'paymentStore'])->name('payment.store');
+
+// Online-Überweisung über das Micropayment-Zahlungsfenster.
+//
+// `notify` ruft Micropayment serverseitig auf – ohne Session und ohne
+// CSRF-Token. Die Route steht deshalb bewusst vor der Ergebnisseite und ist
+// nicht durch Middleware geschützt; abgesichert wird sie im Controller über
+// Geheimfeld, Betragsprüfung und Bestellreferenz.
+Route::get('/payment/micropayment/notify', [MicropaymentController::class, 'notify'])->name('payment.micropayment.notify');
+Route::get('/payment/micropayment/result/{state}', [MicropaymentController::class, 'result'])->name('payment.micropayment.result');
+Route::get('/payment/micropayment/order/{order}', [MicropaymentController::class, 'redirectOrder'])->name('payment.micropayment.order');
+Route::get('/payment/micropayment/boost/{payment}', [MicropaymentController::class, 'redirectBoost'])->name('payment.micropayment.boost');
 
 Route::post('add-favorites/{id}', [FavoriteController::class, 'store'])->name('favorite.store');
 Route::post('delete/{favorite}', [FavoriteController::class, 'delete'])->name('buyer.favorite.delete');

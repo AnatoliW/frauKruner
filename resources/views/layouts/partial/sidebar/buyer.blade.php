@@ -11,7 +11,11 @@
             ->orWhere('role', auth()->user()->role_id);
     })
     ->count();
-    
+
+    // Nach bestaetigter Verifizierung ist der Menuepunkt gegenstandslos.
+    // Gleiche Bedingung wie im Adminbereich (ViewVerification::isUserVerified()):
+    // Freischalten setzt verified und status gemeinsam auf 1.
+    $isVerified = (int) auth()->user()->verified === 1 && (int) auth()->user()->status === 1;
 
 @endphp
 
@@ -47,8 +51,10 @@
                     <ul>
                         <li><a href="{{ route('buyer.user.data') }}"
                                 class="to-content-btn">Nutzerdaten</a></li>
-                        <li><a href="{{ route('buyer.data.verify') }}"
-                                class="to-content-btn text-primary">18+ Inhalt Verifizierung</a></li>
+                        @unless ($isVerified)
+                            <li><a href="{{ route('buyer.data.verify') }}"
+                                    class="to-content-btn text-primary">18+ Inhalt Verifizierung</a></li>
+                        @endunless
                         <li><a href="{{ route('buyer.address') }}"
                                 class="to-content-btn">Adresse</a></li>
                     </ul>

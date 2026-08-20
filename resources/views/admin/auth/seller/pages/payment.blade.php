@@ -31,9 +31,15 @@
                      @if($payment->status=="PAID")
                       <button disabled class="btn btn-boost w-100 mt-2">Bezahlt</button>
                       @else
+                      {{--
+                        PayPal ist abgeschaltet, weil die Anbindung derzeit nicht funktioniert.
+                        Siehe resources/views/auth/seller/pages/payment.blade.php – diese Datei
+                        hier wird von keinem Controller gerendert und ist ein Überbleibsel.
+
                       <a style="background-color: #FFCE00" href="{{route('seller.payment.process',$payment->id)}}" class="btn btn-primary w-100 mt-2 text-white border-0 py-0">
                         <img height="50px" src="{{asset('images/paypal.png')}}" alt="">
                        </a>
+                      --}}
                       @endif
                     </div>
                   </div>

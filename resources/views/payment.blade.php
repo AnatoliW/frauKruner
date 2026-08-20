@@ -51,6 +51,17 @@
                     </p>
                 @endif
 
+                @if (\App\Payment\MicropaymentGateway::isEnabled())
+                    <p class="small mt-2">
+                        <input value="{{ \App\Payment\MicropaymentGateway::GATEWAY }}" name="payment_type"
+                            onclick="paymentMethod('online_transfer')" id="payment_option4" type="radio"
+                            class="options radio" />
+                        <label for="payment_option4">
+                            Online-Überweisung (Beta)
+                        </label> <br>
+                    </p>
+                @endif
+
                 <div class="border rounded p-3 mb-3" id="stripe" style="display:none">
                     <div class="">
                         <div class="border rounded px-3 mt-3">
@@ -76,6 +87,13 @@
             </div>
             <div id="pre_payment_container" style="display: none">
                 <button id="prePaymentBtn" class="btn btn-primary">Bezahlen</button>
+            </div>
+            <div id="online_transfer_container" style="display: none">
+                <p class="small text-secondary mb-2">
+                    Du wirst zu deiner Bank weitergeleitet und bestätigst die Überweisung dort im gewohnten
+                    Online-Banking. Anschließend kommst du automatisch zurück in den Shop.
+                </p>
+                <button id="onlineTransferBtn" class="btn btn-primary">Weiter zur Bank</button>
             </div>
             </div>
         </form>
@@ -186,10 +204,18 @@
                 if (e == 'stripe') {
                     document.getElementById('stripe').style.display = "block";
                     document.getElementById('pre_payment_container').style.display = "none";
+                    document.getElementById('online_transfer_container').style.display = "none";
                     document.getElementById('complete-order').style.display = "block";
                 } else if (e == 'pre_payment') {
                     document.getElementById('stripe').style.display = "none";
                     document.getElementById('pre_payment_container').style.display = "block";
+                    document.getElementById('online_transfer_container').style.display = "none";
+                    document.getElementById('complete-order').disabled = true;
+                    document.getElementById('complete-order').style.display = "none";
+                } else if (e == 'online_transfer') {
+                    document.getElementById('stripe').style.display = "none";
+                    document.getElementById('pre_payment_container').style.display = "none";
+                    document.getElementById('online_transfer_container').style.display = "block";
                     document.getElementById('complete-order').disabled = true;
                     document.getElementById('complete-order').style.display = "none";
                 }
@@ -203,6 +229,18 @@
                     event.preventDefault();
                     form.submit();
                 });
+
+                // form.submit() umgeht den submit-Handler von Stripe – genau wie
+                // bei der Vorkasse. Sonst würde Stripe versuchen, ein Kartentoken
+                // zu erzeugen, obwohl gar keine Karte im Spiel ist.
+                const onlineTransferBtn = document.getElementById('onlineTransferBtn');
+                if (onlineTransferBtn) {
+                    onlineTransferBtn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        onlineTransferBtn.disabled = true;
+                        form.submit();
+                    });
+                }
             });
         </script>
     @endpush
