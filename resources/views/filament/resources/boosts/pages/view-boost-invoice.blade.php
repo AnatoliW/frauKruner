@@ -11,12 +11,7 @@
         $buyerFirstName = $boost->user_info->f_name ?? $boost->user?->name ?? '';
         $buyerLastName = $boost->user_info->l_name ?? $boost->user?->last_name ?? '';
 
-        $cutoffDate = \Carbon\Carbon::parse(config('app.invoice_format_cutoff_date'));
-        $useOldFormat = $boost->created_at->lt($cutoffDate) && $payment && $payment->payment_trnx_id;
-
-        $invoiceNumber = $useOldFormat
-            ? 'FKB' . $payment->payment_trnx_id
-            : 'PFK-' . $boost->created_at->format('Y') . '-' . $boost->id;
+        $invoiceNumber = $boost->invoice_number;
     @endphp
 
     <x-invoice.document-styles />

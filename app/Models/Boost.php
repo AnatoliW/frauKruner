@@ -45,6 +45,27 @@ class Boost extends Model
         return $value / 100 ?? 0;
     }
 
+    /**
+     * Rechnungsnummer der Hervorhebung ("Push").
+     *
+     * Einzige Quelle fuer Nutzerkonto und Adminbereich, damit beide Seiten
+     * immer dieselbe Nummer anzeigen. Alte Belege (vor dem Stichtag aus
+     * config('app.invoice_format_cutoff_date')) behalten FKB + Zahlungs-ID,
+     * alles danach bekommt FKP-<Jahr>-<ID>, z. B. FKP-2026-1787.
+     */
+    public function getInvoiceNumberAttribute(): string
+    {
+        $cutoff = Carbon::parse(config('app.invoice_format_cutoff_date', '2026-08-20'));
+        $createdAt = $this->created_at ?? Carbon::now();
+        $payment = $this->payment ?? $this->payments->first();
+
+        if ($createdAt->lt($cutoff) && $payment && $payment->payment_trnx_id) {
+            return 'FKB' . $payment->payment_trnx_id;
+        }
+
+        return 'FKP-' . $createdAt->format('Y') . '-' . $this->id;
+    }
+
     public function getProductNameAttribute()
     {
         return $this->boostable ? $this->boostable->title :'';

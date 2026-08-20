@@ -99,17 +99,8 @@
 
 
                             <div class=" col-md-6">
-                                @php
-                                    $cutoffDate = \Carbon\Carbon::parse(config('app.invoice_format_cutoff_date'));
-                                    $payment = $dataTypeContent->payment ?? $dataTypeContent->payments->first();
-                                    $useOldFormat = $dataTypeContent->created_at->lt($cutoffDate) && $payment && $payment->payment_trnx_id;
-                                @endphp
                                 <p>Rechnungs-Nr:
-                                    @if ($useOldFormat)
-                                        FKB{{ $payment->payment_trnx_id }}<br>
-                                    @else
-                                        PFK-{{ $dataTypeContent->created_at->format('Y') }}-{{ $dataTypeContent->id }}<br>
-                                    @endif
+                                    {{ $dataTypeContent->invoice_number }}<br>
                                     Rechnungs-Datum:
                                     {{ $dataTypeContent->created_at->format('d.m.Y') }} <br><br>
                                 </p>

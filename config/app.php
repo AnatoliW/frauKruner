@@ -69,6 +69,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Invoice Format Cutoff Date
+    |--------------------------------------------------------------------------
+    |
+    | Hervorhebungen ("Push"), die vor diesem Datum angelegt wurden, behalten
+    | die alte Rechnungsnummer (FKB + payment_trnx_id). Alles ab diesem Datum
+    | bekommt die neue Nummer FKP-<Jahr>-<Boost-ID>, z. B. FKP-2026-1787.
+    |
+    */
+
+    'invoice_format_cutoff_date' => env('INVOICE_FORMAT_CUTOFF_DATE', '2026-08-20'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |
