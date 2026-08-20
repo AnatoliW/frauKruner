@@ -46,7 +46,7 @@
                         <input value="pre_payment" name="payment_type" onclick="paymentMethod('pre_payment')"
                             id="payment_option3" type="radio" class="options radio" />
                         <label for="payment_option3">
-                            Vorkasse (Beta)
+                            Vorkasse
                         </label> <br>
                     </p>
                 @endif
