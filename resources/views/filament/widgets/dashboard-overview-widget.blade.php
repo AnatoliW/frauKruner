@@ -59,7 +59,7 @@
             position: relative;
             overflow: hidden;
             min-height: 198px;
-            border-radius: 0.2rem;
+            border-radius: 10px;
             border: 1px solid rgba(15, 23, 42, 0.18);
             background: #2d353d;
             color: #ffffff;
@@ -225,7 +225,7 @@
                     <div class="dashboard-card-action">
                         <a
                             href="{{ $this->getOrdersUrl() }}"
-                            class="dashboard-card-button"
+                            class="fi-color fi-color-primary fi-bg-color-400 hover:fi-bg-color-300 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-900 hover:fi-text-color-800 dark:fi-text-color-950 dark:hover:fi-text-color-950 fi-btn fi-size-md  fi-ac-btn-action"
                         >
                             Alle Bestellungen anzeigen
                         </a>
@@ -253,7 +253,7 @@
                     <div class="dashboard-card-action">
                         <a
                             href="{{ $this->getProductsUrl() }}"
-                            class="dashboard-card-button"
+                            class="fi-color fi-color-primary fi-bg-color-400 hover:fi-bg-color-300 dark:fi-bg-color-600 dark:hover:fi-bg-color-500 fi-text-color-900 hover:fi-text-color-800 dark:fi-text-color-950 dark:hover:fi-text-color-950 fi-btn fi-size-md  fi-ac-btn-action"
                         >
                             Produkte anzeigen
                         </a>

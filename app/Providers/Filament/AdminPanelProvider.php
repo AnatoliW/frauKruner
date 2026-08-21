@@ -61,6 +61,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('36px')
             ->colors([
                 'primary' => Color::Amber,
+                // Palette aus dem gewuenschten Hex erzeugen, den vorgegebenen
+                // Shade danach exakt auf den Wunschwert setzen.
+                'success' => array_replace(Color::hex('#67c776'), [500 => '#67c776']),
+                'warning' => array_replace(Color::hex('#e8ca31'), [300 => '#e8ca31']),
+                'danger' => array_replace(Color::hex('#e74a3f'), [600 => '#e74a3f']),
             ])
             ->maxContentWidth(Width::Full)
             // Globale Suche in der oberen Leiste deaktiviert
@@ -377,6 +382,82 @@ class AdminPanelProvider extends PanelProvider
                     right: 1rem;
                     z-index: 5;
                 } */
+            }
+
+            /* Success-/Warning-/Danger-Buttons: keine Transparenz, voller
+               Farbwert aus der Palette und durchgehend weisse Beschriftung. */
+            .fi-btn.fi-color-success,
+            .fi-btn.fi-color-warning,
+            .fi-btn.fi-color-danger {
+                opacity: 1 !important;
+            }
+
+            .fi-btn.fi-color-success:not(.fi-outlined),
+            .fi-btn.fi-color-warning:not(.fi-outlined),
+            .fi-btn.fi-color-danger:not(.fi-outlined) {
+                --text: #ffffff;
+                --hover-text: #ffffff;
+                --dark-text: #ffffff;
+                --dark-hover-text: #ffffff;
+                color: #ffffff !important;
+            }
+
+            .fi-btn.fi-color-success:not(.fi-outlined) > .fi-icon,
+            .fi-btn.fi-color-warning:not(.fi-outlined) > .fi-icon,
+            .fi-btn.fi-color-danger:not(.fi-outlined) > .fi-icon {
+                color: #ffffff !important;
+            }
+
+            .fi-btn.fi-color-success:not(.fi-outlined) {
+                --bg: #67c776;
+                --dark-bg: #67c776;
+                --hover-bg: #4fb45f;
+                --dark-hover-bg: #4fb45f;
+            }
+
+            .fi-btn.fi-color-warning:not(.fi-outlined) {
+                --bg: #e8ca31;
+                --dark-bg: #e8ca31;
+                --hover-bg: #d0b41f;
+                --dark-hover-bg: #d0b41f;
+            }
+
+            .fi-btn.fi-color-danger:not(.fi-outlined) {
+                --bg: #e74a3f;
+                --dark-bg: #e74a3f;
+                --hover-bg: #d13328;
+                --dark-hover-bg: #d13328;
+            }
+
+            /* Primaere Buttons uebernehmen die Optik der Dashboard-Karten-
+               Buttons (.dashboard-card-button im Overview-Widget). */
+            .fi-btn.fi-color-primary:not(.fi-outlined) {
+                --bg: #1ba4db;
+                --dark-bg: #1ba4db;
+                --hover-bg: #1593c6;
+                --dark-hover-bg: #1593c6;
+                --text: #ffffff;
+                --hover-text: #ffffff;
+                --dark-text: #ffffff;
+                --dark-hover-text: #ffffff;
+                border: 1px solid rgba(14, 165, 233, 0.85);
+                color: #ffffff !important;
+                font-weight: 400;
+                line-height: 1.2;
+                text-decoration: none;
+                transition: 0.18s ease;
+                opacity: 1 !important;
+            }
+
+            .fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
+                color: #ffffff !important;
+            }
+
+            /* Padding und Schriftgroesse nur fuer die Standardgroesse; Buttons
+               mit expliziter Groesse (z. B. Tabellenaktionen) bleiben proportional. */
+            .fi-btn.fi-color-primary:not(.fi-outlined):not(.fi-size-xs):not(.fi-size-sm):not(.fi-size-lg):not(.fi-size-xl) {
+                padding: 0.65rem 1.25rem;
+                font-size: 1rem;
             }
         </style>
         <script>
