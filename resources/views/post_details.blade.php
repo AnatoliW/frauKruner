@@ -7,6 +7,13 @@
 			background-color: none !important;
 			height: 0 !important;
 		}
+
+		/* Im Editor gesetzte Bildbreiten (max. 600px) duerfen auf kleinen
+		   Displays nicht aus der Textspalte laufen. */
+		.news-single-content img {
+			max-width: 100%;
+			height: auto;
+		}
 	</style>
 	@endpush
 	@section('content')

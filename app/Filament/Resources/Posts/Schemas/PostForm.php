@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
+use App\Filament\Forms\Components\RichEditorImageSize;
 use App\Filament\Forms\Components\RichEditorLink;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -37,7 +38,9 @@ class PostForm
                             ->rows(3)
                             ->columnSpanFull()
                             ->helperText('Kurzer Text unter dem Titel auf /Neuigkeiten – optional, aber empfohlen.'),
-                        RichEditorLink::applyTo(RichEditor::make('body'))
+                        RichEditorImageSize::applyTo(
+                            RichEditorLink::applyTo(RichEditor::make('body')),
+                        )
                             ->label('Beitragstext')
                             ->required()
                             ->columnSpanFull()
@@ -64,7 +67,7 @@ class PostForm
                                 ['blockquote', 'bulletList', 'orderedList'],
                                 ['undo', 'redo'],
                             ])
-                            ->helperText('Fotos einfügen: Button „Dateien anhängen“ in der Toolbar, per Drag & Drop oder mit Strg+V in den Text.')
+                            ->helperText('Fotos einfügen: Button „Dateien anhängen“ in der Toolbar, per Drag & Drop oder mit Strg+V in den Text. Größe ändern: Bild anklicken und in der eingeblendeten Leiste eine Breite wählen – oder an den Ecken ziehen.')
                             ->extraInputAttributes([
                                 'style' => 'min-height: 60vh; font-size: 1.125rem; line-height: 1.75;',
                             ]),
