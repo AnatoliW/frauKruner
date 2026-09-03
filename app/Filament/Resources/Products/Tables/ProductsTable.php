@@ -28,7 +28,20 @@ class ProductsTable
             ->columns([
                 TextColumn::make('user_id')
                     ->label('Nutzer Id')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $query->where(function (Builder $q) use ($search): void {
+                            if (is_numeric($search)) {
+                                $q->where('products.user_id', (int) $search);
+                            }
+
+                            $q->orWhereHas('user', function (Builder $q) use ($search): void {
+                                $q->where('email', 'like', "%{$search}%")
+                                    ->orWhere('last_name', 'like', "%{$search}%")
+                                    ->orWhereRaw("CONCAT_WS(' ', name, last_name) LIKE ?", ["%{$search}%"]);
+                            });
+                        });
+                    }),
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable(),

@@ -25,6 +25,16 @@ class UsersTable
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
+                TextColumn::make('id')
+                    ->label('Nutzer Id')
+                    ->sortable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        if (! is_numeric($search)) {
+                            return $query;
+                        }
+
+                        return $query->orWhere('users.id', (int) $search);
+                    }),
                 TextColumn::make('username')
                     ->label('Nutzername')
                     ->searchable(),
