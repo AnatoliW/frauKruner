@@ -37,9 +37,13 @@ class MicropaymentOrderSubject extends MicropaymentSubject
         return (int) round(((float) $this->order->total) * 100);
     }
 
+    /**
+     * Nur die Kennung, z. B. `FK2026-12088`. Bewusst ohne Zusatztext: So steht
+     * auf dem Kontoauszug genau das, wonach die Bestellung auch gesucht wird.
+     */
     public function paytext(): string
     {
-        return 'Bestellung '.$this->reference().' bei fraukruner.de';
+        return $this->reference();
     }
 
     public function firstName(): string
