@@ -689,11 +689,11 @@
                             alt="Bezahlmethode Logo">
                     @endforeach -->
                     <span>VORKASSE</span>
-                    <a class="no-before" href="https://paymentdomain.micropayment.de/payment/service/?project=projectIdentifier&param1Name=param1Value&paramXName=paramXValue" target="_blank"><img src="https://payment-resources.micropayment.de/ui/brands/set-001/sepa/39780" style="border: 0px; width: 120px; max-width: 120px;"></a>
+                    <img src="https://payment-resources.micropayment.de/ui/brands/set-001/sepa/39780" style="border: 0px; width: 120px; max-width: 120px;">
 
-                    <a class="no-before" href="https://paymentdomain.micropayment.de/payment/service/?project=projectIdentifier&param1Name=param1Value&paramXName=paramXValue" target="_blank"><img src="https://payment-resources.micropayment.de/ui/brands/set-001/onlinebanktransfer/39780" style="border: 0px; width: 120px; max-width: 120px;"></a>
+                    <img src="https://payment-resources.micropayment.de/ui/brands/set-001/onlinebanktransfer/39780" style="border: 0px; width: 120px; max-width: 120px;">
 
-                    <a class="no-before" href="https://paymentdomain.micropayment.de/payment/service/?project=projectIdentifier&param1Name=param1Value&paramXName=paramXValue" target="_blank"><img src="https://payment-resources.micropayment.de/ui/brands/set-001/prepay/39780" style="border: 0px; width: 120px; max-width: 120px;"></a>
+                    <img src="https://payment-resources.micropayment.de/ui/brands/set-001/prepay/39780" style="border: 0px; width: 120px; max-width: 120px;">
                 </div>
 
                 <div class="text-center">
