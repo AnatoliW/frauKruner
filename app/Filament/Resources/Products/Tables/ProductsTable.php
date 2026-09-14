@@ -95,10 +95,12 @@ class ProductsTable
                         ->whereNotNull('boost_end_date')
                         ->where('boost_start_date', '<=', now())
                         ->where('boost_end_date', '>=', now())),
+                // Seit boosts:expire laeuft, steht bei einem abgelaufenen Push
+                // boosted auf 0 und nur noch das Enddatum zeugt davon.
                 Filter::make('expired_boost')
                     ->label('Push abgelaufen')
                     ->query(fn (Builder $query): Builder => $query
-                        ->where('boosted', 1)
+                        ->where('boosted', 0)
                         ->whereNotNull('boost_end_date')
                         ->where('boost_end_date', '<', now())),
                 TrashedFilter::make(),

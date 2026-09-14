@@ -135,15 +135,58 @@ class Boost extends Model
         ]);
     }
 
+    /**
+     * Beendet die Hervorhebung.
+     *
+     * Aufgerufen vom Befehl boosts:expire, sobald end_day vorbei ist.
+     *
+     * Start- und Enddatum bleiben am Profil bzw. Produkt stehen: Der
+     * Adminbereich zeigt sie als Verlauf an ("Push-Ende"), und ohne sie liesse
+     * sich spaeter nicht mehr nachvollziehen, wann der letzte Push lief.
+     * Abgeschaltet wird allein das Kennzeichen boosted.
+     */
     public function end()
     {
         $this->status = 0;
         $this->save();
-        return $this->boostable->update([
-            'boosted' => 0,
-            'boost_start_date' => null,
-            'boost_end_date' => null,
-        ]);
+
+        // Geloeschte Produkte laedt morphTo nicht mit; um die kuemmert sich der
+        // zweite Durchgang von boosts:expire.
+        if (! $this->boostable) {
+            return false;
+        }
+
+        // Laeuft auf demselben Profil oder Produkt noch eine zweite
+        // Hervorhebung, darf sie hier nicht mit abgeschaltet werden.
+        if (static::hasRunningBoost($this->boostable, $this->getKey())) {
+            return false;
+        }
+
+        return $this->boostable->update(['boosted' => 0]);
+    }
+
+    /**
+     * Laeuft auf diesem Profil oder Produkt noch eine Hervorhebung?
+     *
+     * Massgeblich sind die Boost-Datensaetze, nicht das Feld boost_end_date am
+     * Profil bzw. Produkt: process() ueberschreibt dieses Feld bei jedem neuen
+     * Push mit "heute + Laufzeit des neuen Pakets". Wer waehrend eines langen
+     * Pushs einen kurzen dazukauft, hat danach ein zu frueh stehendes
+     * boost_end_date, obwohl der lange Push noch laeuft. Wuerde sich das
+     * Abschalten auf dieses Feld stuetzen, verloere die Kundin bezahlte Zeit.
+     *
+     * $exceptBoostId blendet den Boost aus, der gerade beendet wird.
+     */
+    public static function hasRunningBoost(Model $boostable, ?int $exceptBoostId = null): bool
+    {
+        return static::query()
+            ->where('boostable_type', $boostable->getMorphClass())
+            ->where('boostable_id', $boostable->getKey())
+            ->when($exceptBoostId !== null, fn ($query) => $query->whereKeyNot($exceptBoostId))
+            ->where('status', 1)
+            ->whereNotNull('end_day')
+            ->where('end_day', '>', Carbon::now())
+            ->exists();
     }
     public function payments()
     {

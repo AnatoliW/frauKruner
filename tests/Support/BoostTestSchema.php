@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 class BoostTestSchema
 {
     /** @var list<string> */
-    private const TABLES = ['payments', 'boosts', 'packages', 'points', 'users'];
+    private const TABLES = ['payments', 'boosts', 'packages', 'points', 'products', 'users'];
 
     public static function create(): void
     {
@@ -40,6 +40,19 @@ class BoostTestSchema
             $table->bigInteger('pointable_id');
             $table->string('pointable_type');
             $table->bigInteger('points')->default(0);
+            $table->timestamps();
+        });
+
+        // Produkte koennen genau wie Profile gepusht werden; boosts:expire
+        // raeumt beide auf.
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('title')->nullable();
+            $table->tinyInteger('boosted')->default(0);
+            $table->timestamp('boost_start_date')->nullable();
+            $table->timestamp('boost_end_date')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
 
