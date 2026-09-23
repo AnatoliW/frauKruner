@@ -131,6 +131,17 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        Illuminate\Database\Eloquent\Collection::class,
+        App\Addition::class,
+        App\Category::class,
+        App\Finishing::class,
+        App\PaymentIcon::class,
+        App\Product::class,
+        App\Rating::class,
+        App\Tag::class,
+        App\WearingTime::class,
+        App\Models\User::class,
+    ],
 
 ];
