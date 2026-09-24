@@ -11,6 +11,9 @@
         Cache::put('payment_methods', $paymentMethods, 60);
     }
 
+    // Cache-Busting fuer das Druck-Stylesheet
+    $printCssVersion = @filemtime(public_path('css/print.css')) ?: 1;
+
 @endphp
 
 <!DOCTYPE html>
@@ -47,7 +50,7 @@
         }
     </style>
     <link rel="stylesheet" href="{{ asset('assets/css/style.min.css?v=14') }}" defer>
-    <link rel="stylesheet" href="{{ asset('css/print.css') }}" media="print" />
+    <link rel="stylesheet" href="{{ asset('css/print.css') }}?v={{ $printCssVersion }}" media="print" />
     <link rel="stylesheet" href="{{ asset('css/custom/star-rating.css') }}" media="all" type="text/css" />
     {{-- <link rel="stylesheet" href="{{asset('fonts/font-awesome/fontawesome.css')}}"> --}}
     <link rel="stylesheet" href="{{ asset('assets/css/font.min.css') }}">

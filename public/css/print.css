@@ -2,7 +2,36 @@
  * Print overrides (loaded with media="print").
  * Blacklist approach: hide only non-print elements with display:none.
  * Avoids body visibility:hidden which can prevent content from inheriting visibility.
+ *
+ * Seitenbox explizit setzen: ohne @page rendert Chrome/Safari auf Mobilgeraeten
+ * gegen das Geraete-Viewport (~390px) und skaliert das Ergebnis auf A4 hoch -
+ * die Rechnung wird dadurch rund doppelt so gross gedruckt.
  */
+@page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+}
+
+/* Basis in absoluten Einheiten: macht den Ausdruck unabhaengig von Geraetebreite
+   und Browser-Schriftgroesse (Bootstrap rechnet rem gegen den html-Wert). */
+html {
+    font-size: 10pt !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+html,
+body {
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    line-height: 1.4 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
 /* Remove from flow - no empty space */
 body > header,
 body > footer,
@@ -31,12 +60,17 @@ main,
     margin: 0 !important;
     padding: 0 !important;
 }
-/* Full-width container for print */
+/* Full-width container for print - Seitenrand kommt aus @page */
 .container,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl,
+.container-xxl,
 .container-fluid {
     max-width: none !important;
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
 }
 /* Voyager: full width for side-body and content */
 .content-container .container-fluid,
@@ -45,7 +79,7 @@ main,
 #buyerPrintWhole {
     max-width: none !important;
     width: 100% !important;
-    padding: 0 0.5rem !important;
+    padding: 0 !important;
     flex: 0 0 100% !important;
 }
 /* Override style.min.css: do NOT hide body - causes content to disappear */
@@ -61,6 +95,29 @@ body {
     top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+/* Negative Row-Gutter von Bootstrap neutralisieren: ohne Container-Padding
+   ragen die Zeilen sonst ueber den Satzspiegel hinaus. */
+#buyerPrintWhole .row,
+#charges .row,
+#printableArea .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+/* Inline overflow-x:auto in den Blade-Views schneidet die breite Positions-
+   tabelle beim Druck rechts ab - im Druck muss alles sichtbar bleiben. */
+#buyerPrintWhole,
+#charges,
+#printableArea,
+#buyerPrintWhole .card-body,
+#charges .card-body,
+#printableArea .card-body,
+#buyerPrintWhole .table-responsive,
+#charges .table-responsive,
+#printableArea .table-responsive {
+    overflow: visible !important;
 }
 /* Override column constraints for full-width print */
 .row,
@@ -71,4 +128,148 @@ body {
     max-width: 100% !important;
     width: 100% !important;
     flex: 0 0 100% !important;
+}
+/* Adress- und Belegdaten zweispaltig halten, unabhaengig vom Viewport.
+   Muss nach der Regel oben stehen, damit .col-12.col-md-6 hier landet. */
+#buyerPrintWhole .col-md-6,
+#charges .col-md-6,
+#printableArea .col-md-6 {
+    width: 50% !important;
+    max-width: 50% !important;
+    flex: 0 0 50% !important;
+}
+
+/* Verschachtelte Bootstrap-Cards flachlegen: spart Breite und Seitenumbrueche */
+#buyerPrintWhole .card,
+#charges .card,
+#printableArea .card {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+#buyerPrintWhole .card-body,
+#charges .card-body,
+#printableArea .card-body {
+    padding: 0 !important;
+}
+
+#buyerPrintWhole .card + .card,
+#charges .card + .card,
+#printableArea .card + .card {
+    margin-top: 6mm !important;
+}
+
+/* Tabellen: auf die Seitenbreite umbrechen statt horizontal zu scrollen.
+   table-layout bleibt auto, damit Produktname mehr Platz bekommt als Netto;
+   den Umbruch erzwingt overflow-wrap an den Zellen. */
+#buyerPrintWhole table,
+#charges table,
+#printableArea table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+    font-size: 9pt !important;
+}
+
+#buyerPrintWhole th,
+#charges th,
+#printableArea th,
+#buyerPrintWhole td,
+#charges td,
+#printableArea td {
+    width: auto !important;
+    padding: 1.5mm 2mm !important;
+    border: 1px solid #d1d5db !important;
+    vertical-align: top !important;
+    /* break-word statt anywhere: Betraege wie "49,58 EUR" bleiben zusammen,
+       nur zu lange Einzelwoerter werden getrennt. */
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    hyphens: auto !important;
+}
+
+/* Produktnamen duerfen notfalls hart umbrechen, sonst sprengen sie die Spalte */
+#buyerPrintWhole td:first-child,
+#charges td:first-child,
+#printableArea td:first-child {
+    word-break: break-word !important;
+}
+
+#buyerPrintWhole thead,
+#charges thead,
+#printableArea thead {
+    display: table-header-group !important;
+}
+
+#buyerPrintWhole tr,
+#charges tr,
+#printableArea tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
+
+/* Grosse Abstandsklassen fressen auf A4 eine halbe Seite */
+#buyerPrintWhole .mt-5,
+#charges .mt-5,
+#printableArea .mt-5 {
+    margin-top: 6mm !important;
+}
+
+/* Rechnungskopf im Druck immer einzeilig - die 900px-Query der
+   Komponente wuerde auf dem Handy sonst auch im Druck greifen. */
+#buyerPrintWhole .invoice-document__header,
+#charges .invoice-document__header,
+#printableArea .invoice-document__header {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+}
+
+#buyerPrintWhole .invoice-document__title-block,
+#charges .invoice-document__title-block,
+#printableArea .invoice-document__title-block {
+    text-align: right !important;
+}
+
+/* Storniert-Banner (roter ::before-Balken) im Ausdruck erhalten */
+.card-body.storniert::before {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/**
+ * Rueckfallebene fuer Mobilbrowser, die @page ignorieren und die Druckseite
+ * gegen das Geraete-Viewport rendern. In dem Fall ist die Seitenbox schmal -
+ * dann darf hart umgebrochen werden, damit die Positionstabelle mit bis zu
+ * neun Spalten nicht rechts abgeschnitten wird.
+ * Auf A4 (794px) und Letter (816px) greift diese Regel nicht.
+ */
+@media print and (max-width: 600px) {
+    #buyerPrintWhole table,
+    #charges table,
+    #printableArea table {
+        table-layout: fixed !important;
+        font-size: 7.5pt !important;
+    }
+
+    #buyerPrintWhole th,
+    #charges th,
+    #printableArea th,
+    #buyerPrintWhole td,
+    #charges td,
+    #printableArea td {
+        word-break: break-word !important;
+        padding: 1mm !important;
+    }
+
+    /* Adressblock untereinander - zweispaltig wird es hier zu eng */
+    #buyerPrintWhole .col-md-6,
+    #charges .col-md-6,
+    #printableArea .col-md-6 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
 }
