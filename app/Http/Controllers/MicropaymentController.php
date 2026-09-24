@@ -162,6 +162,29 @@ class MicropaymentController extends Controller
             return redirect()->to($this->resultUrl('completed', $subject));
         }
 
+        // Ein Betrag von 0 darf das Zahlungsfenster nie erreichen.
+        //
+        // Micropayment lehnt ihn nicht ab, sondern bucht den Mindestbetrag von
+        // 0,49 €. Die Kundin zahlt also, die Benachrichtigung meldet 49 Cent
+        // gegen erwartete 0, amountMismatch() schlägt an – und nichts wird
+        // gebucht. Das ist der schlechteste aller Ausgänge: Geld eingezogen,
+        // Leistung nicht erbracht, und niemand bemerkt es ohne Blick ins
+        // Protokoll.
+        //
+        // Die Ursache gehört an die Stelle, die den Betrag festlegt – für
+        // Bestellungen inzwischen CheckoutController::store(), das einen leeren
+        // Warenkorb abweist. Diese Prüfung hier bleibt trotzdem: Sie deckt jede
+        // künftige Quelle eines Nullbetrags ab, ohne dass jemand daran denken
+        // muss.
+        if ($subject->amountInCents() <= 0) {
+            logger()->warning('Micropayment: Weiterleitung mit Betrag 0 abgewiesen', [
+                'reference' => $subject->reference(),
+            ] + $subject->logContext());
+
+            return redirect()->to($subject->backUrl())
+                ->withErrors('Für diesen Vorgang ist kein Betrag hinterlegt. Bitte wende dich an den Kundenservice.');
+        }
+
         $subject->markRedirected();
 
         $paymentUrl = MicropaymentGateway::paymentUrl($subject);

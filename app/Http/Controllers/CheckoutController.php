@@ -30,6 +30,26 @@ class CheckoutController extends Controller
 {
     public function store(Request $request)
     {
+        // Ohne Artikel gibt es nichts zu bestellen.
+        //
+        // Die Kassenseite selbst ist gegen den leeren Warenkorb geschützt
+        // (PageController::checkout() leitet dann in den Shop), das Absenden
+        // war es nicht. Wer das Formular erneut abschickt – Zurück-Taste,
+        // zweiter Tab, doppelter Klick –, trifft auf einen Warenkorb, den
+        // processOrder() am Ende bereits geleert hat: `max(0, 0 - 0)` ergibt
+        // eine Bestellung über 0,00 € ohne Unterbestellungen.
+        //
+        // Die geht anschließend mit `amount=0` ins Zahlungsfenster, wo
+        // Micropayment daraus seinen Mindestbetrag von 0,49 € macht. Der Kunde
+        // zahlt, die Betragsprüfung in MicropaymentController::amountMismatch()
+        // schlägt an, und gebucht wird nichts – Geld weg, Bestellung offen.
+        if (\Cart::isEmpty()) {
+            CouponSession::forget();
+
+            return redirect('/shop')
+                ->withErrors('Dein Warenkorb ist leer – die Bestellung wurde nicht angelegt. Bitte lege die Artikel erneut hinein.');
+        }
+
         $request->validate([
             'first_name' => 'required|string',
             'last_name' => 'required|string',

@@ -657,6 +657,27 @@ describe('Weiterleitung zum Zahlungsfenster', function () {
         expect($order->fresh()->payment_gateway)->toBeNull();
     });
 
+    // Micropayment lehnt einen Betrag von 0 nicht ab, sondern bucht seinen
+    // Mindestbetrag von 0,49 €. Die Benachrichtigung meldet dann 49 Cent gegen
+    // erwartete 0, die Betragsprüfung schlägt an und nichts wird gebucht – die
+    // Kundin hat bezahlt und bekommt nichts. Produktiv ist das 346-mal
+    // entstanden, weil ein erneut abgeschicktes Kassenformular auf einen
+    // bereits geleerten Warenkorb traf.
+    it('leitet einen Betrag von 0 gar nicht erst weiter', function ($total) {
+        [$order] = mcpOrderWithChild(['total' => $total]);
+
+        $this->get(URL::temporarySignedRoute(
+            'payment.micropayment.order', now()->addMinutes(30), ['order' => $order->id]
+        ))->assertRedirect(route('payment', $order));
+
+        // Auch die Zahlart darf nicht gesetzt werden: Die Bestellung war nie
+        // beim Zahlungsfenster.
+        expect($order->fresh()->payment_gateway)->toBeNull();
+    })->with([
+        'Betrag 0' => [0],
+        'Betrag negativ' => [-5],
+    ]);
+
     it('weist eine abgelaufene Signatur ab', function () {
         [$order] = mcpOrderWithChild();
 
