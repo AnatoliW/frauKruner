@@ -36,6 +36,21 @@ class PayoutResource extends BaseAdminResource
         return PayoutsTable::configure($table);
     }
 
+    /**
+     * Diese Liste zeigt Positionen: je Verkäuferin eine Auszahlung.
+     *
+     * Vorgeladen wird alles, was die Tabelle je Zeile anzeigt. Ohne das holt
+     * jede Zeile ihre Bestellung, ihre Verkäuferin, deren Bankverbindung, ihr
+     * Produkt, dessen Kategorie und ihre Fotos einzeln nach – gemessen sechs
+     * Abfragen je Zeile, also knapp 190 für eine Seite mit 30 Auszahlungen.
+     * Auf einer Datenbank im selben Rechner fällt das nicht auf; liegt sie auf
+     * einem anderen Host, kostet jede dieser Abfragen ihren Netzweg, und aus
+     * Millisekunden werden Sekunden. Genau das war live als lange Wartezeit
+     * nach dem Tippen im Suchfeld zu sehen.
+     *
+     * `parent` gehört dazu, weil die Bestellnummer der Position aus dem Kopf
+     * der Bestellung kommt (Order::orderNumber() über mainOrder()).
+     */
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -43,6 +58,12 @@ class PayoutResource extends BaseAdminResource
             ->active()
             ->children()
             ->filter()
+            ->with([
+                'parent',
+                'vendor.method',
+                'product.category',
+                'orderimages',
+            ])
             ->latest(Order::CREATED_AT);
     }
 
