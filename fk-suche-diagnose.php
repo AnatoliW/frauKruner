@@ -34,6 +34,35 @@ $titel = function (string $text): void {
     echo "\n".$text."\n".str_repeat('-', strlen($text))."\n";
 };
 
+// --------------------------------------------------- 0. Welche Datenbank?
+$titel('0. Welche Datenbank laeuft hier?');
+
+$version = DB::selectOne('select version() as v')->v;
+$istMaria = stripos($version, 'mariadb') !== false;
+
+printf("Version   %s\n", $version);
+printf("Host      %s\n", config('database.connections.'.config('database.default').'.host'));
+
+echo "\nWarum das die wichtigste Zeile ist: Die Suche vergleicht eine Bestellung\n";
+echo "mit ihren Positionen ueber eine korrelierte EXISTS-Unterabfrage. MariaDB\n";
+echo "formt die in einen Semi-Join um und bleibt linear schnell. MySQL fuehrt\n";
+echo "sie je nach Version als abhaengige Unterabfrage aus - einmal pro Zeile.\n";
+echo "Ohne Index auf orders.parent_id ist das jedes Mal ein voller Tabellen-\n";
+echo "durchlauf, und aus Millisekunden werden Minuten. Punkt 4 zeigt, ob der\n";
+echo "Index fehlt, Punkt 3 was der Plan daraus macht.\n";
+
+// Damit dieses Skript nicht selbst haengt, wenn die Abfrage entgleist.
+try {
+    if ($istMaria) {
+        DB::statement('SET SESSION max_statement_time = 20');
+    } else {
+        DB::statement('SET SESSION max_execution_time = 20000');
+    }
+    echo "\nZeitgrenze fuer Punkt 3: 20 Sekunden je Abfrage.\n";
+} catch (\Throwable $e) {
+    echo "\nHinweis: Zeitgrenze liess sich nicht setzen (".$e->getMessage().").\n";
+}
+
 // ---------------------------------------------------------------- 1. Umfang
 $titel('1. Wie viele Zeilen liegen live?');
 
@@ -78,13 +107,29 @@ if ($leerlauf < 1) {
 $titel('3. Wie lange braucht die Suchabfrage selbst?');
 
 $messen = function (string $name, callable $bauen): void {
+    echo "\n".$name."\n";
+
+    // Zuerst der Plan: Der kostet nichts und sagt schon alles. `type=ALL` in
+    // einer Unterabfrage heisst voller Durchlauf je Zeile - das ist der Haenger.
     try {
-        $bauen();                                          // aufwaermen
-        $start = microtime(true);
-        $treffer = $bauen();
-        printf("%-34s %7.0f ms   %5d Treffer\n", $name, (microtime(true) - $start) * 1000, $treffer);
+        $q = $bauen();
+        foreach (DB::select('EXPLAIN '.$q->toSql(), $q->getBindings()) as $r) {
+            printf("  Plan  %-20s type=%-8s key=%-16s rows=%-9s %s\n",
+                $r->select_type ?? '', $r->type ?? '', $r->key ?? 'KEINER',
+                $r->rows ?? '', $r->Extra ?? '');
+        }
     } catch (\Throwable $e) {
-        printf("%-34s FEHLER: %s\n", $name, $e->getMessage());
+        printf("  Plan  nicht lesbar: %s\n", $e->getMessage());
+    }
+
+    try {
+        $start = microtime(true);
+        $treffer = $bauen()->count();
+        printf("  Zeit  %7.0f ms   %5d Treffer\n", (microtime(true) - $start) * 1000, $treffer);
+    } catch (\Throwable $e) {
+        $kurz = explode("\n", $e->getMessage())[0];
+        printf("  Zeit  abgebrochen: %s\n", substr($kurz, 0, 160));
+        echo "        (Zeitgrenze erreicht - genau das ist die lange Wartezeit live)\n";
     }
 };
 
@@ -94,23 +139,31 @@ $wieName = function ($q) use ($suche) {
         ->orWhere('email', 'like', "%{$suche}%");
 };
 
-$messen('/admin/orders', fn () => DB::table('orders as o')
+// Die teure Bedingung isoliert: nur die Unterabfrage auf die Positionen.
+$messen('/admin/orders - nur der Teil mit den Positionen', fn () => DB::table('orders as o')
+    ->whereNull('o.parent_id')->where('o.payment_status', 1)
+    ->whereExists(fn ($s) => $s->from('orders as k')
+        ->whereColumn('k.parent_id', 'o.id')
+        ->whereExists(fn ($u) => $u->from('users')->whereColumn('users.id', 'k.vendor_id')
+            ->where(fn ($n) => $n->where('name', 'like', "%{$suche}%")->orWhere('last_name', 'like', "%{$suche}%")))));
+
+$messen('/admin/orders - vollstaendig', fn () => DB::table('orders as o')
     ->whereNull('o.parent_id')->where('o.payment_status', 1)
     ->where(function ($q) use ($wieName, $suche) {
         $q->where($wieName)->orWhereExists(fn ($s) => $s->from('orders as k')
             ->whereColumn('k.parent_id', 'o.id')
             ->whereExists(fn ($u) => $u->from('users')->whereColumn('users.id', 'k.vendor_id')
                 ->where(fn ($n) => $n->where('name', 'like', "%{$suche}%")->orWhere('last_name', 'like', "%{$suche}%"))));
-    })->count());
+    }));
 
 $messen('/admin/prepayments', fn () => DB::table('orders as o')
     ->whereNull('o.parent_id')->where('o.payment_status', 0)
     ->where('o.payment_gateway', 'pre_payment')
-    ->where($wieName)->count());
+    ->where($wieName));
 
 $messen('/admin/payouts', fn () => DB::table('orders as o')
     ->whereNotNull('o.parent_id')->where('o.payment_status', 1)->where('o.status', 1)
-    ->where($wieName)->count());
+    ->where($wieName));
 
 // ------------------------------------------------------------ 4. Indizes
 $titel('4. Welche Indizes hat orders?');
@@ -120,10 +173,26 @@ foreach (DB::select('SHOW INDEX FROM orders') as $i) {
     $indizes[$i->Key_name][] = $i->Column_name;
 }
 foreach ($indizes as $name => $spalten) {
-    printf("  %-24s (%s)\n", $name, implode(', ', $spalten));
+    printf("  %-28s (%s)\n", $name, implode(', ', $spalten));
 }
-echo "\nGemessen bringen zusaetzliche Indizes hier fast nichts (95 -> 79 ms bei\n";
-echo "117.000 Zeilen). Sie sind also nicht der Hebel - nur der Vollstaendigkeit halber.\n";
+
+$hatParent = false;
+foreach ($indizes as $spalten) {
+    if (($spalten[0] ?? null) === 'parent_id') {
+        $hatParent = true;
+    }
+}
+
+echo "\n";
+if ($hatParent) {
+    echo "  parent_id ist indiziert - gut, die Unterabfrage kann gezielt suchen.\n";
+} else {
+    echo "  parent_id ist NICHT indiziert.\n";
+    echo "  Auf MariaDB fiel das nicht auf (gemessen 95 ms bei 117.000 Zeilen, weil\n";
+    echo "  der Semi-Join die Unterabfrage einmal auswertet). Auf MySQL wird sie je\n";
+    echo "  Zeile ausgewertet und durchlaeuft dabei jedes Mal die ganze Tabelle.\n";
+    echo "  Die Migration add_search_indexes_to_orders_table legt den Index an.\n";
+}
 
 // ------------------------------------------------ 5. Stand des Codes
 $titel('5. Laeuft live der Stand mit dem Vorladen?');
