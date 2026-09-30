@@ -5,134 +5,160 @@
 ]">
 
     <div class="card-fields-shopping-cart">
-        <!-- Selled Product Item-->
+        {{-- Eine Karte je Bestellung. Die Artikel stehen als Positionen darin:
+             Bezahlt wurde die Bestellung als Ganzes, und es gibt eine Rechnung
+             dafür. Video, Fotos und die Bewertung gelten dagegen je Artikel,
+             denn die kommen von der jeweiligen Herstellerin. --}}
         @foreach ($orders as $order)
-            <div class="card-item-profile-sells {{ $order->status == 3 ? 'storniert' : '' }}" style="border-bottom:none">
-                <div class="card-item-profile-sells__main-info">
-                    <div class="col-prod-profile-sells-image">
-                        @if (isset($order->vendor->id))
-                            <a href="{{ route('user.profile', $order->vendor->id) }}" class="no-before">
-                                <img data-src="{{ media_url($order->product->image) ?: 'https://www.fraukruner.de/assets/img/user.png' }}"
-                                    class="lazy img-fluid" alt="{{ $order->product->name }}">
-                            </a>
-                        @else
-                            <img data-src="https://www.fraukruner.de/assets/img/user.png" class="lazy img-fluid"
-                                alt="{{ $order->product->name }}">
-                        @endif
-                    </div>
+            @php
+                // Altbestellung ohne Positionen: dann ist sie ihre eigene Position.
+                $positions = $order->childrens->isNotEmpty() ? $order->childrens : collect([$order]);
+                $alleStorniert = $positions->every(fn ($p) => (int) ($p->status ?? 0) === 3);
+                $istVorkasse = $order->payment_gateway === 'pre_payment';
+                $istBezahlt = (int) ($order->payment_status ?? 0) !== 0;
+            @endphp
 
-                    <div class="col-prod-profile-sells-text">
-                        <div class="col-prod-profile-sells-text__prod-summary">
-                            <h6 class="text-primary">{{ $order->product->category->name }}</h6>
-                            <p>{{ $order->product->name }}</p>
-                            @if (isset($order->vendor->id))
-                                <a href="{{ route('user.profile', $order->vendor->id) }}" title="zum Profil">zum
-                                    Profil</a>
+            <div class="card-item-profile-sells {{ $alleStorniert ? 'storniert' : '' }}" style="border-bottom:none">
+
+                {{-- Kopf der Bestellung: Nummer, Datum, Gesamtbetrag, Rechnung. --}}
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-2">
+                    <div>
+                        <b class="text-primary">Bestellung {{ $order->orderNumber() }}</b>
+                        <div class="text-grey small">
+                            Bestellt: {{ $order->created_at->format('d.m.Y') }}
+                            @if ($positions->count() > 1)
+                                · {{ $positions->count() }} Artikel
                             @endif
-
-                            <div class="order-details-buyer-s text-grey small">
-                                <div class="d-flex">
-                                    <span style="min-width:100px;">Bestellt:</span>
-                                    <span>{{ $order->created_at->format('d.m.Y') }}</span>
-                                </div>
-                                @if (filled($order->shipping_date))
-                                    <div class="d-flex">
-                                        <!-- if not sended yes then "offen" if -->
-                                        <span style="min-width:100px;">Versendet:</span>
-                                        <span>{{ $order->shipping_date->format('d.m.Y') }}
-                                            @if (filled($order->shipping_method))
-                                                ({{ $order->shipping_method }})
-                                            @endif
-                                        </span>
-                                    </div>
-                                @endif
-                            </div>
-
-
                         </div>
-
                     </div>
 
-                    <div class="col-prod-profile-sells-buttons text-center">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="col-prod-profile-sells-price__price">
+                            {{-- Im Kopf der Bestellung ist der Gutschein bereits abgezogen. --}}
+                            <div>{{ Shop::price($order->total) }}</div>
+                        </span>
 
-                        @if ($order->payment_gateway !== 'pre_payment')
-                            @if ($order->payment_status == 0 && $order->status !== 3)
+                        @unless ($istVorkasse)
+                            @if (! $istBezahlt && ! $alleStorniert)
                                 <a class="btn btn-primary" target="_blank"
-                                    href="{{ route('payment', $order->parent_id) }}">Bezahlen</a>
+                                    href="{{ route('payment', $order) }}">Bezahlen</a>
                             @endif
-                        @endif
-                        @if ($order->payment_gateway == 'pre_payment' && $order->status == 0)
+                        @endunless
+                        @if ($istVorkasse && (int) ($order->status ?? 0) === 0)
                             <a class="btn btn-primary" target="_blank"
                                 href="{{ route('buyer.pre.payment', $order) }}">Bezahlen</a>
                         @endif
 
-                        <!-- if ordered see photos and videos-->
-                        @php
-                            $viewDeadline = $order->shipping_date
-                                ? \Carbon\Carbon::parse($order->shipping_date)
-                                : $order->created_at;
-                        @endphp
-                        @if ($viewDeadline->gte(now()->subWeeks(4)))
-                            @if (filled($order->video) && Storage::exists($order->video) && $order->status !== 3)
-                                <a class="btn btn-secondary" target="_blank" href="{{ Storage::url($order->video) }}">Video
-                                    ansehen</a>
-                                {{-- <a class="btn btn-secondary" target="_blank" href="{{route('buyer.video.player',$order)}}">Video
-                                    ansehen</a> --}}
-                                <a target="_blank" class="small no-before" href="{{ Storage::url($order->video) }}"
-                                    download><i class="fa fa-download" aria-hidden="true"></i> Video herunterladen</a>
-                            @endif
-                            @if (!$order->orderimages->isEmpty() && $order->status !== 3)
-                                <a class="btn btn-secondary" target="_blank"
-                                    href="{{ route('buyer.photos', $order) }}">Foto ansehen</a>
-                            @endif
-                        @endif
-                        @if ($order->payment_status != 0)
+                        {{-- Eine Rechnung für die ganze Bestellung. --}}
+                        @if ($istBezahlt)
                             <a href="{{ route('invoice', $order) }}" class="btn btn-secondary">Rechnung</a>
                         @endif
-
-                        @if ($order->is_rated == false)
-                            @if (isset($order->vendor->id) && $order->payment_status != 0 && $order->status !== 3)
-                                <!-- Button trigger modal -->
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#ratingModal" data-order-id="{{ $order->id }}"
-                                    data-user-id="{{ $order->vendor->id }}">
-                                    Erfahrung teilen
-                                </button>
-                            @endif
-                        @else
-                            <span class="text-grey small">Erfahrung geteilt</span>
-                        @endif
-
                     </div>
-
-                    <div class="col-prod-profile-sells-price">
-                        <span class="col-prod-profile-sells-price__price">
-                            @php
-                                $finalTotal = $order->discount > 0 ? $order->total - $order->discount : $order->total;
-                            @endphp
-                            <div>{{ Shop::price($finalTotal) }}</div>
-
-                        </span>
-                    </div>
-
                 </div>
+
+                @if (filled($order->discount_code) && (float) $order->discount > 0)
+                    <div class="text-grey small pb-2">
+                        Gutschein {{ $order->discount_code }}: −{{ Shop::price($order->discount) }}
+                    </div>
+                @endif
+
+                {{-- Die Artikel dieser Bestellung. --}}
+                @foreach ($positions as $position)
+                    <div class="card-item-profile-sells__main-info {{ (int) ($position->status ?? 0) === 3 ? 'storniert' : '' }}">
+                        <div class="col-prod-profile-sells-image">
+                            @if (isset($position->vendor->id))
+                                <a href="{{ route('user.profile', $position->vendor->id) }}" class="no-before">
+                                    <img data-src="{{ media_url($position->product->image) ?: 'https://www.fraukruner.de/assets/img/user.png' }}"
+                                        class="lazy img-fluid" alt="{{ $position->product->name }}">
+                                </a>
+                            @else
+                                <img data-src="https://www.fraukruner.de/assets/img/user.png" class="lazy img-fluid"
+                                    alt="{{ $position->product->name }}">
+                            @endif
+                        </div>
+
+                        <div class="col-prod-profile-sells-text">
+                            <div class="col-prod-profile-sells-text__prod-summary">
+                                <h6 class="text-primary">{{ $position->product->category->name }}</h6>
+                                <p>{{ $position->product_name ?? $position->product->name }}</p>
+                                @if (isset($position->vendor->id))
+                                    <a href="{{ route('user.profile', $position->vendor->id) }}" title="zum Profil">zum
+                                        Profil</a>
+                                @endif
+
+                                <div class="order-details-buyer-s text-grey small">
+                                    @if (filled($position->shipping_date))
+                                        <div class="d-flex">
+                                            <span style="min-width:100px;">Versendet:</span>
+                                            <span>{{ $position->shipping_date->format('d.m.Y') }}
+                                                @if (filled($position->shipping_method))
+                                                    ({{ $position->shipping_method }})
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="d-flex">
+                                            <span style="min-width:100px;">Versand:</span>
+                                            <span>offen</span>
+                                        </div>
+                                    @endif
+                                    @if ((int) ($position->status ?? 0) === 3)
+                                        <div class="d-flex">
+                                            <span style="min-width:100px;">Status:</span>
+                                            <span>storniert</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-prod-profile-sells-buttons text-center">
+                            {{-- Video, Fotos und Bewertung gelten je Artikel. --}}
+                            @php
+                                $viewDeadline = $position->shipping_date
+                                    ? \Carbon\Carbon::parse($position->shipping_date)
+                                    : $position->created_at;
+                            @endphp
+                            @if ($viewDeadline->gte(now()->subWeeks(4)))
+                                @if (filled($position->video) && Storage::exists($position->video) && $position->status !== 3)
+                                    <a class="btn btn-secondary" target="_blank" href="{{ Storage::url($position->video) }}">Video
+                                        ansehen</a>
+                                    <a target="_blank" class="small no-before" href="{{ Storage::url($position->video) }}"
+                                        download><i class="fa fa-download" aria-hidden="true"></i> Video herunterladen</a>
+                                @endif
+                                @if (!$position->orderimages->isEmpty() && $position->status !== 3)
+                                    <a class="btn btn-secondary" target="_blank"
+                                        href="{{ route('buyer.photos', $position) }}">Foto ansehen</a>
+                                @endif
+                            @endif
+
+                            @if ($position->is_rated == false)
+                                @if (isset($position->vendor->id) && (int) ($position->payment_status ?? 0) !== 0 && $position->status !== 3)
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#ratingModal" data-order-id="{{ $position->id }}"
+                                        data-user-id="{{ $position->vendor->id }}">
+                                        Erfahrung teilen
+                                    </button>
+                                @endif
+                            @else
+                                <span class="text-grey small">Erfahrung geteilt</span>
+                            @endif
+                        </div>
+
+                        <div class="col-prod-profile-sells-price">
+                            <span class="col-prod-profile-sells-price__price">
+                                <div>{{ Shop::price($position->total) }}</div>
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
 
                 <div class="col-prod-profile-sells-addons">
                     <div class="col-prod-profile-sells-addons__placeholder"></div>
-
                 </div>
                 <hr>
-
-                {{-- <div class="sorting-list-collapsing-my-sells">
-                <b>Status:</b> <a href="https://www.dhl.de/de/privatkunden/dhl-sendungsverfolgung.html?piececode=TRACKINGCODE" target="_blank">Versendet</a> <!-- If the product was sended or not with Tracking link(Example DHL)-->
-        </div>  --}}
             </div>
-            <!-- Selled  Product Item-->
         @endforeach
-
-
-
-
     </div>
 
 

@@ -176,6 +176,111 @@ class Order extends Model
      */
     public function markAsPaid(): bool
     {
+        if (! $this->markPositionAsPaid()) {
+            return false;
+        }
+
+        // Der Käufer bekommt jetzt dieselbe Bestellbestätigung wie bei PayPal/Stripe –
+        // bei Vorkasse aber erst nach dem Zahlungseingang.
+        //
+        // Gehört diese Position zu einer Bestellung mit mehreren Positionen, ist
+        // markOrderAsPaid() der richtige Weg: Der Käufer bekommt dann eine
+        // Bestätigung für die ganze Bestellung statt eine pro Position.
+        $this->sendPaymentMail($this->email, fn () => new UserOrderEmail($this));
+
+        return true;
+    }
+
+    /**
+     * Setzt die ganze Bestellung auf bezahlt – mit genau einer Bestätigung an
+     * den Käufer.
+     *
+     * Eine Bestellung mit zwei Artikeln bestand aus zwei Positionen, und jede
+     * wurde einzeln bezahlt gemeldet: zweimal „als bezahlt markieren“ im
+     * Adminbereich und zwei Bestätigungen im Postfach des Käufers, mit
+     * unterschiedlichen Nummern. Bezahlt wird aber die Bestellung als Ganzes,
+     * also ist auch das hier die Einheit.
+     *
+     * Die Verkäuferin-Mail bleibt bewusst pro Position: Jede Verkäuferin darf
+     * nur ihre eigene Position sehen, nicht die der anderen.
+     *
+     * Gibt false zurück, wenn keine einzige Position mehr zu beanspruchen war –
+     * die Bestellung war dann schon bezahlt, und es geht keine zweite
+     * Bestätigung raus.
+     *
+     * Der Aufruf von einer Position aus gilt für die ganze Bestellung, nicht
+     * nur für diese Position – so kommt es aus dem Adminbereich, wo eine Zeile
+     * geklickt wird. Wer die Methode aus einer Zahlung heraus aufruft, muss
+     * deshalb sicherstellen, dass der eingezogene Betrag der Gesamtbetrag der
+     * Bestellung ist und nicht der einer Position. Die Zahlarten tun das,
+     * indem sie gar nicht erst mit einer Position arbeiten: siehe
+     * MicropaymentOrderSubject::__construct() und
+     * CheckoutController::processPayment(), die beide auf mainOrder()
+     * normalisieren.
+     */
+    public function markOrderAsPaid(): bool
+    {
+        $order = $this->mainOrder();
+
+        $positions = $order->childrens()->get();
+
+        // Altdatensatz oder Bestellung ohne Positionen: Dann ist die Bestellung
+        // selbst die Position, und markAsPaid() macht genau das Richtige.
+        if ($positions->isEmpty()) {
+            return $order->markAsPaid();
+        }
+
+        // Jede Position einzeln beanspruchen, damit Bestand und
+        // Verkäuferin-Mail weiterhin genau einmal je Position laufen. Eine
+        // bereits bezahlte Position liefert false und wird übersprungen.
+        $claimed = false;
+
+        foreach ($positions as $position) {
+            if ($position->markPositionAsPaid()) {
+                $claimed = true;
+            }
+        }
+
+        // Auch wenn nichts mehr zu beanspruchen war: Der Kopf der Bestellung
+        // muss den Stand der Positionen tragen, sonst bleibt eine Bestellung in
+        // der Vorkasse-Liste stehen, deren Positionen längst bezahlt sind.
+        $order->update([
+            'payment_status' => 1,
+            'status' => 1,
+        ]);
+
+        if (! $claimed) {
+            return false;
+        }
+
+        // Die eine Bestätigung für die ganze Bestellung. Sie hängt am Kopf, denn
+        // nur der kennt Gesamtbetrag, Gutschein und alle Positionen.
+        $order->sendPaymentMail($order->email, fn () => new UserOrderEmail($order));
+
+        return true;
+    }
+
+    /**
+     * Beansprucht eine einzelne Position: Status setzen, Bestand abbuchen,
+     * Verkäuferin benachrichtigen. Ohne Käufer-Mail – die verschicken
+     * markAsPaid() bzw. markOrderAsPaid(), je nachdem, ob die Bestätigung für
+     * eine Position oder für die ganze Bestellung gilt.
+     *
+     * Gibt false zurück, wenn die Position bereits als bezahlt markiert war,
+     * damit Bestand und Verkäufer-Mail nicht doppelt ausgelöst werden.
+     *
+     * Das Setzen ist bewusst ein bedingtes UPDATE und keine Prüfung mit
+     * anschließendem Schreiben: Zwei gleichzeitige Aufrufe – zwei Zustellungen
+     * derselben Micropayment-Benachrichtigung, zwei Klicks auf „als bezahlt
+     * markieren“ im Admin – könnten sonst beide die Prüfung passieren, bevor
+     * einer schreibt. Folge wären doppelte Mails und eine doppelt abgebuchte
+     * Menge. So gewinnt genau einer, und nur der arbeitet weiter.
+     *
+     * Ein leerer payment_status zählt als unbezahlt; die Spalte ist in der
+     * Datenbank nullable.
+     */
+    protected function markPositionAsPaid(): bool
+    {
         $claimed = static::query()
             ->whereKey($this->getKey())
             ->where(function ($query) {
@@ -206,9 +311,6 @@ class Order extends Model
         // unter der alten Regel angelegt wurde, ein zweites Mal zählen.
         ProductStock::bookSale($this);
 
-        // Der Käufer bekommt jetzt dieselbe Bestellbestätigung wie bei PayPal/Stripe –
-        // bei Vorkasse aber erst nach dem Zahlungseingang.
-        $this->sendPaymentMail($this->email, fn () => new UserOrderEmail($this));
         $this->sendPaymentMail($this->vendor->email, fn () => new VendorOrderEmail($this));
 
         return true;
@@ -283,6 +385,20 @@ class Order extends Model
 
 
     /**
+     * Die Hauptbestellung – bei einer Unterbestellung also die Bestellung, zu
+     * der sie gehört, sonst sie selbst.
+     *
+     * Einzige Quelle für alles, was sich auf „die Bestellung“ als Ganzes
+     * bezieht: Nummer, Gutschein, Zahlbetrag. Steht bewusst als eine Funktion
+     * da, weil `$this->parent ?: $this` sonst an mehreren Stellen einzeln
+     * dasteht und auseinanderlaufen kann.
+     */
+    public function mainOrder(): Order
+    {
+        return $this->parent ?: $this;
+    }
+
+    /**
      * Die Bestellung, an der der Gutschein hängt.
      *
      * Der volle Rabatt steht auf der Hauptbestellung; Unterbestellungen tragen
@@ -291,7 +407,159 @@ class Order extends Model
      */
     public function couponOrder(): Order
     {
-        return $this->parent ?: $this;
+        return $this->mainOrder();
+    }
+
+    /**
+     * Zieht den Bestellkopf nach, wenn alle Positionen storniert sind.
+     *
+     * Storniert wird je Position – es betrifft eine Verkäuferin, die nicht
+     * geliefert hat. Der Kopf der Bestellung blieb dabei unberührt, auch wenn
+     * am Ende keine Position mehr übrig war. Die Belege lesen den Stornostand
+     * deshalb ohnehin aus den Positionen; dieser Abgleich hält zusätzlich die
+     * Daten schlüssig, damit eine restlos stornierte Bestellung nicht als
+     * aktiv dasteht.
+     *
+     * Aufzurufen, nachdem eine Position auf status 3 gesetzt wurde.
+     */
+    public function syncCancellation(): void
+    {
+        $order = $this->mainOrder();
+
+        // Eine Bestellung ohne Kopf über sich hat nichts nachzuziehen.
+        if ($order->is($this)) {
+            return;
+        }
+
+        $nochOffen = $order->childrens()
+            ->where(function ($query) {
+                $query->where('status', '!=', 3)->orWhereNull('status');
+            })
+            ->exists();
+
+        if ($nochOffen) {
+            return;
+        }
+
+        $order->update(['status' => 3]);
+    }
+
+    /**
+     * Die Bestellnummer, die die Kundin bezahlt hat, z. B. `FK2026-12696`.
+     *
+     * Eine Bestellung besteht aus der Hauptbestellung und je einer
+     * Unterbestellung pro Warenkorbposition, alle in derselben Tabelle und
+     * damit aus derselben Nummernfolge. Bezahlt wird immer die
+     * Hauptbestellung – nur deren Nummer steht auf dem Kontoauszug. Eine
+     * Unterbestellung trägt deshalb nach außen die Nummer ihrer
+     * Hauptbestellung und nicht ihre eigene ID.
+     *
+     * Muss zeichengleich zu MicropaymentOrderSubject::reference() bleiben,
+     * sonst passen Bestätigung und Kontoauszug wieder nicht zusammen. Deshalb
+     * auch das Jahr der Hauptbestellung: Haupt- und Unterbestellung entstehen
+     * in derselben Transaktion, an einem Jahreswechsel könnten die Zeitstempel
+     * aber auf zwei Jahre fallen.
+     */
+    public function orderNumber(): string
+    {
+        $order = $this->mainOrder();
+
+        $createdAt = $order->created_at ?? Carbon::now();
+
+        return 'FK' . $createdAt->format('Y') . '-' . $order->getKey();
+    }
+
+    /**
+     * Stelle dieser Unterbestellung innerhalb der Bestellung, z. B. `[1, 2]`
+     * für „die erste von zwei Positionen“.
+     *
+     * Null für die Hauptbestellung und für eine Bestellung mit nur einer
+     * Position: Dort ist „Position 1 von 1“ kein Hinweis, sondern Rauschen.
+     *
+     * Die Reihenfolge ist die der IDs, also die Reihenfolge, in der
+     * CheckoutController::createOrders() die Positionen angelegt hat.
+     *
+     * @return array{int, int}|null
+     */
+    public function positionInOrder(): ?array
+    {
+        if (! $this->parent_id) {
+            return null;
+        }
+
+        // Beide Seiten hart auf int: Je nach Treiber liefert pluck() die IDs als
+        // Zeichenkette, ein strenger Vergleich würde dann nie treffen.
+        $ids = static::query()
+            ->where('parent_id', $this->parent_id)
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (count($ids) < 2) {
+            return null;
+        }
+
+        $index = array_search((int) $this->getKey(), $ids, true);
+
+        if ($index === false) {
+            return null;
+        }
+
+        return [$index + 1, count($ids)];
+    }
+
+    /**
+     * Bestellnummer für Kundin, Betreff und Beleg, z. B.
+     * `FK2026-12696 (Position 1 von 2)`.
+     *
+     * Der Zusatz erklärt, warum bei mehreren Artikeln mehrere Bestätigungen
+     * mit derselben Nummer ankommen.
+     */
+    /**
+     * Rechnungsnummer der Kundenrechnung, z. B. `FK2026-12696`.
+     *
+     * Der Käufer bekommt eine Rechnung für seine Bestellung – nicht eine je
+     * Artikel. Rechnungsstellerin ist Frau Kruner, und bezahlt wurde die
+     * Bestellung als Ganzes; die Nummer ist deshalb die Bestellnummer.
+     *
+     * Die Verkäuferinnen rechnen getrennt ab: Jede bekommt eine Gutschrift für
+     * ihre Position, mit eigener Nummer (siehe gutschriftNumber()).
+     *
+     * Eigene Methode statt eines Aufrufs von orderNumber(): Die Rechnungsnummer
+     * ist ein steuerliches Feld. Soll das Format später einmal wechseln, ohne
+     * bereits ausgestellte Rechnungen zu verändern, gehört der Stichtag hierhin
+     * – so wie bei Boost::invoice_number.
+     */
+    public function invoiceNumber(): string
+    {
+        return $this->orderNumber();
+    }
+
+    /**
+     * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-12697-45`.
+     *
+     * Gilt je Position, weil jede Verkäuferin einzeln abrechnet: Bestellnummer
+     * der Position plus ihre Verkäuferinnen-ID.
+     */
+    public function gutschriftNumber(): string
+    {
+        $createdAt = $this->created_at ?? Carbon::now();
+
+        return 'FK'.$createdAt->format('Y').'-'.$this->getKey().'-'.($this->vendor_id ?? $this->vendor?->id);
+    }
+
+    public function orderNumberWithPosition(): string
+    {
+        $position = $this->positionInOrder();
+
+        if (! $position) {
+            return $this->orderNumber();
+        }
+
+        [$index, $total] = $position;
+
+        return $this->orderNumber() . ' (Position ' . $index . ' von ' . $total . ')';
     }
 
     /**

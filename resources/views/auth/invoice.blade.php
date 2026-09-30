@@ -1,10 +1,50 @@
 @extends('layouts.app')
-@if (Auth()->user()->role_id == 3)
-    @section('title', 'Gutschrift')
-@endif
-@if (Auth()->user()->role_id == 2)
-    @section('title', 'Rechnung')
-@endif
+
+@php
+    // Zwei Belege aus einer Vorlage:
+    //
+    //  - Die Verkaeuferin sieht die GUTSCHRIFT fuer ihre Position. Jede
+    //    Verkaeuferin rechnet einzeln ab, deshalb gilt sie je Position.
+    //  - Alle anderen (Kundin, Adminbereich) sehen die RECHNUNG fuer die ganze
+    //    Bestellung: Der Kaeufer hat einmal bezahlt und bekommt einen Beleg mit
+    //    allen Artikeln darauf.
+    //
+    // $positions kommt aus HomeController::invoice(): fuer die Gutschrift die
+    // eine Position, fuer die Rechnung alle Positionen der Bestellung.
+    $istGutschrift = (int) (Auth()->user()->role_id ?? 0) === 3;
+
+    $positions = $positions ?? collect([$order]);
+
+    // Spalten nur zeigen, wenn irgendeine Position etwas darin hat.
+    $hatVeredelungen = $positions->contains(fn ($p) => !empty($p->finishings));
+    $hatZusatzoptionen = $positions->contains(fn ($p) => !empty($p->addition));
+    $hatTragedauer = $positions->contains(fn ($p) => !empty($p->wearing_time));
+
+    // Zwischensumme der Rechnung: Bruttowerte der Positionen. Der Rabatt steht
+    // am Kopf der Bestellung und wird genau einmal abgezogen.
+    $stornierte = $positions->filter(fn ($p) => (int) ($p->status ?? 0) === 3);
+    $allesStorniert = $stornierte->count() === $positions->count();
+    $teilweiseStorniert = $stornierte->isNotEmpty() && ! $allesStorniert;
+
+    $zwischensumme = (float) $positions->sum('total');
+    $rabatt = (float) ($order->discount ?? 0);
+    $gesamtbetrag = max(0, $zwischensumme - $rabatt);
+
+    // Nur die Anfangsteile einer Auswahl anzeigen ("Rot-123" => "Rot").
+    $auswahl = static function ($werte): string {
+        if (empty($werte)) {
+            return '-';
+        }
+
+        $teile = collect((array) $werte)
+            ->map(fn ($wert) => strstr((string) $wert, '-', true) ?: (string) $wert)
+            ->filter();
+
+        return $teile->isEmpty() ? '-' : $teile->implode(', ');
+    };
+@endphp
+
+@section('title', $istGutschrift ? 'Gutschrift' : 'Rechnung')
 @section('content')
 
     <x-invoice.customer-header-styles />
@@ -19,30 +59,31 @@
                     </div>
 
 
-                    <div class="card-body {{ $order->status == 3 ? 'storniert' : '' }}" id="printableArea"
+                    <div class="card-body {{ $allesStorniert ? 'storniert' : '' }}" id="printableArea"
                         style="overflow-x:auto;">
 
-                        @if (Auth()->user()->role_id == 3)
+                        @if ($istGutschrift)
                             <x-invoice.header
                                 title="Gutschrift"
-                                :subtitle="'Gutschrift-Nr. FK' . $order->created_at->year . '-' . $order->id . '-' . $order->vendor->id . ' · ' . $order->created_at->format('d.m.Y')"
+                                :subtitle="'Gutschrift-Nr. ' . $order->gutschriftNumber() . ' · ' . $order->created_at->format('d.m.Y')"
                             />
                         @else
                             <x-invoice.header
                                 title="Rechnung"
-                                :subtitle="'Rechnungs-Nr. FK' . $order->created_at->year . '-' . $order->id . ' · ' . $order->created_at->format('d.m.Y')"
+                                :subtitle="'Rechnungs-Nr. ' . $order->invoiceNumber() . ' · ' . $order->created_at->format('d.m.Y')"
                             />
                         @endif
 
-                        @if (Auth()->user()->role_id == 3)
-                            @if ($order->status == 3)
-                                <h3 style="color:red">GUTSCHRIFT WURDE STORNIERT!</h3>
-                            @endif
-                        @endif
-                        @if (Auth()->user()->role_id == 2)
-                            @if ($order->status == 3)
-                                <h3 style="color:red">RECHNUNG WURDE STORNIERT!</h3>
-                            @endif
+                        @if ($allesStorniert)
+                            <h3 style="color:red">{{ $istGutschrift ? 'GUTSCHRIFT' : 'RECHNUNG' }} WURDE STORNIERT!</h3>
+                        @elseif ($teilweiseStorniert)
+                            {{-- Teilstorno: Die Rechnung gilt weiter, aber nicht fuer
+                                 jeden Artikel. Welcher betroffen ist, steht in der
+                                 Positionstabelle. --}}
+                            <h3 style="color:red">
+                                {{ $stornierte->count() }} von {{ $positions->count() }}
+                                Artikeln dieser Bestellung wurden storniert.
+                            </h3>
                         @endif
 
                         <div class="row">
@@ -54,7 +95,7 @@
                                             <div class="row">
                                                 <div class="col-12 col-md-6">
                                                     <p><b>Kundeninformation</b></p>
-                                                    @if (Auth()->user()->role_id == 3)
+                                                    @if ($istGutschrift)
                                                         <p>
                                                          
 
@@ -73,13 +114,13 @@
                                                         @endif
                                                     @endif
 
-                                                    @if (Auth()->user()->role_id == 2)
+                                                    @unless ($istGutschrift)
                                                         <p>
                                                             {{ $order->first_name }} {{ $order->last_name }}<br>
                                                             {{ $order->street }} {{ $order->house_no }}<br>
                                                             {{ $order->zip }} {{ $order->federal_state }}
                                                         </p>
-                                                    @endif
+                                                    @endunless
                                                 </div>
 
                                                 <div class="col-12 col-md-6">
@@ -93,20 +134,23 @@
                                                 </div>
                                                 <div class="col-12 col-md-6">
                                                 </div>
-                                                @if (Auth()->user()->role_id == 3)
+                                                @if ($istGutschrift)
                                                     <div class="col-12 col-md-6">
                                                         <p>Gutschrift-Nr.:
-                                                            FK{{ $order->created_at->year }}-{{ $order->id }}-{{ $order->vendor->id }}<br>
+                                                            {{ $order->gutschriftNumber() }}<br>
                                                             Gutschrift-Datum:
-                                                            {{ $order->created_at->format('d. M. Y') }}<br><br>
+                                                            {{ $order->created_at->format('d. M. Y') }}<br>
+                                                            {{-- Die Bestellung, aus der diese Position stammt. --}}
+                                                            zur Bestellung:
+                                                            {{ $order->orderNumber() }}<br><br>
                                                         </p>
                                                     </div>
-                                                @endif
-
-                                                @if (Auth()->user()->role_id == 2)
+                                                @else
                                                     <div class="col-12 col-md-6">
+                                                        {{-- Eine Rechnung fuer die ganze Bestellung: Die Nummer ist die
+                                                             Bestellnummer, also die, die auch auf dem Kontoauszug steht. --}}
                                                         <p>Rechnungs-Nr.:
-                                                            FK{{ $order->created_at->year }}-{{ $order->id }}<br>
+                                                            {{ $order->invoiceNumber() }}<br>
                                                             Rechnungs-Datum:
                                                             {{ $order->created_at->format('d. M. Y') }}<br><br>
                                                         </p>
@@ -124,7 +168,7 @@
                                     <div class="card-body" style="overflow-x:auto;">
                                         <div class="col-sm-12">
                                             <h3 class="panel-title">Details</h3>
-                                            @if (Auth()->user()->role_id == 3)
+                                            @if ($istGutschrift)
                                                 <table class="table table-hover no-footer">
                                                     <thead>
                                                         <tr role="row">
@@ -256,105 +300,95 @@
 
                                                     </tbody>
                                                 </table>
-                                            @endif
-                                            @if (Auth()->user()->role_id == 2)
+                                            @else
+                                                {{-- Eine Rechnung fuer die ganze Bestellung: je Artikel eine Zeile,
+                                                     darunter Zwischensumme, Gutschein und Gesamtbetrag. Vorher gab es
+                                                     je Artikel eine eigene Rechnung mit eigener Nummer. --}}
                                                 <table class="table table-hover no-footer">
                                                     <thead>
                                                         <tr>
                                                             <th>Produktname</th>
-                                                            @if (!empty($order->finishings))
+                                                            @if ($hatVeredelungen)
                                                                 <th>Veredelungen</th>
                                                             @endif
-                                                            @if (!empty($order->addition))
+                                                            @if ($hatZusatzoptionen)
                                                                 <th>Zusatzoptionen</th>
                                                             @endif
-                                                            @if (!empty($order->wearing_time))
+                                                            @if ($hatTragedauer)
                                                                 <th>Tragedauer</th>
                                                             @endif
-                                                            @if ($order->discount > 0)
-                                                                <th>Gutschein-Wert</th>
-                                                            @endif
-
-                                                            {{-- @if (isset($order->seller_info->is_pay_vat) && $order->seller_info->is_pay_vat == 1)
-                                                                <th>MwSt.</th>
-                                                            @endif --}}
                                                             <th>Gesamt</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr>
-                                                            <td>{{ $order->product->name }}</td>
-                                                            @if ($order->finishings)
+                                                        @foreach ($positions as $position)
+                                                            @php $positionStorniert = (int) ($position->status ?? 0) === 3; @endphp
+                                                            <tr @class(['text-decoration-line-through' => $positionStorniert])>
                                                                 <td>
-                                                                    <div>
-                                                                        @foreach ($order->finishings as $data)
-                                                                            {{ strstr($data, '-', true) }}
-                                                                            @if (!$loop->last)
-                                                                                ,
-                                                                            @endif
-                                                                        @endforeach
-                                                                    </div>
+                                                                    {{ $position->product_name ?? $position->product->name }}
+                                                                    @if ($positionStorniert)
+                                                                        <br><small style="color:red">storniert</small>
+                                                                    @endif
                                                                 </td>
-                                                            @endif
-                                                            @if ($order->addition)
-                                                                <td>
-                                                                    <div>
-                                                                        @foreach ($order->addition as $key => $data)
-                                                                            {{ strstr($data, '-', true) }}
-                                                                            @if (!$loop->last)
-                                                                                ,
-                                                                            @endif
-                                                                        @endforeach
-                                                                    </div>
-                                                                </td>
-                                                            @endif
-                                                            @if ($order->wearing_time)
-                                                                <td>
-                                                                    <div>
-
-                                                                        @foreach ($order->wearing_time as $data)
-                                                                            {{ strstr($data, '-', true) }}
-                                                                            @if (!$loop->last)
-                                                                                ,
-                                                                            @endif
-                                                                        @endforeach
-
-                                                                    </div>
-                                                                </td>
-                                                            @endif
-
-                                                            @if ($order->discount > 0)
-                                                                <td>{{ Shop::price($order->discount) }}</td>
-                                                            @endif
-                                                            {{-- @if (isset($order->seller_info->is_pay_vat) && $order->seller_info->is_pay_vat == 0)
-                                                    <td>{{ Shop::price($order->tax) }}</td>
-                                                @endif --}}
-                                                            <td>
-                                                                @php
-                                                                    $finalAmount = $order->total;
-                                                                    if ($order->discount > 0) {
-                                                                        $finalAmount -= $order->discount;
-                                                                    }
-                                                                @endphp
-                                                                {{ Shop::price($finalAmount) }}
-                                                            </td>
-                                                        </tr>
+                                                                @if ($hatVeredelungen)
+                                                                    <td>{{ $auswahl($position->finishings) }}</td>
+                                                                @endif
+                                                                @if ($hatZusatzoptionen)
+                                                                    <td>{{ $auswahl($position->addition) }}</td>
+                                                                @endif
+                                                                @if ($hatTragedauer)
+                                                                    <td>{{ $auswahl($position->wearing_time) }}</td>
+                                                                @endif
+                                                                <td>{{ Shop::price($position->total) }}</td>
+                                                            </tr>
+                                                        @endforeach
                                                     </tbody>
-                                                </table>
-                                                
-                                                @if (Auth()->user()->role_id == 2)
-                                                    <div class="col-12 mt-5">
-                                                        @if (($order->seller_info->vat_perchatage ?? 0) >= 1)
-                                                            Umsatzsteuer wird gemäß § 25a UStG nicht ausgewiesen.
-                                                        @else
-                                                            Gemäß § 19 UStG enthält der o.g. Rechnungsbetrag keine Umsatzsteuer.
+                                                    <tfoot>
+                                                        @php
+                                                            // Spalten links vom Betrag, damit die Summen rechts ausgerichtet bleiben.
+                                                            $leereSpalten = 1
+                                                                + ($hatVeredelungen ? 1 : 0)
+                                                                + ($hatZusatzoptionen ? 1 : 0)
+                                                                + ($hatTragedauer ? 1 : 0);
+                                                        @endphp
+                                                        @if ($rabatt > 0)
+                                                            <tr>
+                                                                <td colspan="{{ $leereSpalten }}" class="text-end">Zwischensumme</td>
+                                                                <td>{{ Shop::price($zwischensumme) }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="{{ $leereSpalten }}" class="text-end">
+                                                                    {{ filled($order->discount_code) ? 'Gutschein ' . $order->discount_code : 'Gutschein' }}
+                                                                </td>
+                                                                <td>−{{ Shop::price($rabatt) }}</td>
+                                                            </tr>
                                                         @endif
-                                                    </div>
+                                                        <tr>
+                                                            <td colspan="{{ $leereSpalten }}" class="text-end"><b>Gesamtbetrag</b></td>
+                                                            <td><b>{{ Shop::price($gesamtbetrag) }}</b></td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+
+                                                @if ($positions->count() > 1)
+                                                    <p class="text-muted">
+                                                        Diese Rechnung umfasst alle {{ $positions->count() }} Artikel der
+                                                        Bestellung {{ $order->orderNumber() }}. Die Artikel werden von
+                                                        unterschiedlichen Herstellerinnen einzeln versendet.
+                                                    </p>
                                                 @endif
+
+                                                <div class="col-12 mt-5">
+                                                    @if (($order->seller_info->vat_perchatage ?? 0) >= 1)
+                                                        Umsatzsteuer wird gemäß § 25a UStG nicht ausgewiesen.
+                                                    @else
+                                                        Gemäß § 19 UStG enthält der o.g. Rechnungsbetrag keine Umsatzsteuer.
+                                                    @endif
+                                                </div>
 
                                             @endif
                                         </div>
-                                        @if (Auth()->user()->role_id == 3)
+                                        @if ($istGutschrift)
                                             <div class="col-12 mt-5">
                                                 <p>{{ isset($order->seller_info->is_pay_vat) && $order->seller_info->is_pay_vat == 1 ? 'Alle Preise sind inklusive der gesetzlichen Umsatzsteuer.' : 'Gemäß § 19 UStG enthält der o.g. Rechnungsbetrag keine Umsatzsteuer.' }}
                                                 </p>

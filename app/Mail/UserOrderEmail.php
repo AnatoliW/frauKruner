@@ -29,7 +29,7 @@ class UserOrderEmail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Bestellung #'.$this->order->id)
+        return $this->subject('Bestellung '.$this->order->orderNumberWithPosition())
             ->markdown('emails.orders.user_order');
     }
 }

@@ -30,7 +30,7 @@ class AdminController extends Controller
 
     public function payemntCheckUpdate(Order $order)
     {
-        if (! $order->markAsPaid()) {
+        if (! $order->markOrderAsPaid()) {
             return redirect()->back()->with([
                 'message' => 'Bestellung war bereits als bezahlt markiert',
                 'alert-type' => 'warning',

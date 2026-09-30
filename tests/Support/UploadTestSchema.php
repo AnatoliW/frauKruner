@@ -45,6 +45,7 @@ class UploadTestSchema
         'categories',
         'images',
         'orderimages',
+        'order_product',
         'orders',
         'products',
         'methods',
@@ -154,6 +155,17 @@ class UploadTestSchema
             $table->timestamps();
         });
 
+        // Zwischentabelle fuer Order::products(); die Rechnung greift darauf zu.
+        Schema::create('order_product', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('order_id')->nullable();
+            $table->unsignedBigInteger('product_id')->nullable();
+            $table->integer('quantity')->nullable();
+            $table->decimal('price', 8, 2)->nullable();
+            $table->string('variation')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
@@ -206,6 +218,28 @@ class UploadTestSchema
             $table->string('last_name')->nullable();
             $table->string('email', 100)->nullable();
             $table->decimal('subtotal', 8, 2)->nullable();
+            // Der Gutschein der Bestellung: Im Kopf steht der volle Rabatt, in
+            // einer Position nur ihr Anteil. Die Bestellbestätigung weist ihn
+            // aus, deshalb gehören die Spalten auch ins Testschema.
+            $table->decimal('discount', 8, 2)->nullable();
+            $table->string('discount_code')->nullable();
+            // Beide per Migration nachgezogen und für den Zahlungseingang nötig:
+            // confirmed_at sichert die Einmaligkeit der Bestätigung,
+            // coupon_redeemed_at die der Gutscheinbuchung.
+            $table->timestamp('confirmed_at')->nullable();
+            $table->timestamp('coupon_redeemed_at')->nullable();
+            // Lieferadresse des Käufers – steht auf der Rechnung.
+            $table->string('street')->nullable();
+            $table->string('house_no')->nullable();
+            $table->string('zip')->nullable();
+            $table->string('federal_state')->nullable();
+            $table->string('po_box')->nullable();
+            $table->string('additional')->nullable();
+            $table->text('seller_info')->nullable();
+            $table->text('finishings')->nullable();
+            $table->text('addition')->nullable();
+            $table->text('wearing_time')->nullable();
+            $table->string('product_name')->nullable();
             $table->decimal('tax', 8, 2)->nullable();
             $table->decimal('shipping_cost', 8, 2)->nullable();
             $table->string('shipping_method', 50)->nullable();

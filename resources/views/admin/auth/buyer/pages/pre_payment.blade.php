@@ -1,7 +1,10 @@
 @php
-    $price = $order->total;
-    $date = $order->created_at;
-    $orderId = $order->id;
+    // Überwiesen wird die ganze Bestellung, nicht diese eine Position: $order ist
+    // hier eine Position, ihr 'total' waere nur der Wert dieses Artikels. Im Kopf
+    // der Bestellung ist der Gutschein bereits abgezogen – das ist der Betrag,
+    // der auf dem Kontoauszug erscheinen muss.
+    $bestellung = $order->mainOrder();
+    $zuZahlen = number_format((float) $bestellung->total, 2, ',', '.');
 @endphp
 
 <x-dashboard type='buyer' title="Vorkasse" :bread="[
@@ -46,7 +49,7 @@
         --}}
 
         <p >
-            Bitte überweise: <b class="h6">{{$order->total}} €</b><br>
+            Bitte überweise: <b class="h6">{{ $zuZahlen }} €</b><br>
             auf das folgende Konto unter Angabe des Verwendungszwecks:<br>
             </p>
             <table class="table text-secondary" style="max-width:600px;">
@@ -54,10 +57,6 @@
                 <tr>
                     <td scope="row">Kontoinhaberin:</td>
                     <th>Kathleen Krüger</th>
-                </tr>
-                <tr>
-                    <td scope="row">Parent ID:</td>
-                    <th>{{$order->parent_id}}</th>
                 </tr>
                 <tr>
                     <td scope="row">IBAN:</td>
@@ -69,11 +68,11 @@
                 </tr> -->
                 <tr>
                     <td scope="row">Verwendungszweck:<br><small class="text-primary">(zwingend erforderlich)</small></td>
-                    <th>FK{{$order->created_at->year}}-{{$order->id}}</th>
+                    <th>{{ $bestellung->orderNumber() }}</th>
                 </tr>
                 <tr>
                     <td scope="row">Betrag:</td>
-                    <th>{{$order->total}} €</th>
+                    <th>{{ $zuZahlen }} €</th>
                 </tr>
 
             </tbody>
@@ -84,7 +83,9 @@
         </p>
 
         @if ($order->payment_status == 0 && $order->status !== 3)
-            <a class="btn btn-primary" target="_blank" href="{{ route('payment', $order->parent_id) }}">Andere Bezahlmethode wählen</a>
+            {{-- $bestellung, nicht $order->parent_id: Die Seite wird jetzt auch mit
+                 der Bestellung selbst aufgerufen, deren parent_id leer ist. --}}
+            <a class="btn btn-primary" target="_blank" href="{{ route('payment', $bestellung) }}">Andere Bezahlmethode wählen</a>
         @endif
     </div>
 

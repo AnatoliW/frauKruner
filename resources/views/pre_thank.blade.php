@@ -37,7 +37,7 @@
                 </tr> -->
                 <tr>
                     <td scope="row">Verwendungszweck:<br><small class="text-primary">(zwingend erforderlich)</small></td>
-                    <th>FK{{$order->created_at->year}}-{{$order->id}}</th>
+                    <th>{{ $order->orderNumber() }}</th>
                 </tr>
                 <tr>
                     <td scope="row">Betrag:</td>

@@ -81,7 +81,7 @@
                                 @foreach ($order->addition as $data)
                                     Zusatzoptionen: {{ $data }}<br>
                                 @endforeach
-                                Gutschrift-Nr.: FK{{ $order->created_at->year }}-{{ $order->id }}-{{ $order->vendor->id }}<br>
+                                Gutschrift-Nr.: {{ $order->gutschriftNumber() }}<br>
                             </p>
 
                         </div>

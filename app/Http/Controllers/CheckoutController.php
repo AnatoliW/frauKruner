@@ -394,7 +394,7 @@ class CheckoutController extends Controller
             if ($peyment_gayway == 'pre_payment') {
                 // Vorkasse reserviert nichts: Das Produkt bleibt bis zum Zahlungseingang
                 // im Shop sichtbar und kaufbar. Abgebucht wird es erst, wenn die
-                // Bestellung im Admin als bezahlt markiert wird (Order::markAsPaid()).
+                // Bestellung im Admin als bezahlt markiert wird (Order::markOrderAsPaid()).
                 // Die Zahlungsinformationen gehen per UserPrepaymentOrder raus.
                 // Mail::to('k@fraukruner.de')->send(new AdminPrepaymentOrder($ord));
                 continue;
@@ -402,10 +402,20 @@ class CheckoutController extends Controller
 
             ProductStock::bookSale($ord);
 
-            Mail::to($ord->email)->send(new UserOrderEmail($ord));
+            // Die Verkäuferin-Mail bleibt pro Position: Jede Verkäuferin darf nur
+            // ihre eigene Position sehen, nicht die der anderen.
             // Mail::to('k@fraukruner.de')->send(new OrderPlaced($ord));
             Mail::to($ord->vendor->email)->send(new VendorOrderEmail($ord));
         }
+
+        if ($peyment_gayway == 'pre_payment') {
+            return;
+        }
+
+        // Eine Bestätigung für die ganze Bestellung, nicht eine pro Position:
+        // Bezahlt wurde die Bestellung als Ganzes, und nur ihr Kopf kennt
+        // Gesamtbetrag, Gutschein und alle Positionen.
+        Mail::to($order->email)->send(new UserOrderEmail($order));
     }
 
     /**
@@ -436,7 +446,16 @@ class CheckoutController extends Controller
 
     public function processPayment(Request $request)
     {
-        $order = Order::find($request->order_id);
+        // Auf den Kopf der Bestellung normalisieren, bevor geprueft, berechnet
+        // oder signiert wird: Bezahlt wird die Bestellung, nicht eine Position.
+        //
+        // `order_id` kommt als verstecktes Feld aus dem Formular der
+        // Bezahlseite, ist also frei waehlbar. Ohne diesen Schritt liesse sich
+        // die Nummer gegen die einer eigenen Position tauschen - mayPayFor()
+        // laesst sie durch, weil `user_id` auf jeder Position steht. Berechnet
+        // wuerde dann der Positionsbetrag, bezahlt gemeldet ueber
+        // Order::markOrderAsPaid() aber die ganze Bestellung.
+        $order = Order::find($request->order_id)?->mainOrder();
 
         // Die Online-Überweisung wird hier nicht abgeschlossen, sondern erst
         // angestoßen: Die Kundin geht zum Zahlungsfenster von Micropayment, der

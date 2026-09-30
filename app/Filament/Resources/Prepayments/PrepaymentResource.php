@@ -37,11 +37,19 @@ class PrepaymentResource extends BaseAdminResource
 
     public static function getEloquentQuery(): Builder
     {
+        // Eine Zeile je Bestellung, nicht je Position: Bezahlt wird die
+        // Bestellung als Ganzes, also gibt es hier auch nur einen Knopf dafür.
+        // Vorher stand eine Bestellung mit zwei Artikeln zweimal in der Liste
+        // und musste zweimal als bezahlt markiert werden.
+        //
+        // Die Positionen hängen als childrens daran und werden vorgeladen, weil
+        // die Tabelle Produkt und Verkäuferin je Position anzeigt.
         return parent::getEloquentQuery()
             ->filter()
-            ->children()
+            ->whereNull('parent_id')
             ->where('payment_status', 0)
             ->where('payment_gateway', 'pre_payment')
+            ->with(['childrens.product', 'childrens.vendor'])
             ->latest(Order::CREATED_AT);
     }
 

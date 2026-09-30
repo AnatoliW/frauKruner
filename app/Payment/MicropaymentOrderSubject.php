@@ -9,11 +9,43 @@ use App\Order;
  */
 class MicropaymentOrderSubject extends MicropaymentSubject
 {
-    public function __construct(public readonly Order $order) {}
+    public readonly Order $order;
 
+    /**
+     * Bezahlt wird immer die Bestellung als Ganzes, nie eine einzelne Position.
+     * Deshalb wird hier auf den Kopf der Bestellung normalisiert: Referenz,
+     * Betrag, Zahlungsstand und Merkmal beschreiben damit garantiert dieselbe
+     * Einheit, und reference() bleibt zeichengleich zu Order::orderNumber(),
+     * das ebenfalls ueber mainOrder() geht.
+     *
+     * Ohne diese Normalisierung traegt eine Position ihren eigenen
+     * Positionsbetrag als Zahlbetrag, waehrend markPaid() ueber
+     * Order::markOrderAsPaid() die ganze Bestellung bezahlt meldet. Wer auf der
+     * Bezahlseite die Bestellnummer im Formular gegen die einer eigenen
+     * Position austauscht, bekaeme dann nur die guenstigste Position berechnet
+     * und die ganze Bestellung ausgeliefert. Die Betragspruefung in
+     * MicropaymentController::amountMismatch() faellt darauf herein, weil sie
+     * ihren Erwartungswert aus demselben Objekt zieht und deshalb denselben zu
+     * kleinen Betrag erwartet.
+     */
+    public function __construct(Order $order)
+    {
+        $this->order = $order->mainOrder();
+    }
+
+    /**
+     * Loest nur Bestellkoepfe auf.
+     *
+     * Eine Referenz auf eine Position haben wir nie verschickt. Sie
+     * stillschweigend auf den Kopf zu heben waere falsch: Die Benachrichtigung
+     * nennt dann einen Betrag, der zu einer Position gehoert, und wuerde gegen
+     * den Gesamtbetrag geprueft. Null fuehrt in notify() zu `Unbekannte
+     * Referenz` und damit zu `status=error` - die Meldung wird erneut
+     * zugestellt, statt eine zu kleine Zahlung zu buchen.
+     */
     public static function findByKey(int $key): ?static
     {
-        $order = Order::find($key);
+        $order = Order::query()->whereNull('parent_id')->find($key);
 
         return $order ? new static($order) : null;
     }
@@ -87,11 +119,12 @@ class MicropaymentOrderSubject extends MicropaymentSubject
     }
 
     /**
-     * Die eigentliche Arbeit macht Order::markAsPaid() je Unterbestellung:
-     * Status setzen, Bestand abbuchen, Kaeufer- und Verkaeufer-Mail. Die Methode
-     * gibt false zurueck, wenn die Unterbestellung schon bezahlt war - eine
-     * zweite Benachrichtigung loest deshalb weder eine zweite Abbuchung noch
-     * eine zweite Mail aus.
+     * Die eigentliche Arbeit macht Order::markOrderAsPaid(): Status je Position
+     * setzen, Bestand abbuchen, Verkaeufer-Mail je Position und eine einzige
+     * Bestaetigung an den Kaeufer fuer die ganze Bestellung. Die Methode gibt
+     * false zurueck, wenn keine Position mehr zu beanspruchen war - eine zweite
+     * Benachrichtigung loest deshalb weder eine zweite Abbuchung noch eine
+     * zweite Mail aus.
      */
     public function markPaid(string $transactionId): void
     {
@@ -100,20 +133,21 @@ class MicropaymentOrderSubject extends MicropaymentSubject
         // Setzt confirmed_at beim ersten Mal. Das Ergebnis wird nicht als
         // Abbruchbedingung benutzt: Haette die Kundin die Bestellung vorher
         // schon einmal bestaetigt, duerfte der Zahlungseingang trotzdem nicht
-        // verloren gehen. Die Einmaligkeit sichern markAsPaid() und
+        // verloren gehen. Die Einmaligkeit sichern markOrderAsPaid() und
         // redeemCoupon() jeweils selbst ab.
         $this->order->claimConfirmation();
 
+        // Die Transaktionsnummer gehoert an jede Position, bevor sie bezahlt
+        // gemeldet wird: Die Verkaeufer-Mail und der Beleg lesen sie.
         foreach ($this->order->childrens as $child) {
             $child->update([
                 'payment_gateway' => MicropaymentGateway::GATEWAY,
                 'payment_id' => filled($transactionId) ? $transactionId : $child->payment_id,
             ]);
-
-            $child->markAsPaid();
         }
 
-        $this->order->update(['payment_status' => 1, 'status' => 1]);
+        // Setzt auch payment_status und status auf dem Kopf der Bestellung.
+        $this->order->markOrderAsPaid();
 
         $this->order->redeemCoupon();
     }

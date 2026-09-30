@@ -17,9 +17,26 @@ class BuyerController extends Controller
     {
         return view('auth.buyer.pages.dashboard');
     }
+    /**
+     * „Meine Käufe“: eine Karte je Bestellung, nicht je Artikel.
+     *
+     * Vorher stand eine Bestellung mit zwei Artikeln zweimal in der Liste, mit
+     * zwei Beträgen und zwei Rechnungs-Knöpfen. Die Kundin hat aber eine
+     * Bestellung aufgegeben und einmal bezahlt – die Artikel hängen als
+     * Positionen darin.
+     */
     public function orders()
     {
-        $orders = Order::where('user_id', Auth()->id())->children()->latest()->get();
+        $orders = Order::where('user_id', Auth()->id())
+            ->whereNull('parent_id')
+            ->with([
+                'childrens.product.category',
+                'childrens.vendor',
+                'childrens.orderimages',
+            ])
+            ->latest()
+            ->get();
+
         return view('auth.buyer.pages.orders', compact('orders'));
     }
     public function news()

@@ -78,7 +78,10 @@
         <select name="category" id="category" class="select-classic @error('category') is-invalid @enderror">
 
             @foreach ($categories as $category)
-                <option value="{{ $category->id }}" @if ($category->id == $product->category_id) selected @endif>
+                {{-- data-name, damit das JS unten Foto/Video am Namen erkennt und nicht an hart
+                     verdrahteten IDs haengt. --}}
+                <option value="{{ $category->id }}" data-name="{{ $category->name }}"
+                    @if ($category->id == $product->category_id) selected @endif>
                     {{ $category->name }}
                 </option>
             @endforeach
@@ -518,7 +521,11 @@
             </div>
 
 
-            <div class="col-12 col-md-6">
+            {{-- Foto und Video gehen nicht per Post raus. Das JS unten blendet diesen Block
+                 fuer die beiden Kategorien aus und setzt das Feld auf 0. Das Feld bleibt im
+                 DOM und wird mitgesendet, damit die Pflichtvalidierung weiter erfuellt ist;
+                 erzwungen wird die 0 zusaetzlich im ProductsController. --}}
+            <div class="col-12 col-md-6" id="shippingCostDiv">
 
                 <h5 class="small mt-5">
                     <details data-popover="up">
@@ -817,6 +824,36 @@
 
     <script>
         $(document).ready(function() {
+            // Kategorien ohne Postversand. Die Namen stehen so in der categories-Tabelle und
+            // werden an mehreren Stellen genauso geprueft (z. B. sales.blade.php).
+            var NO_SHIPPING_CATEGORIES = ['Foto', 'Video'];
+
+            var $shippingCost = $('#shipping_cost');
+            // Den eingetragenen Versandpreis merken, damit er beim Zurueckwechseln auf eine
+            // Versandkategorie nicht verloren ist.
+            var lastShippingCost = $shippingCost.val();
+
+            function updateShippingCost() {
+                var categoryName = $('#category').find('option:selected').data('name');
+                var needsShipping = NO_SHIPPING_CATEGORIES.indexOf(categoryName) === -1;
+
+                if (needsShipping) {
+                    $('#shippingCostDiv').show();
+                    // Nur zuruecksetzen, wenn das Feld noch auf der erzwungenen 0 steht.
+                    if ($shippingCost.val() === '0') {
+                        $shippingCost.val(lastShippingCost);
+                    }
+                } else {
+                    if ($shippingCost.val() !== '0') {
+                        lastShippingCost = $shippingCost.val();
+                    }
+                    // Wert auf 0 setzen statt Feld entfernen: So bleibt die Pflichtangabe
+                    // erfuellt und das Speichern laeuft ohne Validierungsfehler durch.
+                    $shippingCost.val(0);
+                    $('#shippingCostDiv').hide();
+                }
+            }
+
             // Function to handle the visibility of elements based on category value
             function updateVisibility() {
                 var categoryVal = $('#category').val();
@@ -833,6 +870,8 @@
                     $('#addtionGroup').show();
                     $('#additionsDiv').show();
                 }
+
+                updateShippingCost();
             }
 
             // Add change event listener to the category select

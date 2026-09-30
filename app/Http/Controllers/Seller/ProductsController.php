@@ -47,6 +47,8 @@ class ProductsController extends Controller
     {
         $file = $request->file('thumbnail');
 
+        $this->forceZeroShippingCost($request);
+
         $request->validate([
             'name' => ['required', 'max:40'],
             'category' => ['required'],
@@ -148,6 +150,9 @@ class ProductsController extends Controller
         $resizeWidth = 780;
         $resizeHeight = null;
         $file = $request->file('thumbnail');
+
+        $this->forceZeroShippingCost($request);
+
         $request->validate([
             'name' => ['required', 'max:40'],
             'category' => ['required'],
@@ -330,6 +335,23 @@ class ProductsController extends Controller
             'success' => true,
             'message' => 'Produktaktion erfolgreich erstellt',
         ]);
+    }
+
+    /**
+     * Foto und Video gehen nicht per Post raus, deshalb gibt es dort keine Versandkosten.
+     *
+     * Im Formular ist das Feld fuer diese Kategorien ausgeblendet und steht auf 0. Die 0 wird
+     * hier noch einmal erzwungen, damit ein manipulierter oder gar nicht gesendeter Wert die
+     * Regel nicht umgeht. Gleichzeitig ist damit die Pflichtangabe shipping_cost immer
+     * erfuellt, das Speichern laeuft also auch ohne JavaScript durch.
+     */
+    private function forceZeroShippingCost(Request $request): void
+    {
+        $category = Category::find($request->category);
+
+        if ($category && in_array($category->name, ['Foto', 'Video'], true)) {
+            $request->merge(['shipping_cost' => 0]);
+        }
     }
 }
 

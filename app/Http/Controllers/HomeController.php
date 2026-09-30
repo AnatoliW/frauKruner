@@ -89,12 +89,68 @@ class HomeController extends Controller
         $orders = Order::where('user_id', auth()->id())->latest()->get();
         return view('auth.orders', compact('orders'));
     }
+    /**
+     * Beleg zu einer Bestellung.
+     *
+     * Dieselbe Adresse bedient zwei Belege, weil beide dieselbe Vorlage nutzen:
+     *
+     *  - Die Verkäuferin sieht die **Gutschrift** für ihre Position. Sie gilt je
+     *    Position, denn jede Verkäuferin rechnet einzeln ab.
+     *  - Der Käufer sieht die **Rechnung** für seine ganze Bestellung, mit allen
+     *    Artikeln darauf. Er hat einmal bezahlt und bekommt einen Beleg.
+     *    Deshalb wird hier auf die Bestellung aufgelöst, auch wenn der Aufruf
+     *    die ID einer Position trägt – die Bestelllisten verlinken beides.
+     *
+     * Die Zugriffsprüfung ist neu: Die Adresse war nur durch `auth` geschützt.
+     * Wer angemeldet war, konnte über eine geratene Nummer Name, Adresse und
+     * Bestellung fremder Kundinnen lesen – und die Nummern sind fortlaufend.
+     */
     public function invoice(Order $order)
     {
-        $order->load(['product', 'vendor.address', 'vendor.verification', 'products']);
-        $products = $order->products;
+        $user = auth()->user();
 
-        return view('auth.invoice', compact('order', 'products'));
+        if ((int) ($user->role_id ?? 0) === 3) {
+            // Gutschrift: nur die Verkäuferin der Position, nicht die der
+            // Nachbarposition in derselben Bestellung.
+            abort_unless((int) $order->vendor_id === (int) $user->id, 404);
+
+            $order->load(['product', 'vendor.address', 'vendor.verification', 'products']);
+
+            return view('auth.invoice', [
+                'order' => $order,
+                'products' => $order->products,
+                'positions' => collect([$order]),
+            ]);
+        }
+
+        // Rechnung: gilt für die Bestellung als Ganzes.
+        $invoice = $order->mainOrder();
+
+        // Der Adminbereich darf jeden Beleg sehen, die Kundin nur ihren eigenen.
+        abort_unless(
+            (int) ($user->role_id ?? 0) === 1 || (int) $invoice->user_id === (int) $user->id,
+            404
+        );
+
+        $invoice->load([
+            'childrens.product',
+            'childrens.vendor.address',
+            'childrens.vendor.verification',
+            'product',
+            'vendor.address',
+            'vendor.verification',
+            'products',
+        ]);
+
+        // Eine Bestellung ohne Positionen (Altdatensatz) ist ihre eigene einzige
+        // Position; die Rechnung sieht dann aus wie bisher.
+        $positions = $invoice->childrens->isNotEmpty() ? $invoice->childrens : collect([$invoice]);
+
+        return view('auth.invoice', [
+            'order' => $invoice,
+            'products' => $invoice->products,
+            'positions' => $positions,
+        ]);
     }
     public function printemail()
     {
@@ -209,23 +265,38 @@ class HomeController extends Controller
             'status' => 3,
         ]);
 
+        // War das die letzte offene Position, gilt die ganze Bestellung als
+        // storniert. Die Belege lesen den Stand ohnehin aus den Positionen,
+        // hier bleiben zusätzlich die Daten schlüssig.
+        $order->syncCancellation();
+
         // Nur zurückbuchen, wenn der Verkauf auch abgebucht war. Eine unbezahlte
         // Vorkasse-Bestellung hat nie etwas aus dem Shop genommen.
         if ($wasPaid) {
             ProductStock::releaseSale($order);
         }
 
-        $year = now()->format('Y');
+        // Die Bestellnummer, die die Kundin kennt – nicht die ID dieser Position
+        // und nicht das laufende Jahr: Beides stand vorher in der Storno-Mail und
+        // passte bei einer älteren Bestellung mit mehreren Artikeln zu nichts.
+        $bestellnummer = $order->orderNumber();
+
+        // Storniert wird eine Position. Bei mehreren Artikeln muss die Kundin
+        // erkennen, welcher davon betroffen ist.
+        $artikel = $order->product_name ?? $order->product?->name;
+
         $mail_data = [
-            'subject' => 'Storno Bestellung FK' . $year . '-' . $order->id,
-            'title' => 'Storno Bestellung FK' . $year . '-' . $order->id,
-            'body' => "Hey du,<br><br>leider musste ich deinen Einkauf stornieren. Für die Unannehmlichkeit entschuldige ich mich.<br><br>Weitere Informationen erhälst du per E-Mail.",
+            'subject' => 'Storno Bestellung ' . $bestellnummer,
+            'title' => 'Storno Bestellung ' . $bestellnummer,
+            'body' => "Hey du,<br><br>leider musste ich "
+                . (filled($artikel) ? 'den Artikel „' . e($artikel) . '“ aus deiner Bestellung ' . $bestellnummer : 'deinen Einkauf')
+                . " stornieren. Für die Unannehmlichkeit entschuldige ich mich.<br><br>Weitere Informationen erhälst du per E-Mail.",
             'button_link' => route('shop'),
             'button_text' => 'ein anderes Produkt bestellen',
         ];
         $mail_data2 = [
-            'subject' => 'Storno Bestellung FK' . $year . '-' . $order->id,
-            'title' => 'Storno Bestellung FK' . $year . '-' . $order->id,
+            'subject' => 'Storno Bestellung ' . $bestellnummer,
+            'title' => 'Storno Bestellung ' . $bestellnummer,
             'body' => "Hallo,<br><br> da du deiner Vertragspflicht als Produzentin nicht nachgekommen bist und auch auf Fristen nicht reagiert hast, habe ich deinen Verkauf storniert.<br><br> Dein Konto auf FrauKruner.de wurde gelöscht.<br><br>",
             'button_link' => '',
             'button_text' => '',

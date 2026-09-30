@@ -42,9 +42,18 @@ class OrderResource extends BaseAdminResource
 
     public static function getEloquentQuery(): Builder
     {
+        // Eine Zeile je Bestellung, nicht je Position. Vorher stand eine
+        // Bestellung mit zwei Artikeln zweimal in der Liste – mit zwei
+        // verschiedenen Nummern, von denen keine die bezahlte war. Die Artikel
+        // stehen jetzt in der Zeile der Bestellung und ausführlich in ihrer
+        // Ansicht.
+        //
+        // Vorgeladen wird alles, was die Liste je Position anzeigt; sonst holt
+        // jede Zeile ihre Positionen, Produkte und Verkäuferinnen einzeln nach.
         return parent::getEloquentQuery()
-            ->children()
+            ->whereNull('parent_id')
             ->paid()
+            ->with(['childrens.product', 'childrens.vendor'])
             ->latest(Order::CREATED_AT);
     }
 

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Payouts\Tables;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Mail\UserNotifyEmail;
 use App\Order;
+use App\Support\OrderNumberSearch;
 use App\Services\ProductStock;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -110,9 +111,46 @@ class PayoutsTable
                                 ->orWhere('tracking_Id', 'like', "%{$search}%");
                         });
                     }),
+                // Diese Liste zeigt Positionen: je Verkäuferin eine Auszahlung.
+                // Über der Positions-ID steht deshalb die Bestellung, zu der sie
+                // gehört – das ist die Nummer, die die Kundin bezahlt hat und die
+                // auf dem Kontoauszug steht. Ohne sie lässt sich eine Auszahlung
+                // keinem Zahlungseingang zuordnen.
                 TextColumn::make('id')
                     ->label('Bestell-ID')
-                    ->sortable(),
+                    ->html()
+                    ->state(function (Order $record): string {
+                        $zeilen = [];
+
+                        if ($record->parent_id) {
+                            $zeilen[] = '<span style="font-weight:600;">'.e($record->orderNumber()).'</span>';
+                            $zeilen[] = '<span style="font-size:11px;opacity:.7;">Haupt-Bestell-ID: '
+                                .e((string) $record->parent_id).'</span>';
+                        }
+
+                        $zeilen[] = '<span style="font-size:11px;opacity:.7;">Beleg-Nr.: '
+                            .e((string) $record->getKey()).'</span>';
+
+                        return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">'
+                            .implode('', $zeilen).'</div>';
+                    })
+                    ->sortable()
+                    // Gesucht werden kann nach der Haupt-Bestell-ID, nach der
+                    // Beleg-Nr. dieser Position und nach `FK2026-5131`, wie es in
+                    // Mail und Kontoauszug steht.
+                    //
+                    // Exakter Vergleich statt LIKE: Er nutzt den Index und trifft
+                    // nicht auch 112696, wenn nach 12696 gesucht wird.
+                    ->searchable(query: function ($query, string $search): void {
+                        if (! $nummer = OrderNumberSearch::number($search)) {
+                            return;
+                        }
+
+                        $query->where(function ($q) use ($nummer): void {
+                            $q->where('id', $nummer)
+                                ->orWhere('parent_id', $nummer);
+                        });
+                    }),
                 TextColumn::make('shipping_status')
                     ->label('Versandstatus')
                     ->html()
@@ -258,7 +296,13 @@ class PayoutsTable
                     ->button()
                     ->size('sm')
                     ->color('warning')
-                    ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record' => $record])),
+                    // Diese Liste zeigt Positionen (je Verkäuferin eine Auszahlung),
+                    // die Bestellansicht zeigt Bestellungen. Verlinkt wird deshalb
+                    // die Bestellung, zu der die Position gehört – mit der Position
+                    // selbst fände die Ansicht keinen Datensatz.
+                    ->url(fn (Order $record): string => OrderResource::getUrl('view', [
+                        'record' => $record->mainOrder(),
+                    ])),
                 Action::make('cancel')
                     ->label('Stornieren')
                     ->button()
@@ -273,24 +317,33 @@ class PayoutsTable
 
                         $record->update(['status' => 3]);
 
+                        // War das die letzte offene Position, gilt die ganze
+                        // Bestellung als storniert.
+                        $record->syncCancellation();
+
                         // Nur zurückbuchen, wenn der Verkauf auch abgebucht war.
                         if ($wasPaid) {
                             ProductStock::releaseSale($record);
                         }
 
-                        $year = now()->format('Y');
+                        // Die Bestellnummer, die die Kundin kennt – nicht die ID
+                        // dieser Position und nicht das laufende Jahr.
+                        $bestellnummer = $record->orderNumber();
+                        $artikel = $record->product_name ?? $record->product?->name;
 
                         Mail::to($record->email)->send(new UserNotifyEmail([
-                            'subject' => 'Storno Bestellung FK' . $year . '-' . $record->id,
-                            'title' => 'Storno Bestellung FK' . $year . '-' . $record->id,
-                            'body' => 'Hey du,<br><br>leider musste ich deinen Einkauf stornieren. Für die Unannehmlichkeit entschuldige ich mich.<br><br>Weitere Informationen erhälst du per E-Mail.',
+                            'subject' => 'Storno Bestellung ' . $bestellnummer,
+                            'title' => 'Storno Bestellung ' . $bestellnummer,
+                            'body' => 'Hey du,<br><br>leider musste ich '
+                                . (filled($artikel) ? 'den Artikel „' . e($artikel) . '“ aus deiner Bestellung ' . $bestellnummer : 'deinen Einkauf')
+                                . ' stornieren. Für die Unannehmlichkeit entschuldige ich mich.<br><br>Weitere Informationen erhälst du per E-Mail.',
                             'button_link' => route('shop'),
                             'button_text' => 'ein anderes Produkt bestellen',
                         ]));
 
                         Mail::to($record->vendor->email)->send(new UserNotifyEmail([
-                            'subject' => 'Storno Bestellung FK' . $year . '-' . $record->id,
-                            'title' => 'Storno Bestellung FK' . $year . '-' . $record->id,
+                            'subject' => 'Storno Bestellung ' . $bestellnummer,
+                            'title' => 'Storno Bestellung ' . $bestellnummer,
                             'body' => 'Hallo,<br><br> da du deiner Vertragspflicht als Produzentin nicht nachgekommen bist und auch auf Fristen nicht reagiert hast, habe ich deinen Verkauf storniert.<br><br> Dein Konto auf FrauKruner.de wurde gelöscht.<br><br>',
                             'button_link' => '',
                             'button_text' => '',

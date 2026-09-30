@@ -863,3 +863,146 @@ describe('Zahlungsart im Checkout', function () {
             ->assertSessionHasNoErrors();
     });
 });
+
+/**
+ * Bestellung mit zwei unterschiedlich teuren Positionen und angemeldeter
+ * Käuferin: 5,00 € und 500,00 €, Gesamtbetrag 505,00 €.
+ *
+ * Die Preise liegen bewusst weit auseinander – bei gleich teuren Positionen
+ * fiele eine Verwechslung von Position und Bestellung nicht auf.
+ *
+ * @return array{0: Order, 1: Order, 2: Order, 3: User}
+ */
+function mcpOrderWithTwoPositions(): array
+{
+    $buyer = User::create([
+        'name' => 'Käuferin',
+        'email' => 'buyer@example.com',
+        'status' => 1,
+    ]);
+
+    $base = [
+        'user_id' => $buyer->id,
+        'first_name' => 'Anna',
+        'last_name' => 'Beispiel',
+        'email' => $buyer->email,
+        'status' => 0,
+        'payment_status' => 0,
+    ];
+
+    $head = Order::create($base + ['total' => 505.00, 'subtotal' => 505.00]);
+
+    $positions = collect([5.00, 500.00])->map(function (float $price, int $i) use ($head, $base) {
+        $vendor = User::create([
+            'name' => 'Verkäuferin '.$i,
+            'email' => "vendor-{$i}@example.com",
+            'status' => 1,
+        ]);
+
+        $product = Product::create([
+            'user_id' => $vendor->id,
+            'name' => 'Testprodukt '.$i,
+            'price' => $price,
+            'quantity' => 1,
+            'sale_count' => 0,
+            'selloption' => 0,
+            'status' => 1,
+        ]);
+
+        return Order::create($base + [
+            'parent_id' => $head->id,
+            'product_id' => $product->id,
+            'vendor_id' => $vendor->id,
+            'total' => $price,
+        ]);
+    });
+
+    return [$head->fresh(), $positions[0]->fresh(), $positions[1]->fresh(), $buyer];
+}
+
+/**
+ * Bezahlt wird die Bestellung, nicht eine Position.
+ *
+ * Die Bezahlseite schickt die Bestellnummer als verstecktes Feld. Tauscht die
+ * angemeldete Kundin sie gegen die ihrer günstigsten Position, trägt diese
+ * Position ihren eigenen, kleineren Betrag – Order::markOrderAsPaid() meldet
+ * aber die ganze Bestellung bezahlt, bucht jeden Bestand ab und schickt jeder
+ * Verkäuferin ihre Mail. Die Betragsprüfung merkt nichts davon, weil sie ihren
+ * Erwartungswert aus demselben Objekt zieht und deshalb denselben zu kleinen
+ * Betrag erwartet: 5,00 € bezahlt, 505,00 € ausgeliefert.
+ *
+ * Deshalb wird an jeder Stelle, die eine Zahlung anstößt oder verbucht, auf den
+ * Kopf der Bestellung normalisiert.
+ */
+describe('Zahlung gilt für die Bestellung, nicht für eine Position', function () {
+    it('leitet die Zahlung einer Position auf den Kopf der Bestellung', function () {
+        [$head, $cheap, , $buyer] = mcpOrderWithTwoPositions();
+
+        $response = $this->actingAs($buyer)->post(route('payment.process'), [
+            'payment_type' => 'online_transfer',
+            'order_id' => $cheap->id,
+        ]);
+
+        $response->assertRedirect()->assertSessionHasNoErrors();
+
+        // mayPayFor() lässt die Position durch – user_id steht auf jeder
+        // Position. Signiert werden darf trotzdem nur der Kopf.
+        expect($response->headers->get('Location'))
+            ->toContain('/payment/micropayment/order/'.$head->id)
+            ->not->toContain('/payment/micropayment/order/'.$cheap->id);
+    });
+
+    it('nennt dem Zahlungsfenster auch für eine Position den Gesamtbetrag', function () {
+        [$head, $cheap] = mcpOrderWithTwoPositions();
+
+        $subject = new MicropaymentOrderSubject($cheap);
+
+        // 505,00 € und nicht 5,00 € – und dieselbe Kennung, die auch auf der
+        // Bestätigung und dem Kontoauszug steht.
+        expect($subject->amountInCents())->toBe(50500)
+            ->and($subject->reference())->toBe($head->orderNumber())
+            ->and($subject->order->id)->toBe($head->id);
+    });
+
+    it('lehnt eine Benachrichtigung ab, die eine Position nennt', function () {
+        [$head, $cheap, $expensive] = mcpOrderWithTwoPositions();
+
+        // Ohne orderToken: Das Merkmal leitet sich aus der Referenz ab, und für
+        // eine Position wurde nie eines ausgegeben. Übrig bleibt das
+        // Geheimfeld – genau das brächte eine echte Benachrichtigung mit.
+        $result = mcpNotify([
+            'function' => 'billing',
+            'title' => 'FK'.$cheap->created_at->year.'-'.$cheap->id,
+            'amount' => 500,
+            'currency' => 'EUR',
+            'auth' => 'mcp-trx-0815',
+            'testmode' => 1,
+            'secretfield' => 'geheim123',
+        ]);
+
+        expect($result['status'])->toBe('error');
+
+        // Nichts bezahlt, nichts abgebucht, keine Mail unterwegs.
+        expect((int) $head->fresh()->payment_status)->toBe(0)
+            ->and((int) $cheap->fresh()->payment_status)->toBe(0)
+            ->and((int) $expensive->fresh()->payment_status)->toBe(0)
+            ->and((int) Product::find($expensive->product_id)->quantity)->toBe(1);
+
+        Mail::assertNothingSent();
+    });
+
+    it('verbucht die Zahlung des Kopfes wie gewohnt', function () {
+        [$head, $cheap, $expensive] = mcpOrderWithTwoPositions();
+
+        $result = mcpNotify(mcpNotification($head));
+
+        expect($result['status'])->toBe('ok');
+
+        expect((int) $head->fresh()->payment_status)->toBe(1)
+            ->and((int) $cheap->fresh()->payment_status)->toBe(1)
+            ->and((int) $expensive->fresh()->payment_status)->toBe(1);
+
+        Mail::assertSent(UserOrderEmail::class, 1);
+        Mail::assertSent(VendorOrderEmail::class, 2);
+    });
+});

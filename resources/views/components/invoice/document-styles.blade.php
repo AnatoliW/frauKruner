@@ -144,6 +144,55 @@
         background: #fafafa;
     }
 
+    /*
+     * Summenzeilen (Zwischensumme, Gutschein, Gesamtbetrag). Ohne eigene Regel
+     * erben sie keinen Innenabstand, und die Beschriftung klebt am Betrag.
+     */
+    .invoice-document__table tfoot td {
+        border: 1px solid #e5e7eb;
+        padding: 0.5625rem 0.625rem;
+        color: #182b63;
+        background: #f8fafc;
+    }
+
+    /*
+     * Storno-Markierung. Entspricht dem roten Balken der Kundenansicht
+     * (.card-body.storniert in style.css), hier aber als eigenes Element,
+     * damit es auch im Ausdruck erhalten bleibt.
+     */
+    .invoice-document__cancelled {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0 1rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        background: #e74a3f;
+        color: #fff;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.8125rem;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .invoice-document__cancelled--teilweise {
+        background: #fef7f6;
+        color: #b3271c;
+        border: 1px solid #e74a3f;
+    }
+
+    /* Stornierte Zeile in der Positionstabelle. */
+    .invoice-document__table tbody tr.is-cancelled td {
+        color: #b3271c;
+        text-decoration: line-through;
+    }
+
+    .invoice-document__table tbody tr.is-cancelled td:last-child {
+        text-decoration: none;
+    }
+
     .invoice-document__note {
         margin: 0.75rem 0 0;
         padding: 0.625rem 0.75rem;

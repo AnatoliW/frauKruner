@@ -10,13 +10,21 @@ class DashboardOverviewWidget extends Widget
 
     protected int | string | array $columnSpan = 'full';
 
+    /**
+     * Zahl der bezahlten Bestellungen – nicht der Positionen.
+     *
+     * Muss zu OrderResource::getEloquentQuery() passen, denn die Kachel verlinkt
+     * genau diese Liste. Vorher wurden hier Positionen gezählt: Eine Bestellung
+     * mit zwei Artikeln zählte doppelt, und die Zahl stimmte nicht mit den
+     * Zeilen der Liste überein.
+     */
     public function getOrdersCount(): int
     {
         return class_exists(\App\Order::class)
-            ? \App\Order::children()
-            ->paid()
-            ->latest(\App\Order::CREATED_AT)
-            ->count()
+            ? \App\Order::query()
+                ->whereNull('parent_id')
+                ->paid()
+                ->count()
             : 0;
     }
 

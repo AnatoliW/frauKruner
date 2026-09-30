@@ -31,7 +31,7 @@ class UserPrepaymentOrder extends Mailable
     public function build()
     {
         return $this->from(mail_from_address(), mail_from_name())
-            ->subject('Bestellung #'.$this->order->id)
+            ->subject('Bestellung '.$this->order->orderNumberWithPosition())
             ->markdown('emails.orders.user_pre_payment_order');
     }
 }

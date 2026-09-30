@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Prepayments\Tables;
 
 use App\Order;
+use App\Support\OrderNumberSearch;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
@@ -18,10 +19,29 @@ class PrepaymentsTable
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('parent_id')
-                    ->label('Haupt ID')
-                    ->sortable()
-                    ->searchable(),
+                // Die Nummer, die die Kundin überwiesen hat und die im
+                // Verwendungszweck steht – danach wird dieser Eingang gesucht.
+                TextColumn::make('order_number')
+                    ->label('Bestellnummer')
+                    ->weight('bold')
+                    ->state(fn (Order $record): string => $record->orderNumber())
+                    ->description(fn (Order $record): ?string => ($count = $record->childrens->count()) > 1
+                        ? $count.' Positionen'
+                        : null)
+                    // Exakter Vergleich statt LIKE: Er nutzt den Index und trifft
+                    // nicht auch 112696, wenn nach 12696 gesucht wird. `FK2026-12696`
+                    // darf direkt aus Mail oder Kontoauszug eingefügt werden.
+                    ->searchable(query: function ($query, string $search): void {
+                        if (! $nummer = OrderNumberSearch::number($search)) {
+                            return;
+                        }
+
+                        // Auch die Beleg-Nr. einer Position findet ihre Bestellung.
+                        $query->where(function ($q) use ($nummer): void {
+                            $q->where('id', $nummer)
+                                ->orWhereHas('childrens', fn ($c) => $c->where('id', $nummer));
+                        });
+                    }),
                 TextColumn::make('user_id')
                     ->label('Nutzer ID')
                     ->sortable()
@@ -46,15 +66,23 @@ class PrepaymentsTable
                                 ->orWhere('email', 'like', "%{$search}%");
                         });
                     }),
+                // Verkäuferin und Produkt hängen an den Positionen, nicht an der
+                // Bestellung: Bei mehreren Artikeln stehen hier mehrere Zeilen.
                 TextColumn::make('vendor.name')
                     ->label('Verkäuferin')
+                    ->html()
                     ->state(function (Order $record): string {
-                        $name = trim(($record->vendor->name ?? '').' '.($record->vendor->last_name ?? ''));
+                        $names = $record->childrens
+                            ->map(fn (Order $position): string => trim(
+                                ($position->vendor->name ?? '').' '.($position->vendor->last_name ?? '')
+                            ))
+                            ->filter()
+                            ->map(fn (string $name): string => e($name));
 
-                        return $name !== '' ? $name : '-';
+                        return $names->isEmpty() ? '-' : $names->implode('<br>');
                     })
                     ->searchable(query: function ($query, string $search): void {
-                        $query->whereHas('vendor', function ($q) use ($search): void {
+                        $query->whereHas('childrens.vendor', function ($q) use ($search): void {
                             $q->where('name', 'like', "%{$search}%")
                                 ->orWhere('last_name', 'like', "%{$search}%");
                         });
@@ -62,23 +90,32 @@ class PrepaymentsTable
                 TextColumn::make('product')
                     ->label('Produkt')
                     ->html()
-                    ->formatStateUsing(function (Order $record): string {
-                        if (!$record->product || !$record->product->slug) {
-                            return '-';
-                        }
+                    ->state(function (Order $record): string {
+                        $links = $record->childrens
+                            ->map(function (Order $position): ?string {
+                                if (! $position->product || ! $position->product->slug) {
+                                    return null;
+                                }
 
-                        $url = route('product', $record->product->slug);
+                                $url = route('product', $position->product->slug);
 
-                        return '<a href="'.e($url).'" target="_blank">'.e((string) $record->product->name).'</a>';
+                                return '<a href="'.e($url).'" target="_blank">'
+                                    .e((string) $position->product->name).'</a>';
+                            })
+                            ->filter();
+
+                        return $links->isEmpty() ? '-' : $links->implode('<br>');
                     }),
                 TextColumn::make('total')
-                    ->label('Gesamt')
+                    ->label('Zu zahlen')
                     ->money()
                     ->sortable()
-                    // 'total' ist der Bruttowert dieser Position; ein
-                    // Gutscheinanteil geht davon noch ab. Gerade bei Vorkasse
-                    // muss der Unterschied sichtbar sein – sonst wird hier auf
-                    // einen Zahlungseingang gewartet, den es nie geben wird.
+                    // Achtung, anders als bei einer Position: Im Kopf der
+                    // Bestellung ist der Gutschein bereits abgezogen
+                    // (CheckoutController::processOrder() legt total als
+                    // subtotal − discount an). Hier darf also nicht noch einmal
+                    // abgezogen werden – der Wert ist direkt der Betrag, den die
+                    // Kundin überweisen soll.
                     ->description(function (Order $record, Table $table): ?Htmlable {
                         $discount = (float) ($record->discount ?? 0);
 
@@ -92,12 +129,10 @@ class PrepaymentsTable
                         $currency = $table->getDefaultCurrency();
                         $locale = $table->getDefaultNumberLocale() ?? config('app.locale');
 
-                        $paid = max(0, (float) $record->total - $discount);
-
                         return new HtmlString(
-                            'Gutschein: '.e($record->discount_code)
-                            .' −'.e(Number::currency($discount, $currency, $locale))
-                            .'<br>Zu zahlen: '.e(Number::currency($paid, $currency, $locale))
+                            'Zwischensumme: '.e(Number::currency((float) $record->subtotal, $currency, $locale))
+                            .'<br>Gutschein '.e($record->discount_code)
+                            .': −'.e(Number::currency($discount, $currency, $locale))
                         );
                     }),
                 TextColumn::make('created_at')
@@ -114,9 +149,24 @@ class PrepaymentsTable
                     ->icon('heroicon-m-check-circle')
                     ->requiresConfirmation()
                     ->modalHeading('Bezahlung bestätigen')
-                    ->modalDescription('Möchtest du diese Bestellung als bezahlt markieren? Das Produkt wird jetzt aus dem Shop genommen, falls es ein Einzelstück ist.')
+                    // Der Hinweistext nennt die Zahl der Positionen, damit vor dem
+                    // Klick klar ist, wie viele Artikel aus dem Shop gehen.
+                    ->modalDescription(function (Order $record): string {
+                        $count = $record->childrens->count();
+
+                        $artikel = $count > 1
+                            ? 'Die '.$count.' Artikel werden'
+                            : 'Das Produkt wird';
+
+                        return 'Möchtest du die Bestellung '.$record->orderNumber()
+                            .' als bezahlt markieren? '.$artikel
+                            .' jetzt aus dem Shop genommen, falls es Einzelstücke sind.'
+                            .' Der Käufer bekommt eine Bestätigung für die ganze Bestellung.';
+                    })
                     ->action(function (Order $record): void {
-                        if (!$record->markAsPaid()) {
+                        // Die ganze Bestellung in einem Schritt: Status und Bestand
+                        // je Position, aber nur eine Bestätigung an den Käufer.
+                        if (! $record->markOrderAsPaid()) {
                             Notification::make()
                                 ->title('Bestellung war bereits als bezahlt markiert')
                                 ->warning()
@@ -126,7 +176,7 @@ class PrepaymentsTable
                         }
 
                         Notification::make()
-                            ->title('Bestellung als bezahlt markiert')
+                            ->title('Bestellung '.$record->orderNumber().' als bezahlt markiert')
                             ->success()
                             ->send();
                     }),

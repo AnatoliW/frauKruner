@@ -1,12 +1,5 @@
-@php
-    $price = $order->total;
-    $date = $order->created_at;
-    $orderId = $order->id;
-    $year = $order->created_at->year;
-@endphp
-
 @component('mail::message')
-<h1 class="title">Bestellung #{{ $order->id }}</h1>
+<h1 class="title">Bestellung {{ $order->orderNumber() }}</h1>
 <div class="body-section">
 <p>Herzlichen Glückwunsch {{ $order->user->username ?? $order->user->name }} zum Kauf.</p>
 
@@ -33,7 +26,7 @@
             Verwendungszweck:<br>
             <span>(bitte angeben)</span>
         </td>
-        <td>FK{{ $order->created_at->year }}-{{ $order->id }}</td>
+        <td>{{ $order->orderNumber() }}</td>
     </tr>
     <tr>
         <td>Betrag:</td>
