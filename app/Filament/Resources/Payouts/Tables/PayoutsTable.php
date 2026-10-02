@@ -300,9 +300,19 @@ class PayoutsTable
                     // die Bestellansicht zeigt Bestellungen. Verlinkt wird deshalb
                     // die Bestellung, zu der die Position gehört – mit der Position
                     // selbst fände die Ansicht keinen Datensatz.
+                    //
+                    // Der Anker führt in der Bestellansicht direkt zur Gutschrift
+                    // dieser Position. Ohne ihn landet man bei einer Bestellung mit
+                    // mehreren Artikeln oben und muss die richtige Gutschrift unter
+                    // allen anderen suchen – ausgezahlt wird aber genau diese eine.
+                    // Die ID ist dieselbe, die view-order.blade.php je Gutschrift
+                    // als Druckblock setzt (seller-print-block-<Positions-ID>).
+                    // Diese Liste zeigt über scopeChildren() nur Positionen, die
+                    // Bestellansicht listet genau deren Gutschriften – der Anker
+                    // trifft also immer.
                     ->url(fn (Order $record): string => OrderResource::getUrl('view', [
                         'record' => $record->mainOrder(),
-                    ])),
+                    ]).'#seller-print-block-'.$record->getKey()),
                 Action::make('cancel')
                     ->label('Stornieren')
                     ->button()

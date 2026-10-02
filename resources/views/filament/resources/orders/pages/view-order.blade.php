@@ -311,9 +311,12 @@
              jetzt in der Übersicht. --}}
         @foreach ($positions as $index => $position)
             @php
-                // Zwei Gutschriften unterscheiden sich durch die Herstellerin, nicht
-                // durch eine Positionsnummer.
+                // Zwei Gutschriften unterscheiden sich durch die Herstellerin – und,
+                // wenn beide Artikel von derselben Frau kommen, nur noch durch den
+                // Artikel. Beides steht deshalb über der Gutschrift, damit die aus
+                // der Auszahlungsliste verlinkte auf Anhieb zu erkennen ist.
                 $herstellerin = trim(($position->vendor?->name ?? '') . ' ' . ($position->vendor?->last_name ?? ''));
+                $artikel = (string) ($position->product_name ?? $position->product?->name ?? '');
             @endphp
 
             <section class="invoice-document__section" id="seller-print-block-{{ $position->id }}">
@@ -327,7 +330,7 @@
                 @endif
 
                 <div class="invoice-document__section-heading no-print">
-                    <h2>Gutschrift{{ $herstellerin !== '' ? ' · ' . $herstellerin : '' }}</h2>
+                    <h2>Gutschrift{{ $herstellerin !== '' ? ' · ' . $herstellerin : '' }}{{ $artikel !== '' ? ' · ' . $artikel : '' }}</h2>
                     <button type="button" class="invoice-document__print-btn" onclick="printInvoiceSection('seller-print-block-{{ $position->id }}')">Drucken</button>
                 </div>
 
@@ -399,8 +402,61 @@
                     Frau Kruner · Schönhauser Allee 163 · 10435 Berlin · fraukruner.de
                 </p>
             </section>
-
-            </section>
         @endforeach
     </div>
+
+    {{-- Aus der Auszahlungsliste wird eine einzelne Gutschrift direkt verlinkt
+         (…/orders/123#seller-print-block-456). Der Browser springt dort nicht
+         von allein hin: Die Seite kommt von Livewire, und wenn der Anker
+         ausgewertet wird, steht der Abschnitt noch nicht im Dokument.
+
+         Deshalb hier selbst scrollen – und den Abschnitt kurz hervorheben, denn
+         bei einer Bestellung mit mehreren Artikeln sehen die Gutschriften
+         untereinander gleich aus. Ohne die Markierung bleibt offen, welche davon
+         zu der angeklickten Auszahlung gehört. --}}
+    <script>
+        (function () {
+            // Einmal definieren: Bei einer Livewire-Navigation wird dieses Skript
+            // erneut ausgeführt, und ein zweiter Listener am document würde jedes
+            // Mal mitlaufen.
+            if (typeof window.fkScrollToGutschrift !== 'function') {
+                window.fkScrollToGutschrift = function () {
+                    const hash = window.location.hash;
+
+                    if (! hash || hash.indexOf('seller-print-block-') === -1) {
+                        return;
+                    }
+
+                    const section = document.getElementById(hash.slice(1));
+
+                    if (! section) {
+                        return;
+                    }
+
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    section.classList.add('invoice-document__section--highlight');
+
+                    // Die Markierung wieder abräumen: Sie soll den Weg zeigen,
+                    // nicht dauerhaft eine Gutschrift anders aussehen lassen.
+                    window.setTimeout(function () {
+                        section.classList.remove('invoice-document__section--highlight');
+                    }, 2600);
+                };
+
+                document.addEventListener('livewire:navigated', function () {
+                    window.requestAnimationFrame(window.fkScrollToGutschrift);
+                });
+            }
+
+            // Direkter Aufruf der Seite (neuer Tab, eingefügter Link).
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function () {
+                    window.requestAnimationFrame(window.fkScrollToGutschrift);
+                });
+            } else {
+                window.requestAnimationFrame(window.fkScrollToGutschrift);
+            }
+        })();
+    </script>
 </x-filament-panels::page>

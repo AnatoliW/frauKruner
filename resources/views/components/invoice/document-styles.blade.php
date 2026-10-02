@@ -12,6 +12,23 @@
         margin-bottom: 1.25rem;
         padding: 1.25rem 1.5rem;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        /*
+         * Ein Direktlink auf eine Gutschrift (Auszahlungsliste) soll den
+         * Abschnitt ganz zeigen. Ohne diesen Abstand verschwindet sein Kopf mit
+         * der Gutschrift-Nr. hinter der festen Kopfzeile des Adminbereichs.
+         */
+        scroll-margin-top: 6rem;
+    }
+
+    /*
+     * Kurz hervorgehoben, wenn der Abschnitt das Ziel eines Direktlinks ist:
+     * Mehrere Gutschriften einer Bestellung sehen gleich aus, und nach dem
+     * Scrollen muss erkennbar bleiben, welche gemeint war.
+     */
+    .invoice-document__section--highlight {
+        border-color: #67c776;
+        box-shadow: 0 0 0 10px #67c776;
+        transition: box-shadow 0.3s ease, border-color 0.3s ease;
     }
 
     .invoice-document__header {
