@@ -20,3 +20,16 @@ Artisan::command('inspire', function () {
 Schedule::command('boosts:expire')
     ->hourly()
     ->withoutOverlapping();
+
+/*
+ * Aus dem alten Projekt (fxxk, app/Console/Kernel.php) uebernommen.
+ * 'dsiable:boosts' fehlt bewusst - das erledigt jetzt 'boosts:expire'.
+ */
+Schedule::command('last:login')->everyMinute()->withoutOverlapping();
+Schedule::command('email:check')->everyMinute()->withoutOverlapping();
+Schedule::command('shipped:email')->daily()->withoutOverlapping();
+Schedule::command('delete:unpaidorder')->everyMinute()->withoutOverlapping();
+Schedule::command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
+Schedule::command('video:delete')->everyMinute()->withoutOverlapping();
+// Schedule::command('media:process')->everyMinute()->withoutOverlapping();
+// Schedule::command('videos:strip-metadata')->everyMinute()->withoutOverlapping();
