@@ -14,6 +14,7 @@ use App\Product;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class Order extends Model
@@ -33,6 +34,51 @@ class Order extends Model
             'coupon_redeemed_at' => 'datetime',
             'confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Steht die Spalte `invoice_no` schon in der Datenbank?
+     *
+     * Zwischen dem Hochladen des Codes und `php artisan migrate` liegt auf dem
+     * Server ein Moment, in dem sie fehlt. Eine Bestellung in diesem Moment darf
+     * nicht an der Belegnummer scheitern – ohne Spalte fällt invoiceNumber()
+     * ohnehin auf die Formel zurück und zeigt dieselbe Nummer an.
+     *
+     * Einmal je Prozess geprüft: Die Frage kostet sonst bei jeder Bestellung
+     * eine eigene Abfrage.
+     */
+    private static ?bool $belegnummerSpalte = null;
+
+    private static function hatBelegnummerSpalte(): bool
+    {
+        return static::$belegnummerSpalte ??= Schema::hasColumn((new static)->getTable(), 'invoice_no');
+    }
+
+    protected static function booted(): void
+    {
+        // Die Belegnummer vergeben, sobald der Datensatz steht.
+        //
+        // Sie enthält die ID und kann deshalb erst nach dem Einfügen feststehen.
+        // Geschrieben wird sie genau einmal: Ab dann ist die Nummer ein
+        // feststehender Wert in der Spalte und kein Rechenergebnis mehr, das
+        // eine spätere Formatänderung rückwirkend verändern könnte.
+        static::created(function (self $order): void {
+            if (filled($order->invoice_no) || ! static::hatBelegnummerSpalte()) {
+                return;
+            }
+
+            $nummer = $order->invoiceNumberFormat();
+
+            // Über die einfache Abfrage statt save(): Das löst keine weiteren
+            // Modell-Ereignisse aus und lässt `updated_at` unberührt.
+            $order->getConnection()
+                ->table($order->getTable())
+                ->where($order->getKeyName(), $order->getKey())
+                ->update(['invoice_no' => $nummer]);
+
+            $order->invoice_no = $nummer;
+            $order->syncOriginalAttribute('invoice_no');
+        });
     }
 
 
@@ -510,45 +556,74 @@ class Order extends Model
     }
 
     /**
+     * Die Belegnummer dieser Position, z. B. `FK2026-12697`.
+     *
+     * Ein Beleg gilt je Position, denn jede Herstellerin rechnet einzeln ab.
+     * Die Nummer ist deshalb an die Position gebunden und nicht an den Kopf der
+     * Bestellung: Bei einem Artikel gibt es eine Belegnummer, bei drei Artikeln
+     * drei. Die Gutschrift der Herstellerin baut auf derselben Nummer auf und
+     * hängt nur ihre Nutzer-ID an (siehe gutschriftNumber()) – so gehören
+     * Rechnung und Gutschrift sichtbar zusammen, ohne sich zu doppeln.
+     *
+     * Die Nummer, die die Kundin bezahlt hat, ist eine andere: Sie steht auf
+     * dem Kontoauszug, gilt für die ganze Bestellung und heißt hier
+     * orderNumber(). Auf jedem Beleg steht sie als „zur Bestellung“ mit dabei.
+     *
+     * Gelesen wird aus der Spalte `invoice_no`. Eine Belegnummer ist ein
+     * feststehender Wert und keine Formel – wird sie bei jedem Aufruf neu
+     * gerechnet, ändert eine Formatänderung rückwirkend auch schon
+     * ausgestellte Belege. Die Formel unten greift nur, solange ein Datensatz
+     * noch keine Nummer hat (Altbestand vor der Migration, Testdaten).
+     */
+    public function invoiceNumber(): string
+    {
+        if (filled($this->invoice_no)) {
+            return (string) $this->invoice_no;
+        }
+
+        return $this->invoiceNumberFormat();
+    }
+
+    /**
+     * Das Format der Belegnummer: `FK<Jahr>-<eigene ID>`.
+     *
+     * Einzige Stelle, an der die Nummer gebildet wird – die Migration füllt den
+     * Altbestand mit derselben Regel, damit archivierte Belege wieder passen.
+     * Soll das Format später wechseln, gehört der Stichtag hierhin, so wie bei
+     * Boost::invoice_number. Bereits vergebene Nummern stehen dann schon in der
+     * Spalte und bleiben unberührt.
+     */
+    public function invoiceNumberFormat(): string
+    {
+        $createdAt = $this->created_at ?? Carbon::now();
+
+        return 'FK'.$createdAt->format('Y').'-'.$this->getKey();
+    }
+
+    /**
+     * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-12697-45`.
+     *
+     * Gilt je Position, weil jede Verkäuferin einzeln abrechnet: die
+     * Belegnummer der Position plus ihre Nutzer-ID. Der Anhang ist der Grund,
+     * warum sich die Nummer nicht mit der Rechnung der Kundin doppelt, obwohl
+     * beide Belege auf derselben Nummer stehen.
+     *
+     * Baut bewusst auf invoiceNumber() auf: Sonst laufen die beiden Nummern
+     * auseinander, sobald eine von beiden angefasst wird – genau das war
+     * zwischen dem 30.09.2026 und diesem Rückbau der Fall.
+     */
+    public function gutschriftNumber(): string
+    {
+        return $this->invoiceNumber().'-'.($this->vendor_id ?? $this->vendor?->id);
+    }
+
+    /**
      * Bestellnummer für Kundin, Betreff und Beleg, z. B.
      * `FK2026-12696 (Position 1 von 2)`.
      *
      * Der Zusatz erklärt, warum bei mehreren Artikeln mehrere Bestätigungen
      * mit derselben Nummer ankommen.
      */
-    /**
-     * Rechnungsnummer der Kundenrechnung, z. B. `FK2026-12696`.
-     *
-     * Der Käufer bekommt eine Rechnung für seine Bestellung – nicht eine je
-     * Artikel. Rechnungsstellerin ist Frau Kruner, und bezahlt wurde die
-     * Bestellung als Ganzes; die Nummer ist deshalb die Bestellnummer.
-     *
-     * Die Verkäuferinnen rechnen getrennt ab: Jede bekommt eine Gutschrift für
-     * ihre Position, mit eigener Nummer (siehe gutschriftNumber()).
-     *
-     * Eigene Methode statt eines Aufrufs von orderNumber(): Die Rechnungsnummer
-     * ist ein steuerliches Feld. Soll das Format später einmal wechseln, ohne
-     * bereits ausgestellte Rechnungen zu verändern, gehört der Stichtag hierhin
-     * – so wie bei Boost::invoice_number.
-     */
-    public function invoiceNumber(): string
-    {
-        return $this->orderNumber();
-    }
-
-    /**
-     * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-12697-45`.
-     *
-     * Gilt je Position, weil jede Verkäuferin einzeln abrechnet: Bestellnummer
-     * der Position plus ihre Verkäuferinnen-ID.
-     */
-    public function gutschriftNumber(): string
-    {
-        $createdAt = $this->created_at ?? Carbon::now();
-
-        return 'FK'.$createdAt->format('Y').'-'.$this->getKey().'-'.($this->vendor_id ?? $this->vendor?->id);
-    }
-
     public function orderNumberWithPosition(): string
     {
         $position = $this->positionInOrder();

@@ -110,6 +110,10 @@ class OrdersTable
                     ->searchable(),
                 // Artikel und Verkäuferin hängen an den Positionen: Bei mehreren
                 // Artikeln stehen hier mehrere Zeilen untereinander.
+                //
+                // Unter dem Artikel steht seine Belegnummer: Ein Beleg gilt je
+                // Position, und das ist die Nummer, die auf Rechnung und
+                // Gutschrift steht – nicht die Bestellnummer darüber.
                 TextColumn::make('articles')
                     ->label('Artikel')
                     ->html()
@@ -117,7 +121,8 @@ class OrdersTable
                         $record,
                         fn (Order $position): ?string => e(
                             $position->product_name ?? $position->product?->name ?? '-'
-                        )
+                        ).'<br><small style="opacity:.6;">Beleg-Nr. '
+                            .e($position->invoiceNumber()).'</small>'
                     )),
                 TextColumn::make('vendors')
                     ->label('Verkaeuferin')

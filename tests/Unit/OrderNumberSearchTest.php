@@ -16,11 +16,12 @@ it('liest die Nummer aus einer Bestellnummer, nicht das Jahr', function () {
     expect(OrderNumberSearch::number('FK2024-4941'))->toBe('4941');
 });
 
-it('nimmt aus einer Gutschrift-Nummer die Verkäuferinnen-ID nicht als Bestellnummer', function () {
-    // FK2026-5132-12034: hinten steht die Verkäuferin. Die Nummer am Ende ist
-    // hier bewusst das Ergebnis – wer eine Gutschrift-Nr. sucht, bekommt keine
-    // Bestellung. Wichtig ist, dass nichts Falsches getroffen wird.
-    expect(OrderNumberSearch::number('FK2026-5132-12034'))->toBe('12034');
+it('liest aus einer Gutschrift-Nummer die Belegnummer, nicht die Herstellerin', function () {
+    // FK2026-5132-12034: vorn das Jahr, in der Mitte der Beleg, hinten die
+    // Herstellerin. Gesucht ist der Beleg 5132. Die Zahl am Ende zu nehmen hieß
+    // früher: die unbeteiligte Bestellung 12034 zu treffen.
+    expect(OrderNumberSearch::number('FK2026-5132-12034'))->toBe('5132');
+    expect(OrderNumberSearch::number('fk2024-3552-5186'))->toBe('3552');
 });
 
 it('kommt mit Leerzeichen aus der Zwischenablage zurecht', function () {

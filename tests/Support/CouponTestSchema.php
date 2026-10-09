@@ -41,6 +41,8 @@ class CouponTestSchema
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->integer('parent_id')->nullable();
+            // Die festgeschriebene Belegnummer, von Order::booted() vergeben.
+            $table->string('invoice_no', 40)->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('vendor_id')->nullable();
             $table->string('email', 100)->nullable();

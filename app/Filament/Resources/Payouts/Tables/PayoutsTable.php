@@ -112,24 +112,28 @@ class PayoutsTable
                         });
                     }),
                 // Diese Liste zeigt Positionen: je Verkäuferin eine Auszahlung.
-                // Über der Positions-ID steht deshalb die Bestellung, zu der sie
-                // gehört – das ist die Nummer, die die Kundin bezahlt hat und die
-                // auf dem Kontoauszug steht. Ohne sie lässt sich eine Auszahlung
-                // keinem Zahlungseingang zuordnen.
+                // Oben steht deshalb die Belegnummer dieser Position – die
+                // Nummer, die auf ihrer Rechnung und auf der Gutschrift der
+                // Herstellerin steht und unter der der Beleg archiviert ist.
+                //
+                // Darunter die Bestellung, zu der die Position gehört: Das ist
+                // die Nummer, die die Kundin bezahlt hat und die auf dem
+                // Kontoauszug steht. Ohne sie lässt sich eine Auszahlung keinem
+                // Zahlungseingang zuordnen.
                 TextColumn::make('id')
-                    ->label('Bestell-ID')
+                    ->label('Beleg-Nr.')
                     ->html()
                     ->state(function (Order $record): string {
                         $zeilen = [];
 
+                        $zeilen[] = '<span style="font-weight:600;">'.e($record->invoiceNumber()).'</span>';
+
                         if ($record->parent_id) {
-                            $zeilen[] = '<span style="font-weight:600;">'.e($record->orderNumber()).'</span>';
+                            $zeilen[] = '<span style="font-size:11px;opacity:.7;">zur Bestellung: '
+                                .e($record->orderNumber()).'</span>';
                             $zeilen[] = '<span style="font-size:11px;opacity:.7;">Haupt-Bestell-ID: '
                                 .e((string) $record->parent_id).'</span>';
                         }
-
-                        $zeilen[] = '<span style="font-size:11px;opacity:.7;">Beleg-Nr.: '
-                            .e((string) $record->getKey()).'</span>';
 
                         return '<div style="display:flex;flex-direction:column;gap:0;line-height:1.35;white-space:normal;">'
                             .implode('', $zeilen).'</div>';

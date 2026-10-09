@@ -6,9 +6,10 @@
 
     <div class="card-fields-shopping-cart">
         {{-- Eine Karte je Bestellung. Die Artikel stehen als Positionen darin:
-             Bezahlt wurde die Bestellung als Ganzes, und es gibt eine Rechnung
-             dafür. Video, Fotos und die Bewertung gelten dagegen je Artikel,
-             denn die kommen von der jeweiligen Herstellerin. --}}
+             Bezahlt wurde die Bestellung als Ganzes, deshalb steht ihre Nummer
+             im Kopf der Karte. Rechnung, Video, Fotos und die Bewertung gelten
+             dagegen je Artikel, denn der kommt von einer eigenen Herstellerin,
+             die auch einzeln abrechnet. --}}
         @foreach ($orders as $order)
             @php
                 // Altbestellung ohne Positionen: dann ist sie ihre eigene Position.
@@ -49,10 +50,6 @@
                                 href="{{ route('buyer.pre.payment', $order) }}">Bezahlen</a>
                         @endif
 
-                        {{-- Eine Rechnung für die ganze Bestellung. --}}
-                        @if ($istBezahlt)
-                            <a href="{{ route('invoice', $order) }}" class="btn btn-secondary">Rechnung</a>
-                        @endif
                     </div>
                 </div>
 
@@ -113,7 +110,18 @@
                         </div>
 
                         <div class="col-prod-profile-sells-buttons text-center">
-                            {{-- Video, Fotos und Bewertung gelten je Artikel. --}}
+                            {{-- Rechnung, Video, Fotos und Bewertung gelten je Artikel. --}}
+
+                            {{-- Ein Beleg je Artikel, mit eigener Nummer: Die
+                                 Herstellerin rechnet einzeln ab, ihre Gutschrift
+                                 steht auf derselben Nummer. --}}
+                            @if ($istBezahlt)
+                                <a href="{{ route('invoice', $position) }}" class="btn btn-secondary">Rechnung</a>
+                                <span class="text-grey small d-block">
+                                    Beleg-Nr. {{ $position->invoiceNumber() }}
+                                </span>
+                            @endif
+
                             @php
                                 $viewDeadline = $position->shipping_date
                                     ? \Carbon\Carbon::parse($position->shipping_date)

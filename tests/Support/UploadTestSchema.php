@@ -211,6 +211,9 @@ class UploadTestSchema
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->integer('parent_id')->nullable();
+            // Die festgeschriebene Belegnummer. Order::booted() vergibt sie beim
+            // Anlegen, die Belege lesen nur noch aus der Spalte.
+            $table->string('invoice_no', 40)->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('vendor_id')->nullable();
             $table->unsignedBigInteger('product_id')->nullable();
