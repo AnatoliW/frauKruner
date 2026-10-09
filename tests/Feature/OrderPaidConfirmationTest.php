@@ -365,7 +365,10 @@ it('listet bezahlte Bestellungen je Bestellung statt je Position', function () {
     [$head, $children] = prepaidOrder(2);
     $head->markOrderAsPaid();
 
-    $ids = \App\Filament\Resources\Orders\OrderResource::getEloquentQuery()
+    $resource = \App\Filament\Resources\Orders\OrderResource::class;
+
+    // Die Liste: eine Zeile je Bestellung.
+    $ids = $resource::scopeToOrders($resource::getEloquentQuery())
         ->pluck('id')
         ->map(fn ($id) => (int) $id);
 
@@ -377,6 +380,28 @@ it('listet bezahlte Bestellungen je Bestellung statt je Position', function () {
     }
 
     expect($ids->filter(fn (int $id): bool => $id === (int) $head->id))->toHaveCount(1);
+});
+
+it('löst eine Positions-ID in der Bestellansicht weiter auf', function () {
+    Mail::fake();
+
+    [$head, $children] = prepaidOrder(2);
+    $head->markOrderAsPaid();
+
+    // Gespeicherte Links von früher tragen die ID einer Position, weil die
+    // Liste damals Positionen zeigte. Die Abfrage der Ressource entscheidet,
+    // was die Ansicht über ihre Adresse auflösen darf – ohne die Positionen
+    // liefen alle diese Links in einen 404.
+    $ids = \App\Filament\Resources\Orders\OrderResource::getEloquentQuery()
+        ->pluck('id')
+        ->map(fn ($id) => (int) $id);
+
+    foreach ($children as $child) {
+        expect($ids)->toContain((int) $child->id);
+    }
+
+    // Und die Ansicht zeigt dann die Belege der Bestellung, zu der sie gehört.
+    expect($children->first()->mainOrder()->id)->toBe($head->id);
 });
 
 it('zählt auf dem Dashboard Bestellungen, nicht Positionen', function () {

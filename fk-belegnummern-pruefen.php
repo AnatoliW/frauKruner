@@ -13,6 +13,12 @@
  * rueckwirkend auch alle schon gedruckten Belege. Dieser Rueckbau stellt die
  * alten Nummern wieder her und schreibt sie in die Spalte `invoice_no` fest.
  *
+ * Ebenfalls ausgewiesen wird der Stichtag der BELEGFORM
+ * (app.invoice_bundle_cutoff_date): Bestellungen davor bekommen je Artikel ein
+ * eigenes Rechnungsblatt mit der Belegnummer in der Kopfzeile, Bestellungen ab
+ * dem Stichtag eine Sammelrechnung ueber die ganze Bestellung. Die Belegnummern
+ * selbst haengen nicht daran - die gelten immer je Position.
+ *
  * Das Skript zeigt je Zeile der Auszahlungsliste drei Nummern:
  *
  *   gespeichert   was jetzt in der Spalte steht und auf dem Beleg erscheint
@@ -66,6 +72,15 @@ $positionen = Order::query()
     ->get();
 
 echo 'Zeilen in der Auszahlungsliste: '.$positionen->count().PHP_EOL;
+
+// Welche Belegform gilt wo? Die Belegnummern haengen nicht daran - die gelten
+// immer je Position -, aber die Form des Kaeuferbelegs schon.
+$stichtag = config('app.invoice_bundle_cutoff_date');
+$sammel = $positionen->filter(fn (Order $p) => $p->usesBundledInvoice())->count();
+
+echo PHP_EOL.'Stichtag Belegform (app.invoice_bundle_cutoff_date): '.$stichtag.PHP_EOL;
+echo '  davor  - je Artikel ein Rechnungsblatt: '.($positionen->count() - $sammel).PHP_EOL;
+echo '  danach - Sammelrechnung je Bestellung:  '.$sammel.PHP_EOL;
 
 // 1. Gesamtzaehlung: Weicht irgendwo die gespeicherte Nummer von der alten ab?
 $abweichend = $positionen->filter(

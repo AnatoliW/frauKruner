@@ -22,6 +22,10 @@ beforeEach(function () {
     // Das echte Dashboard-Layout liest Menues und Einstellungen aus Tabellen, die
     // das schlanke Testschema nicht traegt.
     View::getFinder()->prependLocation(__DIR__.'/../Support/views');
+
+    // Den Stichtag festnageln: Sonst entscheidet die .env des Rechners, ob die
+    // Karte einen Rechnungsknopf oder einen je Artikel zeigt.
+    config(['app.invoice_bundle_cutoff_date' => '2026-09-30']);
 });
 
 /**
@@ -42,6 +46,9 @@ function buyerOrder(int $positions = 2, array $headAttributes = []): array
         'payment_status' => 1,
         'status' => 1,
         'payment_gateway' => 'micropayment',
+        // Nach dem Stichtag, also eine Rechnung je Bestellung.
+        'created_at' => '2026-10-05 10:00:00',
+        'updated_at' => '2026-10-05 10:00:00',
     ], $headAttributes));
 
     $children = collect(range(1, $positions))->map(function (int $i) use ($head, $buyer, $category) {
@@ -68,6 +75,8 @@ function buyerOrder(int $positions = 2, array $headAttributes = []): array
             'payment_status' => 1,
             'status' => 1,
             'payment_gateway' => 'micropayment',
+            'created_at' => $head->created_at,
+            'updated_at' => $head->created_at,
         ]);
     });
 
@@ -166,4 +175,22 @@ it('zeigt eine Bestellung ohne Positionen wie bisher', function () {
     expect($html)
         ->toContain('Bestellung '.$order->orderNumber())
         ->toContain('Einzelner Altartikel');
+});
+
+it('verlinkt bei einer Bestellung vor dem Stichtag je Artikel eine Rechnung', function () {
+    [$head, $children, $buyer] = buyerOrder(2, [
+        'created_at' => '2024-06-12 09:00:00',
+        'updated_at' => '2024-06-12 09:00:00',
+    ]);
+
+    $html = $this->actingAs($buyer)->get('/buyer/dashboard/orders')->assertOk()->getContent();
+
+    // Damals hatte jeder Artikel sein eigenes Rechnungsblatt – nur so kommt die
+    // Kundin wieder an den Beleg, den sie damals bekommen hat.
+    foreach ($children as $child) {
+        expect(substr_count($html, '/invoice/'.$child->id))->toBe(1);
+    }
+
+    // Eine Sammelrechnung gab es für diese Bestellung nie.
+    expect($html)->not->toContain('/invoice/'.$head->id);
 });

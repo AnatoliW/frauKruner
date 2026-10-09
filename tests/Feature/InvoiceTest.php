@@ -18,12 +18,19 @@ use Tests\Support\UploadTestHelpers;
  * Nutzer-ID an (`FK2024-3552-5186`). Damit steht auf keinem Blatt eine Zahl,
  * die es nicht vorher schon mit derselben Bedeutung gab.
  *
+ * Die Sammelrechnung gilt erst ab dem Stichtag aus
+ * `app.invoice_bundle_cutoff_date`. Davor bekam jeder Artikel ein eigenes
+ * Rechnungsblatt mit seiner Belegnummer in der Kopfzeile
+ * (`Rechnungs-Nr. FK2024-3552`). Diese Blätter sind ausgestellt, verschickt und
+ * archiviert – sie müssen sich unverändert wieder erzeugen lassen.
+ *
  * Zwischen dem 30.09.2026 und dem Rückbau wurde die Rechnung mit der
  * Bestellnummer als Rechnungsnummer ausgestellt. Damit änderten sich
  * rückwirkend alle Belegnummern – aus `FK2024-3552` wurde `FK2024-3550`, und
  * archivierte Belege stimmten nicht mehr. Die Tests hier halten fest: die
  * Nummer gilt je Position, sie steht fest in der Datenbank statt bei jedem
- * Aufruf neu gerechnet zu werden, und die Rechnung erfindet keine neue.
+ * Aufruf neu gerechnet zu werden, die Sammelrechnung erfindet keine neue, und
+ * vor dem Stichtag kommt das alte Blatt unverändert zurück.
  */
 uses(UsesUploadSchema::class);
 
@@ -32,6 +39,10 @@ beforeEach(function () {
     // Tabellen, die es im schlanken Test-Schema nicht gibt. Geprueft wird hier
     // der Beleg, nicht das Seitengeruest - wie in MicropaymentNotificationTest.
     View::getFinder()->prependLocation(__DIR__.'/../Support/views');
+
+    // Den Stichtag festnageln: Sonst entscheidet die .env des Rechners, welche
+    // Belegform die Tests sehen.
+    config(['app.invoice_bundle_cutoff_date' => '2026-09-30']);
 });
 
 /**
@@ -54,6 +65,10 @@ function invoiceOrder(int $positions = 2, array $headAttributes = [], array $pos
         'total' => 40.00 * $positions,
         'payment_status' => 1,
         'status' => 1,
+        // Nach dem Stichtag, also Sammelrechnung. Tests für die Zeit davor
+        // setzen 'created_at' über $headAttributes.
+        'created_at' => '2026-10-05 10:00:00',
+        'updated_at' => '2026-10-05 10:00:00',
     ], $headAttributes));
 
     $children = collect(range(1, $positions))->map(function (int $i) use ($head, $buyer, $positionAttributes) {
@@ -82,6 +97,8 @@ function invoiceOrder(int $positions = 2, array $headAttributes = [], array $pos
             'commission' => 6.00,
             'payment_status' => 1,
             'status' => 1,
+            'created_at' => $head->created_at,
+            'updated_at' => $head->created_at,
         ], $positionAttributes));
     });
 
@@ -415,4 +432,121 @@ it('zieht bei einer Bestellung ohne Positionen nichts nach', function () {
     $order->syncCancellation();
 
     expect((int) $order->fresh()->status)->toBe(3);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Der Stichtag: Belege von vor der Sammelrechnung
+|--------------------------------------------------------------------------
+|
+| Vor dem Stichtag hat jeder Artikel ein eigenes Rechnungsblatt bekommen, mit
+| seiner Belegnummer in der Kopfzeile. Diese Blätter liegen im Archiv der
+| Betreiberin und müssen sich unverändert wieder erzeugen lassen.
+*/
+
+it('gibt einer Bestellung vor dem Stichtag je Artikel ein eigenes Rechnungsblatt', function () {
+    [, $children, $buyer] = invoiceOrder(2, [
+        'created_at' => '2024-06-12 09:00:00',
+        'updated_at' => '2024-06-12 09:00:00',
+    ]);
+
+    foreach ($children as $child) {
+        $html = $this->actingAs($buyer)->get('/invoice/'.$child->id)->assertOk()->getContent();
+
+        // Die Belegnummer steht in der Kopfzeile, so wie damals ausgestellt.
+        expect($html)->toMatch('/Rechnungs-Nr\.?:?\s*'.preg_quote($child->invoiceNumber(), '/').'\b/');
+
+        // Nur dieser Artikel, nicht der Nachbarartikel.
+        $andere = $children->firstWhere('id', '!=', $child->id);
+        expect($html)
+            ->toContain($child->product->name)
+            ->not->toContain($andere->product->name);
+    }
+});
+
+it('nimmt das Jahr des Belegs und nicht das des Stichtags', function () {
+    [, $children, $buyer] = invoiceOrder(1, [
+        'created_at' => '2024-06-12 09:00:00',
+        'updated_at' => '2024-06-12 09:00:00',
+    ]);
+
+    $position = $children->first();
+
+    expect($position->invoiceNumber())->toBe('FK2024-'.$position->id);
+
+    $this->actingAs($buyer)
+        ->get('/invoice/'.$position->id)
+        ->assertOk()
+        ->assertSee('FK2024-'.$position->id);
+});
+
+it('führt bei einer Bestellung vor dem Stichtag vom Kopf zum ersten Blatt', function () {
+    [$head, $children, $buyer] = invoiceOrder(2, [
+        'created_at' => '2024-06-12 09:00:00',
+        'updated_at' => '2024-06-12 09:00:00',
+    ]);
+
+    // Der Kopf war damals kein Beleg: Seine Nummer ist die Bestellnummer und
+    // stand nie auf einer Rechnung.
+    $this->actingAs($buyer)
+        ->get('/invoice/'.$head->id)
+        ->assertRedirect(route('invoice', $children->first()));
+});
+
+it('lässt die Gutschrift der Herstellerin vom Stichtag unberührt', function () {
+    [, $alt] = invoiceOrder(1, [
+        'created_at' => '2024-06-12 09:00:00',
+        'updated_at' => '2024-06-12 09:00:00',
+    ]);
+    [, $neu] = invoiceOrder(1);
+
+    // Dieselbe Regel vor und nach dem Stichtag: Belegnummer plus Nutzer-ID.
+    foreach ([$alt->first(), $neu->first()] as $position) {
+        expect($position->gutschriftNumber())
+            ->toBe($position->invoiceNumber().'-'.$position->vendor_id);
+
+        $vendor = \App\Models\User::find($position->vendor_id);
+
+        $this->actingAs($vendor)
+            ->get('/invoice/'.$position->id)
+            ->assertOk()
+            ->assertSee('Gutschrift')
+            ->assertSee($position->gutschriftNumber());
+    }
+});
+
+it('entscheidet die Belegform am Datum der Bestellung, nicht der Position', function () {
+    // Haupt- und Unterbestellung entstehen in derselben Transaktion. Fallen die
+    // Zeitstempel über den Stichtag, darf eine Bestellung nicht in zwei
+    // Belegformen zerfallen.
+    $head = Order::create([
+        'payment_status' => 1,
+        'created_at' => '2026-09-29 23:59:59',
+        'updated_at' => '2026-09-29 23:59:59',
+    ]);
+
+    $child = Order::create([
+        'parent_id' => $head->id,
+        'payment_status' => 1,
+        'created_at' => '2026-09-30 00:00:01',
+        'updated_at' => '2026-09-30 00:00:01',
+    ]);
+
+    expect($head->usesBundledInvoice())->toBeFalse()
+        ->and($child->usesBundledInvoice())->toBeFalse();
+});
+
+it('gibt einer Bestellung ab dem Stichtag die Sammelrechnung', function () {
+    [$head, , $buyer] = invoiceOrder(2, [
+        'created_at' => '2026-09-30 00:00:00',
+        'updated_at' => '2026-09-30 00:00:00',
+    ]);
+
+    expect($head->usesBundledInvoice())->toBeTrue();
+
+    $this->actingAs($buyer)
+        ->get('/invoice/'.$head->id)
+        ->assertOk()
+        ->assertSee('zur Bestellung')
+        ->assertDontSee('Rechnungs-Nr');
 });

@@ -96,18 +96,24 @@ class HomeController extends Controller
      *
      *  - Die Herstellerin sieht die **Gutschrift** für ihre Position. Sie gilt
      *    je Position, denn jede Herstellerin rechnet einzeln ab.
-     *  - Der Käufer sieht **eine Rechnung für seine ganze Bestellung**, mit
-     *    allen Artikeln darauf. Er hat einmal bezahlt und bekommt einen Beleg.
-     *    Deshalb wird hier auf die Bestellung aufgelöst, auch wenn der Aufruf
-     *    die ID einer Position trägt – ältere Links tragen sie noch.
+     *  - Der Käufer sieht die **Rechnung**, und deren Form hängt am Stichtag
+     *    aus `app.invoice_bundle_cutoff_date` (Order::usesBundledInvoice()).
      *
-     * Zu den Nummern, denn daran hing ein längerer Irrtum: Die Rechnung des
-     * Käufers trägt **keine eigene Nummer**. Sie nennt die Bestellnummer als
-     * Bezug – das ist die Nummer, die er bezahlt hat und die auf seinem
-     * Kontoauszug steht – und führt je Artikel dessen Belegnummer auf. Die
-     * Belegnummer gilt je Position (Order::invoiceNumber()), und die Gutschrift
-     * der Herstellerin baut darauf auf. So steht auf dem Blatt keine Zahl, die
-     * es nicht vorher schon mit derselben Bedeutung gab.
+     * Vor dem Stichtag gab es je Artikel eine eigene Rechnung, mit der
+     * Belegnummer in der Kopfzeile (`Rechnungs-Nr. FK2024-3552`). Diese Blätter
+     * sind ausgestellt und archiviert – sie müssen sich unverändert wieder
+     * erzeugen lassen, deshalb wird dafür auf die Position aufgelöst.
+     *
+     * Ab dem Stichtag bekommt er **eine Rechnung für die ganze Bestellung**: Er
+     * hat einmal bezahlt und bekommt einen Beleg. Sie trägt keine eigene Nummer,
+     * sondern nennt die Bestellnummer als Bezug – die Nummer von seinem
+     * Kontoauszug – und führt je Artikel dessen Belegnummer auf. Deshalb wird
+     * dafür auf die Bestellung aufgelöst, auch wenn der Aufruf die ID einer
+     * Position trägt; ältere Links tragen sie noch.
+     *
+     * Die Belegnummern selbst hängen nicht am Stichtag: Sie gelten immer je
+     * Position (Order::invoiceNumber()), die Gutschrift der Herstellerin baut
+     * darauf auf, und sie stehen fest in der Spalte `invoice_no`.
      *
      * Die Zugriffsprüfung: Die Adresse war einmal nur durch `auth` geschützt.
      * Wer angemeldet war, konnte über eine geratene Nummer Name, Adresse und
@@ -131,7 +137,6 @@ class HomeController extends Controller
             ]);
         }
 
-        // Rechnung: gilt für die Bestellung als Ganzes.
         $invoice = $order->mainOrder();
 
         // Der Adminbereich darf jeden Beleg sehen, die Kundin nur ihren eigenen.
@@ -140,6 +145,30 @@ class HomeController extends Controller
             404
         );
 
+        // Vor dem Stichtag: je Artikel eine eigene Rechnung, mit der Belegnummer
+        // in der Kopfzeile. Genau so wurde sie damals ausgestellt und archiviert.
+        if (! $invoice->usesBundledInvoice()) {
+            // Der Kopf einer Bestellung war damals kein Beleg. Weiter zur ersten
+            // Position, die einen trägt.
+            if (! $order->parent_id) {
+                $erste = $order->childrens()->orderBy('id')->first();
+
+                if ($erste) {
+                    return redirect()->route('invoice', $erste);
+                }
+            }
+
+            $order->load(['product', 'vendor.address', 'vendor.verification', 'products']);
+
+            return view('auth.invoice', [
+                'order' => $order,
+                'products' => $order->products,
+                'positions' => collect([$order]),
+                'istSammelrechnung' => false,
+            ]);
+        }
+
+        // Ab dem Stichtag: eine Rechnung für die Bestellung als Ganzes.
         $invoice->load([
             'childrens.product',
             'childrens.vendor.address',
@@ -158,6 +187,7 @@ class HomeController extends Controller
             'order' => $invoice,
             'products' => $invoice->products,
             'positions' => $positions,
+            'istSammelrechnung' => true,
         ]);
     }
     public function printemail()

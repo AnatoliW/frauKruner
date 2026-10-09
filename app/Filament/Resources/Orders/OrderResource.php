@@ -40,21 +40,46 @@ class OrderResource extends BaseAdminResource
         return OrdersTable::configure($table);
     }
 
+    /**
+     * Diese Abfrage entscheidet auch, welche Datensätze die Ansicht über ihre
+     * Adresse auflösen darf – deshalb sind hier Bestellköpfe UND Positionen
+     * zugelassen.
+     *
+     * Die Liste zeigte früher die Positionen; gespeicherte Links und Lesezeichen
+     * tragen deshalb noch eine Positions-ID (`/admin/orders/3552`). Würde die
+     * Abfrage auf Köpfe eingeschränkt, liefen die alle in einen 404. Die Ansicht
+     * löst eine Position selbst auf ihre Bestellung auf und zeigt die Belege
+     * dieser Bestellung.
+     *
+     * Dass die LISTE nur eine Zeile je Bestellung zeigt, regelt stattdessen
+     * OrdersTable über modifyQueryUsing(): Vorher stand eine Bestellung mit zwei
+     * Artikeln zweimal darin – mit zwei verschiedenen Nummern, von denen keine
+     * die bezahlte war.
+     */
     public static function getEloquentQuery(): Builder
     {
-        // Eine Zeile je Bestellung, nicht je Position. Vorher stand eine
-        // Bestellung mit zwei Artikeln zweimal in der Liste – mit zwei
-        // verschiedenen Nummern, von denen keine die bezahlte war. Die Artikel
-        // stehen jetzt in der Zeile der Bestellung und ausführlich in ihrer
-        // Ansicht.
-        //
-        // Vorgeladen wird alles, was die Liste je Position anzeigt; sonst holt
-        // jede Zeile ihre Positionen, Produkte und Verkäuferinnen einzeln nach.
         return parent::getEloquentQuery()
-            ->whereNull('parent_id')
             ->paid()
-            ->with(['childrens.product', 'childrens.vendor'])
             ->latest(Order::CREATED_AT);
+    }
+
+    /**
+     * Schränkt eine Abfrage auf Bestellungen ein – eine Zeile je Bestellung,
+     * nicht je Position.
+     *
+     * Einzige Quelle dieser Einschränkung: Die Liste wendet sie über
+     * OrdersTable an, und die Tests prüfen sie hier. Lägen beide Seiten
+     * getrennt, könnte die Liste wieder Positionen zeigen, ohne dass ein Test
+     * es merkt.
+     *
+     * Vorgeladen wird alles, was die Liste je Position anzeigt; sonst holt jede
+     * Zeile ihre Positionen, Produkte und Verkäuferinnen einzeln nach.
+     */
+    public static function scopeToOrders(Builder $query): Builder
+    {
+        return $query
+            ->whereNull('parent_id')
+            ->with(['childrens.product', 'childrens.vendor']);
     }
 
     public static function getRelations(): array

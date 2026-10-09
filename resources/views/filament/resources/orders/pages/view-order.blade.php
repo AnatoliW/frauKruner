@@ -1,12 +1,15 @@
 <x-filament-panels::page>
     @php
-        // Der Datensatz ist der Kopf der Bestellung. Die Artikel hängen als
-        // Positionen daran, je einer pro Verkäuferin – und weil jede Verkäuferin
-        // selbst abrechnet, gibt es Gutschrift und Rechnung je Position.
+        // Diese Seite zeigt eine Bestellung mit allen Belegen dazu.
+        //
+        // Aufgelöst wird auf den Kopf der Bestellung: Gespeicherte Links von
+        // früher tragen noch die ID einer Position (`/admin/orders/3552`), weil
+        // die Liste damals Positionen zeigte. Die sollen weiter funktionieren
+        // und dieselben Belege zeigen.
         //
         // Eine Bestellung ohne Positionen (Altdatensatz) ist ihre eigene einzige
         // Position; dann sieht die Seite aus wie vorher.
-        $order = $this->getRecord();
+        $order = $this->getRecord()->mainOrder();
 
         $positions = $order->childrens->isNotEmpty() ? $order->childrens : collect([$order]);
 
@@ -192,126 +195,253 @@
             </div>
         </section>
 
-        {{-- Die Rechnung des Käufers: EIN Beleg für die ganze Bestellung, mit
-             allen Artikeln darauf. Rechnungsstellerin ist Frau Kruner, und
-             bezahlt wurde die Bestellung als Ganzes.
+        {{-- Die Rechnung des Käufers. Welche Form sie hat, entscheidet der
+             Stichtag aus app.invoice_bundle_cutoff_date:
 
-             Sie trägt keine eigene Nummer: Sie verweist auf die Bestellnummer –
-             die Nummer vom Kontoauszug der Kundin – und führt je Artikel dessen
-             Beleg-Nr. auf. Auf derselben Beleg-Nr. steht die Gutschrift der
+               VOR dem Stichtag: je Artikel eine EINZELRECHNUNG, mit der
+               Belegnummer in der Kopfzeile („Rechnungs-Nr. FK2024-3552"). Genau
+               diese Blätter sind damals ausgestellt und archiviert worden; sie
+               müssen sich hier unverändert wieder drucken lassen.
+
+               AB dem Stichtag: eine SAMMELRECHNUNG über die ganze Bestellung.
+               Der Käufer hat einmal bezahlt und bekommt einen Beleg. Sie trägt
+               keine eigene Nummer, sondern verweist auf die Bestellnummer – die
+               Nummer vom Kontoauszug – und führt je Artikel dessen Beleg-Nr.
+               auf.
+
+             Auf derselben Beleg-Nr. steht in beiden Fällen die Gutschrift der
              Herstellerin weiter unten, mit ihrer Nutzer-ID am Ende. --}}
-        <section class="invoice-document__section" id="buyer-print-block">
-            <x-invoice.header
-                title="Rechnung für den Käufer"
-                :subtitle="'zur Bestellung ' . $order->orderNumber() . ' · ' . $order->created_at?->format('d.m.Y')"
-            />
-
-            @if ($allesStorniert)
-                <x-invoice.cancelled-banner label="Rechnung storniert" />
-            @elseif ($teilweiseStorniert)
-                <x-invoice.cancelled-banner
-                    scope="teilweise"
-                    :label="'Einzelne Positionen storniert – ' . $stornierte->count() . ' von ' . $positions->count()"
+        @if ($order->usesBundledInvoice())
+            <section class="invoice-document__section" id="buyer-print-block">
+                <x-invoice.header
+                    title="Rechnung für den Käufer"
+                    :subtitle="'zur Bestellung ' . $order->orderNumber() . ' · ' . $order->created_at?->format('d.m.Y')"
                 />
-            @endif
 
-            <div class="invoice-document__section-heading no-print">
-                <h2>Käufer</h2>
-                <button type="button" class="invoice-document__print-btn" onclick="printInvoiceSection('buyer-print-block')">Drucken</button>
-            </div>
-
-            <div class="invoice-document__grid">
-                <div>
-                    <p class="invoice-document__label">Käufer</p>
-                    <p class="invoice-document__address">
-                        {{ $order->first_name }} {{ $order->last_name }}<br>
-                        {{ $order->street }} {{ $order->house_no }}<br>
-                        {{ $order->zip }} {{ $order->federal_state }}<br>
-                        @if ($order->po_box)
-                            Postfach: {{ $order->po_box }}<br>
-                        @endif
-                        {{ $order->user?->email ?? $order->email }}
-                    </p>
-                </div>
-                <div>
-                    <p class="invoice-document__label">Anbieterinformation</p>
-                    <p class="invoice-document__address">
-                        Frau Kruner<br>
-                        Inh. Frau Kathleen Krüger<br>
-                        Schönhauser Allee 163<br>
-                        10435 Berlin<br>
-                        USt.-Ident.-Nr.: DE419009695
-                    </p>
-                    <p class="invoice-document__meta">
-                        zur Bestellung: {{ $order->orderNumber() }}<br>
-                        Rechnungs-Datum: {{ $order->created_at?->format('d.m.Y') }}
-                    </p>
-                </div>
-            </div>
-
-            <div class="invoice-document__table-wrap">
-                <p class="invoice-document__label">Positionen</p>
-                <table class="invoice-document__table">
-                    <thead>
-                        <tr>
-                            <th>Produktname</th>
-                            <th>Beleg-Nr.</th>
-                            <th>Veredelungen</th>
-                            <th>Zusatzoptionen</th>
-                            <th>Tragedauer</th>
-                            <th>Gesamt</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($positions as $position)
-                            <tr class="{{ (int) ($position->status ?? 0) === 3 ? 'is-cancelled' : '' }}">
-                                <td>
-                                    {{ $position->product_name ?? $position->product?->name ?? '-' }}
-                                    @if ((int) ($position->status ?? 0) === 3)
-                                        <br><small>storniert</small>
-                                    @endif
-                                </td>
-                                <td>{{ $position->invoiceNumber() }}</td>
-                                <td>{{ $listText($position->finishings) }}</td>
-                                <td>{{ $listText($position->addition) }}</td>
-                                <td>{{ $listText($position->wearing_time) }}</td>
-                                <td>{{ $fmt($position->total) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        @if ((float) $order->discount > 0)
-                            <tr>
-                                <td colspan="5" style="text-align:right">Zwischensumme</td>
-                                <td>{{ $fmt($positions->sum('total')) }}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="5" style="text-align:right">
-                                    Gutschein{{ filled($order->discount_code) ? ' ' . $order->discount_code : '' }}
-                                </td>
-                                <td>−{{ $fmt($order->discount) }}</td>
-                            </tr>
-                        @endif
-                        <tr>
-                            <td colspan="5" style="text-align:right"><strong>Gesamtbetrag</strong></td>
-                            <td><strong>{{ $fmt($buyerTotal) }}</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <p class="invoice-document__note">Umsatzsteuer wird gemäß § 25a UStG nicht ausgewiesen.</p>
-                @if ($positions->count() > 1)
-                    <p class="invoice-document__note">
-                        Alle {{ $positions->count() }} Artikel der Bestellung {{ $order->orderNumber() }} auf
-                        einem Beleg. Die Artikel kommen von unterschiedlichen Herstellerinnen, werden
-                        einzeln versendet und tragen deshalb je eine eigene Beleg-Nr.
-                    </p>
+                @if ($allesStorniert)
+                    <x-invoice.cancelled-banner label="Rechnung storniert" />
+                @elseif ($teilweiseStorniert)
+                    <x-invoice.cancelled-banner
+                        scope="teilweise"
+                        :label="'Einzelne Positionen storniert – ' . $stornierte->count() . ' von ' . $positions->count()"
+                    />
                 @endif
-            </div>
 
-            <p class="invoice-document__footer">
-                Frau Kruner · Schönhauser Allee 163 · 10435 Berlin · fraukruner.de
-            </p>
-        </section>
+                <div class="invoice-document__section-heading no-print">
+                    <h2>Käufer</h2>
+                    <button type="button" class="invoice-document__print-btn" onclick="printInvoiceSection('buyer-print-block')">Drucken</button>
+                </div>
+
+                <div class="invoice-document__grid">
+                    <div>
+                        <p class="invoice-document__label">Käufer</p>
+                        <p class="invoice-document__address">
+                            {{ $order->first_name }} {{ $order->last_name }}<br>
+                            {{ $order->street }} {{ $order->house_no }}<br>
+                            {{ $order->zip }} {{ $order->federal_state }}<br>
+                            @if ($order->po_box)
+                                Postfach: {{ $order->po_box }}<br>
+                            @endif
+                            {{ $order->user?->email ?? $order->email }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="invoice-document__label">Anbieterinformation</p>
+                        <p class="invoice-document__address">
+                            Frau Kruner<br>
+                            Inh. Frau Kathleen Krüger<br>
+                            Schönhauser Allee 163<br>
+                            10435 Berlin<br>
+                            USt.-Ident.-Nr.: DE419009695
+                        </p>
+                        <p class="invoice-document__meta">
+                            zur Bestellung: {{ $order->orderNumber() }}<br>
+                            Rechnungs-Datum: {{ $order->created_at?->format('d.m.Y') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="invoice-document__table-wrap">
+                    <p class="invoice-document__label">Positionen</p>
+                    <table class="invoice-document__table">
+                        <thead>
+                            <tr>
+                                <th>Produktname</th>
+                                <th>Beleg-Nr.</th>
+                                <th>Veredelungen</th>
+                                <th>Zusatzoptionen</th>
+                                <th>Tragedauer</th>
+                                <th>Gesamt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($positions as $position)
+                                <tr class="{{ (int) ($position->status ?? 0) === 3 ? 'is-cancelled' : '' }}">
+                                    <td>
+                                        {{ $position->product_name ?? $position->product?->name ?? '-' }}
+                                        @if ((int) ($position->status ?? 0) === 3)
+                                            <br><small>storniert</small>
+                                        @endif
+                                    </td>
+                                    <td>{{ $position->invoiceNumber() }}</td>
+                                    <td>{{ $listText($position->finishings) }}</td>
+                                    <td>{{ $listText($position->addition) }}</td>
+                                    <td>{{ $listText($position->wearing_time) }}</td>
+                                    <td>{{ $fmt($position->total) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            @if ((float) $order->discount > 0)
+                                <tr>
+                                    <td colspan="5" style="text-align:right">Zwischensumme</td>
+                                    <td>{{ $fmt($positions->sum('total')) }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" style="text-align:right">
+                                        Gutschein{{ filled($order->discount_code) ? ' ' . $order->discount_code : '' }}
+                                    </td>
+                                    <td>−{{ $fmt($order->discount) }}</td>
+                                </tr>
+                            @endif
+                            <tr>
+                                <td colspan="5" style="text-align:right"><strong>Gesamtbetrag</strong></td>
+                                <td><strong>{{ $fmt($buyerTotal) }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <p class="invoice-document__note">Umsatzsteuer wird gemäß § 25a UStG nicht ausgewiesen.</p>
+                    @if ($positions->count() > 1)
+                        <p class="invoice-document__note">
+                            Alle {{ $positions->count() }} Artikel der Bestellung {{ $order->orderNumber() }} auf
+                            einem Beleg. Die Artikel kommen von unterschiedlichen Herstellerinnen, werden
+                            einzeln versendet und tragen deshalb je eine eigene Beleg-Nr.
+                        </p>
+                    @endif
+                </div>
+
+                <p class="invoice-document__footer">
+                    Frau Kruner · Schönhauser Allee 163 · 10435 Berlin · fraukruner.de
+                </p>
+            </section>
+        @else
+            {{-- Vor dem Stichtag: je Artikel ein eigenes Rechnungsblatt, mit der
+                 Belegnummer in der Kopfzeile. Eins zu eins das, was im Archiv
+                 liegt. Der Druckblock trägt die ID der Position, damit jedes
+                 Blatt für sich gedruckt und verlinkt werden kann. --}}
+            @foreach ($positions as $position)
+                @php
+                    $positionStorniert = (int) ($position->status ?? 0) === 3;
+                    $positionRabatt = (float) ($position->discount ?? 0);
+                    $positionBrutto = (float) ($position->total ?? 0);
+                    $stelle = $position->positionInOrder();
+                @endphp
+
+                <section class="invoice-document__section" id="buyer-print-block-{{ $position->id }}">
+                    <x-invoice.header
+                        title="Rechnung für den Käufer"
+                        :subtitle="'Rechnungs-Nr. ' . $position->invoiceNumber() . ' · ' . $position->created_at?->format('d.m.Y')"
+                    />
+
+                    @if ($positionStorniert)
+                        <x-invoice.cancelled-banner label="Rechnung storniert" />
+                    @endif
+
+                    <div class="invoice-document__section-heading no-print">
+                        <h2>
+                            Käufer
+                            @if ($stelle)
+                                · Artikel {{ $stelle[0] }} von {{ $stelle[1] }}
+                            @endif
+                        </h2>
+                        <button type="button" class="invoice-document__print-btn" onclick="printInvoiceSection('buyer-print-block-{{ $position->id }}')">Drucken</button>
+                    </div>
+
+                    <div class="invoice-document__grid">
+                        <div>
+                            <p class="invoice-document__label">Käufer</p>
+                            <p class="invoice-document__address">
+                                {{ $order->first_name }} {{ $order->last_name }}<br>
+                                {{ $order->street }} {{ $order->house_no }}<br>
+                                {{ $order->zip }} {{ $order->federal_state }}<br>
+                                @if ($order->po_box)
+                                    Postfach: {{ $order->po_box }}<br>
+                                @endif
+                                {{ $order->user?->email ?? $order->email }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="invoice-document__label">Anbieterinformation</p>
+                            <p class="invoice-document__address">
+                                Frau Kruner<br>
+                                Inh. Frau Kathleen Krüger<br>
+                                Schönhauser Allee 163<br>
+                                10435 Berlin<br>
+                                USt.-Ident.-Nr.: DE419009695
+                            </p>
+                            <p class="invoice-document__meta">
+                                Rechnungs-Nr.: {{ $position->invoiceNumber() }}<br>
+                                Rechnungs-Datum: {{ $position->created_at?->format('d.m.Y') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="invoice-document__table-wrap">
+                        <p class="invoice-document__label">Position</p>
+                        <table class="invoice-document__table">
+                            <thead>
+                                <tr>
+                                    <th>Produktname</th>
+                                    <th>Veredelungen</th>
+                                    <th>Zusatzoptionen</th>
+                                    <th>Tragedauer</th>
+                                    <th>Gesamt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="{{ $positionStorniert ? 'is-cancelled' : '' }}">
+                                    <td>
+                                        {{ $position->product_name ?? $position->product?->name ?? '-' }}
+                                        @if ($positionStorniert)
+                                            <br><small>storniert</small>
+                                        @endif
+                                    </td>
+                                    <td>{{ $listText($position->finishings) }}</td>
+                                    <td>{{ $listText($position->addition) }}</td>
+                                    <td>{{ $listText($position->wearing_time) }}</td>
+                                    <td>{{ $fmt($positionBrutto) }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                @if ($positionRabatt > 0)
+                                    {{-- Der Gutschein der Bestellung, anteilig auf diese
+                                         Position. Der volle Rabatt steht im Kopf. --}}
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">Zwischensumme</td>
+                                        <td>{{ $fmt($positionBrutto) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right">
+                                            Gutschein{{ filled($order->discount_code) ? ' ' . $order->discount_code : '' }}
+                                        </td>
+                                        <td>−{{ $fmt($positionRabatt) }}</td>
+                                    </tr>
+                                @endif
+                                <tr>
+                                    <td colspan="4" style="text-align:right"><strong>Gesamtbetrag</strong></td>
+                                    <td><strong>{{ $fmt(max(0, $positionBrutto - $positionRabatt)) }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <p class="invoice-document__note">Umsatzsteuer wird gemäß § 25a UStG nicht ausgewiesen.</p>
+                    </div>
+
+                    <p class="invoice-document__footer">
+                        Frau Kruner · Schönhauser Allee 163 · 10435 Berlin · fraukruner.de
+                    </p>
+                </section>
+            @endforeach
+        @endif
 
         {{-- Ab hier je Position die Gutschrift der Herstellerin: Jede rechnet
              einzeln ab. Der Druckblock trägt die ID der Position, damit jede
@@ -423,9 +553,13 @@
          ausgewertet wird, steht der Abschnitt noch nicht im Dokument.
 
          Deshalb hier selbst scrollen – und den Abschnitt kurz hervorheben, denn
-         bei einer Bestellung mit mehreren Artikeln sehen die Gutschriften
-         untereinander gleich aus. Ohne die Markierung bleibt offen, welche davon
-         zu der angeklickten Auszahlung gehört. --}}
+         bei einer Bestellung mit mehreren Artikeln sehen die Belege untereinander
+         gleich aus. Ohne die Markierung bleibt offen, welcher davon zu der
+         angeklickten Auszahlung gehört.
+
+         Gilt für beide Druckblöcke je Position: die Gutschrift der Herstellerin
+         und – bei Bestellungen vor dem Stichtag – das Rechnungsblatt des
+         Käufers (`buyer-print-block-456`). --}}
     <script>
         (function () {
             // Einmal definieren: Bei einer Livewire-Navigation wird dieses Skript
@@ -435,7 +569,7 @@
                 window.fkScrollToGutschrift = function () {
                     const hash = window.location.hash;
 
-                    if (! hash || hash.indexOf('seller-print-block-') === -1) {
+                    if (! hash || ! /-print-block-\d+$/.test(hash)) {
                         return;
                     }
 

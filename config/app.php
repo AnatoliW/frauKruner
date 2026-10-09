@@ -82,6 +82,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Invoice Bundle Cutoff Date
+    |--------------------------------------------------------------------------
+    |
+    | Ab welchem Tag bekommt der Käufer EINE Rechnung über alle Artikel seiner
+    | Bestellung?
+    |
+    | Bestellungen VOR diesem Datum haben je Position eine eigene Rechnung
+    | bekommen, mit der Belegnummer der Position in der Kopfzeile
+    | (`Rechnungs-Nr. FK2024-3552`). Genau diese Blätter liegen im Archiv und
+    | müssen sich unverändert wieder erzeugen lassen.
+    |
+    | Bestellungen AB diesem Datum bekommen eine Sammelrechnung: eine Rechnung
+    | je Bestellung, ohne eigene Nummer, mit der Bestellnummer als Bezug und der
+    | Belegnummer je Artikel in der Tabelle.
+    |
+    | Die Belegnummern selbst sind davon unberührt – sie gelten immer je
+    | Position und stehen fest in `orders.invoice_no`.
+    |
+    */
+
+    'invoice_bundle_cutoff_date' => env('INVOICE_BUNDLE_CUTOFF_DATE', '2026-09-30'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

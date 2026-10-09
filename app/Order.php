@@ -601,6 +601,34 @@ class Order extends Model
     }
 
     /**
+     * Bekommt der Käufer EINE Rechnung über alle Artikel – oder je Artikel eine?
+     *
+     * Bestellungen vor dem Stichtag aus `app.invoice_bundle_cutoff_date` haben
+     * je Position eine eigene Rechnung bekommen, mit der Belegnummer in der
+     * Kopfzeile (`Rechnungs-Nr. FK2024-3552`). Diese Blätter sind ausgestellt,
+     * verschickt und archiviert; sie müssen sich unverändert wieder erzeugen
+     * lassen. Ab dem Stichtag gilt die Sammelrechnung: eine je Bestellung, ohne
+     * eigene Nummer, mit der Bestellnummer als Bezug und der Belegnummer je
+     * Zeile.
+     *
+     * Maßgeblich ist das Datum der Hauptbestellung, nicht das der Position:
+     * Sonst könnte eine Bestellung am Stichtag in zwei Belegformen zerfallen.
+     *
+     * Die Belegnummern selbst hängen nicht hiervon ab. Sie gelten immer je
+     * Position (invoiceNumber()) und stehen fest in der Spalte `invoice_no`.
+     */
+    public function usesBundledInvoice(): bool
+    {
+        $stichtag = Carbon::parse(
+            config('app.invoice_bundle_cutoff_date', '2026-09-30')
+        )->startOfDay();
+
+        $createdAt = $this->mainOrder()->created_at ?? Carbon::now();
+
+        return $createdAt->gte($stichtag);
+    }
+
+    /**
      * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-12697-45`.
      *
      * Gilt je Position, weil jede Verkäuferin einzeln abrechnet: die

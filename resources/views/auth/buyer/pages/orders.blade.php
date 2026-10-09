@@ -7,9 +7,13 @@
     <div class="card-fields-shopping-cart">
         {{-- Eine Karte je Bestellung. Die Artikel stehen als Positionen darin:
              Bezahlt wurde die Bestellung als Ganzes, deshalb steht ihre Nummer
-             im Kopf der Karte und dort auch die eine Rechnung dazu. Video,
-             Fotos und die Bewertung gelten dagegen je Artikel, denn der kommt
-             von einer eigenen Herstellerin. --}}
+             im Kopf der Karte. Video, Fotos und die Bewertung gelten dagegen je
+             Artikel, denn der kommt von einer eigenen Herstellerin.
+
+             Die Rechnung haengt am Stichtag (Order::usesBundledInvoice()): Ab
+             dem Stichtag eine fuer die ganze Bestellung, im Kopf der Karte.
+             Davor je Artikel eine eigene - so wurde sie damals ausgestellt, und
+             nur so laesst sich ein archivierter Beleg wieder erzeugen. --}}
         @foreach ($orders as $order)
             @php
                 // Altbestellung ohne Positionen: dann ist sie ihre eigene Position.
@@ -17,6 +21,7 @@
                 $alleStorniert = $positions->every(fn ($p) => (int) ($p->status ?? 0) === 3);
                 $istVorkasse = $order->payment_gateway === 'pre_payment';
                 $istBezahlt = (int) ($order->payment_status ?? 0) !== 0;
+                $istSammelrechnung = $order->usesBundledInvoice();
             @endphp
 
             <div class="card-item-profile-sells {{ $alleStorniert ? 'storniert' : '' }}" style="border-bottom:none">
@@ -52,7 +57,7 @@
 
                         {{-- Eine Rechnung für die ganze Bestellung. Die Beleg-Nr. je
                              Artikel steht darauf in der Positionstabelle. --}}
-                        @if ($istBezahlt)
+                        @if ($istBezahlt && $istSammelrechnung)
                             <a href="{{ route('invoice', $order) }}" class="btn btn-secondary">Rechnung</a>
                         @endif
                     </div>
@@ -117,8 +122,13 @@
                         <div class="col-prod-profile-sells-buttons text-center">
                             {{-- Video, Fotos und Bewertung gelten je Artikel. --}}
 
-                            {{-- Die Beleg-Nr. dieses Artikels, damit sich die Zeile
-                                 auf der Rechnung wiederfinden lässt. --}}
+                            {{-- Vor dem Stichtag hat jeder Artikel seine eigene
+                                 Rechnung; danach steht seine Beleg-Nr. als Hinweis
+                                 da, damit sich die Zeile auf der Sammelrechnung
+                                 wiederfinden lässt. --}}
+                            @if ($istBezahlt && ! $istSammelrechnung)
+                                <a href="{{ route('invoice', $position) }}" class="btn btn-secondary">Rechnung</a>
+                            @endif
                             @if ($istBezahlt)
                                 <span class="text-grey small d-block">
                                     Beleg-Nr. {{ $position->invoiceNumber() }}

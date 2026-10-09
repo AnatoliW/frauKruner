@@ -10,6 +10,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Number;
@@ -55,6 +56,14 @@ class OrdersTable
     public static function configure(Table $table): Table
     {
         return $table
+            // Eine Zeile je Bestellung, nicht je Position. Die Artikel stehen
+            // mehrzeilig in der Zelle und ausführlich in der Ansicht.
+            //
+            // Nur die Liste wird so eingeschränkt, nicht die Abfrage der
+            // Ressource: Diese löst auch Positions-IDs auf, damit gespeicherte
+            // Links von früher (`/admin/orders/3552`) weiter funktionieren.
+            // Siehe OrderResource::getEloquentQuery().
+            ->modifyQueryUsing(fn (Builder $query) => OrderResource::scopeToOrders($query))
             ->defaultSort('created_at', 'desc')
             ->columns([
                 // Die Nummer, die die Kundin bezahlt hat und die auf dem
