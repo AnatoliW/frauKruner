@@ -12,9 +12,9 @@ use Tests\Support\UploadTestHelpers;
  * Beträgen. Die Kundin hat aber eine Bestellung aufgegeben und einmal bezahlt;
  * die Artikel hängen als Positionen darin.
  *
- * Die Rechnung gilt dagegen je Artikel: Jeder kommt von einer eigenen
- * Herstellerin, die einzeln abrechnet. In der Karte steht deshalb an jedem
- * Artikel sein eigener Rechnungsknopf mit seiner Belegnummer.
+ * Die Rechnung gilt für die ganze Bestellung und hängt deshalb im Kopf der
+ * Karte. Die Belegnummer steht an jedem Artikel: Sie gilt je Position, weil
+ * jede Herstellerin einzeln abrechnet, und sie steht so auch auf der Rechnung.
  */
 uses(UsesUploadSchema::class);
 
@@ -88,19 +88,22 @@ it('zeigt eine Bestellung mit zwei Artikeln nur einmal', function () {
     }
 });
 
-it('verlinkt je Artikel eine Rechnung und nennt deren Belegnummer', function () {
+it('verlinkt eine Rechnung je Bestellung und nennt je Artikel die Belegnummer', function () {
     [$head, $children, $buyer] = buyerOrder(2);
 
     $html = $this->actingAs($buyer)->get('/buyer/dashboard/orders')->getContent();
 
-    // Je Artikel ein Beleg, jeder mit eigener Nummer.
+    // Genau ein Rechnungslink, und der zeigt auf die Bestellung: Der Käufer hat
+    // einmal bezahlt und bekommt einen Beleg.
+    expect(substr_count($html, '/invoice/'.$head->id))->toBe(1);
+
     foreach ($children as $child) {
-        expect(substr_count($html, '/invoice/'.$child->id))->toBe(1);
+        expect($html)->not->toContain('/invoice/'.$child->id);
+
+        // Die Belegnummer steht trotzdem an jedem Artikel – damit sich die
+        // Zeile auf der Rechnung wiederfinden lässt.
         expect($html)->toContain('Beleg-Nr. '.$child->invoiceNumber());
     }
-
-    // Der Kopf der Bestellung ist kein Beleg und wird nicht verlinkt.
-    expect($html)->not->toContain('/invoice/'.$head->id);
 });
 
 it('zieht den Gutschein im Gesamtbetrag nur einmal ab', function () {

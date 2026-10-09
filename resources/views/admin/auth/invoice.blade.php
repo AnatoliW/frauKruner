@@ -1,19 +1,24 @@
 @extends('layouts.app')
 
 @php
-    // Zwei Belege aus einer Vorlage, beide zu derselben Position:
+    // Zwei Belege aus einer Vorlage:
     //
-    //  - Die Verkaeuferin sieht die GUTSCHRIFT fuer ihre Position.
-    //  - Alle anderen (Kundin, Adminbereich) sehen die RECHNUNG zu derselben
-    //    Position.
+    //  - Die Herstellerin sieht die GUTSCHRIFT fuer ihre Position. Jede
+    //    rechnet einzeln ab, deshalb gilt sie je Position.
+    //  - Alle anderen (Kundin, Adminbereich) sehen EINE RECHNUNG fuer die
+    //    ganze Bestellung, mit allen Artikeln darauf. Der Kaeufer hat einmal
+    //    bezahlt und bekommt einen Beleg.
     //
-    // Ein Beleg gilt je Position, denn jede Herstellerin rechnet einzeln ab.
-    // Beide Belege stehen auf derselben Belegnummer; die Gutschrift haengt nur
-    // die Nutzer-ID der Herstellerin an, damit sich die Nummern nicht doppeln.
-    // Die Nummer, die die Kundin bezahlt hat, steht als "zur Bestellung" dabei.
+    // Zu den Nummern: Die Rechnung traegt keine eigene Nummer. Sie nennt die
+    // BESTELLNUMMER als Bezug - die Nummer, die die Kundin bezahlt hat und die
+    // auf ihrem Kontoauszug steht - und fuehrt je Artikel dessen BELEGNUMMER
+    // auf. Die Belegnummer gilt je Position, und die Gutschrift der
+    // Herstellerin baut darauf auf (Order::gutschriftNumber()). So steht auf
+    // dem Blatt keine Zahl, die es nicht vorher schon mit derselben Bedeutung
+    // gab - und eine Formataenderung kann archivierte Belege nicht umschreiben.
     //
-    // $positions kommt aus HomeController::invoice() und traegt genau diese
-    // eine Position.
+    // $positions kommt aus HomeController::invoice(): fuer die Gutschrift die
+    // eine Position, fuer die Rechnung alle Positionen der Bestellung.
     $istGutschrift = (int) (Auth()->user()->role_id ?? 0) === 3;
 
     $positions = $positions ?? collect([$order]);
@@ -71,14 +76,24 @@
                                 :subtitle="'Gutschrift-Nr. ' . $order->gutschriftNumber() . ' · ' . $order->created_at->format('d.m.Y')"
                             />
                         @else
+                            {{-- Kein eigenes "Rechnungs-Nr.": Die Rechnung verweist auf die
+                                 Bestellung, die Belegnummern stehen je Artikel in der Tabelle. --}}
                             <x-invoice.header
                                 title="Rechnung"
-                                :subtitle="'Rechnungs-Nr. ' . $order->invoiceNumber() . ' · ' . $order->created_at->format('d.m.Y')"
+                                :subtitle="'zur Bestellung ' . $order->orderNumber() . ' · ' . $order->created_at->format('d.m.Y')"
                             />
                         @endif
 
                         @if ($allesStorniert)
                             <h3 style="color:red">{{ $istGutschrift ? 'GUTSCHRIFT' : 'RECHNUNG' }} WURDE STORNIERT!</h3>
+                        @elseif ($teilweiseStorniert)
+                            {{-- Teilstorno: Die Rechnung gilt weiter, aber nicht fuer
+                                 jeden Artikel. Welcher betroffen ist, steht in der
+                                 Positionstabelle. --}}
+                            <h3 style="color:red">
+                                {{ $stornierte->count() }} von {{ $positions->count() }}
+                                Artikeln dieser Bestellung wurden storniert.
+                            </h3>
                         @endif
 
                         <div class="row">
@@ -142,17 +157,13 @@
                                                     </div>
                                                 @else
                                                     <div class="col-12 col-md-6">
-                                                        {{-- Die Belegnummer dieser Position. Die Gutschrift der
-                                                             Herstellerin steht auf derselben Nummer, mit ihrer
-                                                             Nutzer-ID am Ende. --}}
-                                                        <p>Rechnungs-Nr.:
-                                                            {{ $order->invoiceNumber() }}<br>
+                                                        {{-- Die Bestellnummer als Bezug: Sie steht auf dem
+                                                             Kontoauszug der Kundin. Die Belegnummern der
+                                                             einzelnen Artikel stehen in der Tabelle. --}}
+                                                        <p>zur Bestellung:
+                                                            {{ $order->orderNumber() }}<br>
                                                             Rechnungs-Datum:
-                                                            {{ $order->created_at->format('d. M. Y') }}<br>
-                                                            {{-- Die Nummer, die die Kundin bezahlt hat und die auf
-                                                                 ihrem Kontoauszug steht. --}}
-                                                            zur Bestellung:
-                                                            {{ $order->orderNumber() }}<br><br>
+                                                            {{ $order->created_at->format('d. M. Y') }}<br><br>
                                                         </p>
                                                     </div>
                                                 @endif
@@ -308,6 +319,9 @@
                                                     <thead>
                                                         <tr>
                                                             <th>Produktname</th>
+                                                            {{-- Die Belegnummer des Artikels: Darauf steht auch die
+                                                                 Gutschrift seiner Herstellerin. --}}
+                                                            <th>Beleg-Nr.</th>
                                                             @if ($hatVeredelungen)
                                                                 <th>Veredelungen</th>
                                                             @endif
@@ -330,6 +344,7 @@
                                                                         <br><small style="color:red">storniert</small>
                                                                     @endif
                                                                 </td>
+                                                                <td>{{ $position->invoiceNumber() }}</td>
                                                                 @if ($hatVeredelungen)
                                                                     <td>{{ $auswahl($position->finishings) }}</td>
                                                                 @endif
@@ -345,8 +360,9 @@
                                                     </tbody>
                                                     <tfoot>
                                                         @php
-                                                            // Spalten links vom Betrag, damit die Summen rechts ausgerichtet bleiben.
-                                                            $leereSpalten = 1
+                                                            // Spalten links vom Betrag, damit die Summen rechts ausgerichtet
+                                                            // bleiben: Produktname und Beleg-Nr. plus die wahlweisen.
+                                                            $leereSpalten = 2
                                                                 + ($hatVeredelungen ? 1 : 0)
                                                                 + ($hatZusatzoptionen ? 1 : 0)
                                                                 + ($hatTragedauer ? 1 : 0);
@@ -370,14 +386,13 @@
                                                     </tfoot>
                                                 </table>
 
-                                                @if ($stelle = $order->positionInOrder())
-                                                    {{-- Ein Beleg je Artikel: Jeder kommt von einer eigenen
-                                                         Herstellerin, die einzeln abrechnet. Bezahlt wurde die
-                                                         Bestellung als Ganzes. --}}
+                                                @if ($positions->count() > 1)
+                                                    {{-- Warum mehrere Belegnummern auf einer Rechnung stehen. --}}
                                                     <p class="text-muted">
-                                                        Diese Rechnung gilt für Artikel {{ $stelle[0] }} von {{ $stelle[1] }}
-                                                        der Bestellung {{ $order->orderNumber() }}. Für die weiteren
-                                                        Artikel gibt es je eine eigene Rechnung mit eigener Nummer.
+                                                        Diese Rechnung umfasst alle {{ $positions->count() }} Artikel der
+                                                        Bestellung {{ $order->orderNumber() }}. Die Artikel kommen von
+                                                        unterschiedlichen Herstellerinnen, werden einzeln versendet und
+                                                        tragen deshalb je eine eigene Beleg-Nr.
                                                     </p>
                                                 @endif
 

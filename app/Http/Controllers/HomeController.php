@@ -90,24 +90,24 @@ class HomeController extends Controller
         return view('auth.orders', compact('orders'));
     }
     /**
-     * Beleg zu einer Position einer Bestellung.
+     * Beleg zu einer Bestellung.
      *
      * Dieselbe Adresse bedient zwei Belege, weil beide dieselbe Vorlage nutzen:
      *
-     *  - Die Verkäuferin sieht die **Gutschrift** für ihre Position.
-     *  - Der Käufer sieht die **Rechnung** zu derselben Position.
+     *  - Die Herstellerin sieht die **Gutschrift** für ihre Position. Sie gilt
+     *    je Position, denn jede Herstellerin rechnet einzeln ab.
+     *  - Der Käufer sieht **eine Rechnung für seine ganze Bestellung**, mit
+     *    allen Artikeln darauf. Er hat einmal bezahlt und bekommt einen Beleg.
+     *    Deshalb wird hier auf die Bestellung aufgelöst, auch wenn der Aufruf
+     *    die ID einer Position trägt – ältere Links tragen sie noch.
      *
-     * Beide gelten je Position, denn jede Herstellerin rechnet einzeln ab, und
-     * beide stehen auf derselben Belegnummer – die Gutschrift hängt nur die
-     * Nutzer-ID der Herstellerin an. Bei einer Bestellung mit drei Artikeln gibt
-     * es also drei Rechnungen und drei Gutschriften, nicht einen Sammelbeleg.
-     * Die Nummer, die die Kundin bezahlt hat, steht auf jedem Beleg als
-     * „zur Bestellung“ mit dabei.
-     *
-     * Wird der Kopf einer Bestellung aufgerufen – alte Links, die
-     * Auszahlungsliste, der Adminbereich –, führt der Weg zum Beleg der ersten
-     * Position. Der Kopf selbst ist kein Beleg: Seine Nummer ist die
-     * Bestellnummer und stand nie auf einer Rechnung.
+     * Zu den Nummern, denn daran hing ein längerer Irrtum: Die Rechnung des
+     * Käufers trägt **keine eigene Nummer**. Sie nennt die Bestellnummer als
+     * Bezug – das ist die Nummer, die er bezahlt hat und die auf seinem
+     * Kontoauszug steht – und führt je Artikel dessen Belegnummer auf. Die
+     * Belegnummer gilt je Position (Order::invoiceNumber()), und die Gutschrift
+     * der Herstellerin baut darauf auf. So steht auf dem Blatt keine Zahl, die
+     * es nicht vorher schon mit derselben Bedeutung gab.
      *
      * Die Zugriffsprüfung: Die Adresse war einmal nur durch `auth` geschützt.
      * Wer angemeldet war, konnte über eine geratene Nummer Name, Adresse und
@@ -118,51 +118,46 @@ class HomeController extends Controller
         $user = auth()->user();
 
         if ((int) ($user->role_id ?? 0) === 3) {
-            // Gutschrift: nur die Verkäuferin der Position, nicht die der
+            // Gutschrift: nur die Herstellerin der Position, nicht die der
             // Nachbarposition in derselben Bestellung.
             abort_unless((int) $order->vendor_id === (int) $user->id, 404);
 
-            return $this->belegAnzeigen($order);
+            $order->load(['product', 'vendor.address', 'vendor.verification', 'products']);
+
+            return view('auth.invoice', [
+                'order' => $order,
+                'products' => $order->products,
+                'positions' => collect([$order]),
+            ]);
         }
 
-        // Der Adminbereich darf jeden Beleg sehen, die Kundin nur ihren eigenen.
-        // Geprüft wird an der Position und am Kopf der Bestellung: Eine ältere
-        // Position kann ohne user_id dastehen, gehört aber zu einer Bestellung,
-        // die eine trägt.
-        $istAdmin = (int) ($user->role_id ?? 0) === 1;
+        // Rechnung: gilt für die Bestellung als Ganzes.
+        $invoice = $order->mainOrder();
 
+        // Der Adminbereich darf jeden Beleg sehen, die Kundin nur ihren eigenen.
         abort_unless(
-            $istAdmin
-                || (int) $order->user_id === (int) $user->id
-                || (int) $order->mainOrder()->user_id === (int) $user->id,
+            (int) ($user->role_id ?? 0) === 1 || (int) $invoice->user_id === (int) $user->id,
             404
         );
 
-        // Der Kopf einer Bestellung ist kein Beleg. Weiter zur ersten Position,
-        // die einen trägt.
-        if (! $order->parent_id) {
-            $erste = $order->childrens()->orderBy('id')->first();
+        $invoice->load([
+            'childrens.product',
+            'childrens.vendor.address',
+            'childrens.vendor.verification',
+            'product',
+            'vendor.address',
+            'vendor.verification',
+            'products',
+        ]);
 
-            if ($erste) {
-                return redirect()->route('invoice', $erste);
-            }
-        }
-
-        return $this->belegAnzeigen($order);
-    }
-
-    /**
-     * Zeigt den Beleg einer Position – Rechnung oder Gutschrift, je nach
-     * angemeldeter Rolle. Die Vorlage entscheidet das selbst.
-     */
-    private function belegAnzeigen(Order $position)
-    {
-        $position->load(['product', 'vendor.address', 'vendor.verification', 'products']);
+        // Eine Bestellung ohne Positionen (Altdatensatz) ist ihre eigene einzige
+        // Position; die Rechnung sieht dann aus wie bisher.
+        $positions = $invoice->childrens->isNotEmpty() ? $invoice->childrens : collect([$invoice]);
 
         return view('auth.invoice', [
-            'order' => $position,
-            'products' => $position->products,
-            'positions' => collect([$position]),
+            'order' => $invoice,
+            'products' => $invoice->products,
+            'positions' => $positions,
         ]);
     }
     public function printemail()

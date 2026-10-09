@@ -6,23 +6,24 @@ use Tests\Concerns\UsesUploadSchema;
 use Tests\Support\UploadTestHelpers;
 
 /**
- * Ein Beleg je Position – und seine Nummer steht fest.
+ * Eine Rechnung je Bestellung – Belegnummern je Position.
  *
- * Jeder Artikel kommt von einer eigenen Herstellerin, die einzeln abrechnet.
- * Deshalb gilt ein Beleg je Position: Bei einem Artikel gibt es eine
- * Belegnummer, bei drei Artikeln drei. Rechnung der Kundin und Gutschrift der
- * Herstellerin stehen auf derselben Nummer; die Gutschrift hängt nur die
- * Nutzer-ID an, damit sich die Nummern nicht doppeln.
+ * Der Käufer hat einmal bezahlt und bekommt einen Beleg: eine Rechnung für die
+ * ganze Bestellung, mit allen Artikeln darauf. Sie trägt keine eigene Nummer.
+ * Sie nennt die Bestellnummer als Bezug – die Nummer vom Kontoauszug – und
+ * führt je Artikel dessen Belegnummer auf.
  *
- * Die Nummer, die die Kundin bezahlt hat, ist eine andere: Sie gilt für die
- * ganze Bestellung, steht auf dem Kontoauszug und heißt orderNumber(). Auf
- * jedem Beleg steht sie als „zur Bestellung“ dabei.
+ * Die Belegnummer gilt je Position (`FK2024-3552`), denn jede Herstellerin
+ * rechnet einzeln ab; ihre Gutschrift baut darauf auf und hängt nur ihre
+ * Nutzer-ID an (`FK2024-3552-5186`). Damit steht auf keinem Blatt eine Zahl,
+ * die es nicht vorher schon mit derselben Bedeutung gab.
  *
- * Zwischen dem 30.09.2026 und dem Rückbau trug die Rechnung die Bestellnummer.
- * Damit änderten sich rückwirkend alle Belegnummern – aus `FK2024-3552` wurde
- * `FK2024-3550`, und archivierte Belege stimmten nicht mehr. Die Tests hier
- * halten beides fest: die Nummer je Position und dass sie fest in der
- * Datenbank steht, statt bei jedem Aufruf neu gerechnet zu werden.
+ * Zwischen dem 30.09.2026 und dem Rückbau wurde die Rechnung mit der
+ * Bestellnummer als Rechnungsnummer ausgestellt. Damit änderten sich
+ * rückwirkend alle Belegnummern – aus `FK2024-3552` wurde `FK2024-3550`, und
+ * archivierte Belege stimmten nicht mehr. Die Tests hier halten fest: die
+ * Nummer gilt je Position, sie steht fest in der Datenbank statt bei jedem
+ * Aufruf neu gerechnet zu werden, und die Rechnung erfindet keine neue.
  */
 uses(UsesUploadSchema::class);
 
@@ -148,50 +149,59 @@ it('baut die Gutschrift auf der Belegnummer der Rechnung auf', function () {
 |--------------------------------------------------------------------------
 */
 
-it('zeigt dem Käufer die Rechnung zu einem Artikel seiner Bestellung', function () {
+it('zeigt dem Käufer eine Rechnung mit allen Artikeln der Bestellung', function () {
     [$head, $children, $buyer] = invoiceOrder(2);
 
-    $meine = $children->first();
-
-    $response = $this->actingAs($buyer)->get('/invoice/'.$meine->id);
+    $response = $this->actingAs($buyer)->get('/invoice/'.$head->id);
 
     $response->assertOk()
         ->assertSee('Rechnung')
-        ->assertSee($meine->invoiceNumber())
-        ->assertSee($meine->product->name)
-        // Die Nummer, die sie bezahlt hat, steht als Hinweis dabei.
-        ->assertSee($head->orderNumber())
-        // Der andere Artikel hat seinen eigenen Beleg.
-        ->assertDontSee($children->last()->product->name);
-});
-
-it('gibt jedem Artikel eine eigene Rechnung mit eigener Nummer', function () {
-    [, $children, $buyer] = invoiceOrder(2);
+        // Die Bestellnummer als Bezug: die Nummer vom Kontoauszug.
+        ->assertSee($head->orderNumber());
 
     foreach ($children as $child) {
-        $html = $this->actingAs($buyer)->get('/invoice/'.$child->id)->assertOk()->getContent();
-
-        expect($html)->toMatch('/Rechnungs-Nr\.?:?\s*'.preg_quote($child->invoiceNumber(), '/').'\b/');
-
-        // Und nicht die Nummer des Nachbarartikels.
-        $andere = $children->firstWhere('id', '!=', $child->id);
-        expect($html)->not->toMatch('/Rechnungs-Nr\.?:?\s*'.preg_quote($andere->invoiceNumber(), '/').'\b/');
+        $response->assertSee($child->product->name)
+            // Je Artikel seine Belegnummer.
+            ->assertSee($child->invoiceNumber());
     }
 });
 
-it('führt vom Kopf der Bestellung zum Beleg der ersten Position', function () {
+it('erfindet für die Rechnung keine eigene Nummer', function () {
     [$head, $children, $buyer] = invoiceOrder(2);
 
-    // Der Kopf ist kein Beleg: Seine Nummer ist die Bestellnummer und stand nie
-    // auf einer Rechnung. Aeltere Links und Listen tragen sie trotzdem.
-    $this->actingAs($buyer)
-        ->get('/invoice/'.$head->id)
-        ->assertRedirect(route('invoice', $children->first()));
+    $html = $this->actingAs($buyer)->get('/invoice/'.$head->id)->assertOk()->getContent();
+
+    // Keine „Rechnungs-Nr." auf dem Blatt: Das Dokument verweist auf die
+    // Bestellung und führt die Belegnummern der Artikel auf. Jede Zahl darauf
+    // hatte vorher schon dieselbe Bedeutung – deshalb kann sich rückwirkend
+    // nichts verschieben.
+    expect($html)
+        ->not->toContain('Rechnungs-Nr')
+        ->toContain('zur Bestellung')
+        ->toContain('Beleg-Nr.');
+
+    foreach ($children as $child) {
+        expect($html)->toContain($child->invoiceNumber());
+    }
 });
 
-it('rechnet den Gutschein auf der Rechnung der Position ab', function () {
-    // Im Kopf steht der volle Rabatt, in einer Position nur ihr Anteil.
-    [, $children, $buyer] = invoiceOrder(2, [
+it('führt den Käufer von einer Artikel-Nummer zur Rechnung der Bestellung', function () {
+    [$head, $children, $buyer] = invoiceOrder(2);
+
+    // Ältere Links und Listen tragen die ID einer Position. Die Rechnung gilt
+    // aber für die Bestellung, also wird darauf aufgelöst.
+    $this->actingAs($buyer)
+        ->get('/invoice/'.$children->first()->id)
+        ->assertOk()
+        ->assertSee($head->orderNumber())
+        ->assertSee($children->last()->product->name);
+});
+
+it('rechnet den Gutschein auf der Rechnung genau einmal ab', function () {
+    // Im Kopf der Bestellung ist der Rabatt bereits abgezogen. Die Positionen
+    // tragen nur ihren Anteil – auf der Sammelrechnung darf er trotzdem nur
+    // einmal erscheinen.
+    [$head, , $buyer] = invoiceOrder(2, [
         'subtotal' => 80.00,
         'discount' => 15.00,
         'discount_code' => 'SOMMER',
@@ -201,13 +211,14 @@ it('rechnet den Gutschein auf der Rechnung der Position ab', function () {
         'discount_code' => 'SOMMER',
     ]);
 
-    $html = $this->actingAs($buyer)->get('/invoice/'.$children->first()->id)->getContent();
+    $html = $this->actingAs($buyer)->get('/invoice/'.$head->id)->getContent();
 
     expect($html)
         ->toContain('SOMMER')
         ->toContain('Zwischensumme')
-        // 40 − 7,50 = 32,50 für diese Position.
-        ->toContain('32.50');
+        // 80 − 15 = 65, nicht 50 und nicht 72,50.
+        ->toContain('65.00')
+        ->not->toContain('50.00');
 });
 
 it('zeigt der Herstellerin ihre Gutschrift und nicht die der anderen', function () {
@@ -240,11 +251,12 @@ it('weist eine fremde Kundin ab', function () {
         ->toThrow(Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
 });
 
-it('weist eine fremde Kundin auch an der Position ab', function () {
+it('weist eine fremde Kundin auch über eine Positions-ID ab', function () {
     [, $children] = invoiceOrder(2);
 
     $fremde = UploadTestHelpers::buyer();
 
+    // Aufgelöst wird auf die Bestellung – geprüft wird deren Eigentümerin.
     $this->withoutExceptionHandling()->actingAs($fremde);
 
     expect(fn () => $this->get('/invoice/'.$children->first()->id))
@@ -276,14 +288,15 @@ it('weist die Nachbarposition derselben Bestellung ab', function () {
 });
 
 it('lässt den Adminbereich jeden Beleg sehen', function () {
-    [, $children] = invoiceOrder(2);
+    [$head, $children] = invoiceOrder(2);
 
     $admin = UploadTestHelpers::user(['role_id' => 1]);
 
     $this->actingAs($admin)
-        ->get('/invoice/'.$children->last()->id)
+        ->get('/invoice/'.$head->id)
         ->assertOk()
-        ->assertSee($children->last()->invoiceNumber());
+        ->assertSee($head->orderNumber())
+        ->assertSee($children->first()->invoiceNumber());
 });
 
 it('zeigt eine Bestellung ohne Positionen wie bisher', function () {
@@ -300,11 +313,11 @@ it('zeigt eine Bestellung ohne Positionen wie bisher', function () {
         'status' => 1,
     ]);
 
-    // Ein Altdatensatz ohne Positionen ist seine eigene einzige Position: Hier
-    // darf nicht weitergeleitet werden, sonst gibt es keinen Beleg.
+    // Ein Altdatensatz ohne Positionen ist seine eigene einzige Position.
     $this->actingAs($buyer)
         ->get('/invoice/'.$order->id)
         ->assertOk()
+        ->assertSee($order->orderNumber())
         ->assertSee($order->invoiceNumber());
 });
 
@@ -314,13 +327,14 @@ it('zeigt eine Bestellung ohne Positionen wie bisher', function () {
  * standen 138 stornierte Positionen und kein einziger stornierter Kopf. Die
  * Belege lesen den Stornostand deshalb aus den Positionen.
  */
-it('markiert die Rechnung einer stornierten Position als storniert', function () {
-    [, $children, $buyer] = invoiceOrder(2);
+it('markiert die Rechnung als storniert, wenn alle Positionen storniert sind', function () {
+    [$head, $children, $buyer] = invoiceOrder(2);
 
-    $storniert = $children->first();
-    $storniert->update(['status' => 3]);
+    foreach ($children as $child) {
+        $child->update(['status' => 3]);
+    }
 
-    $html = $this->actingAs($buyer)->get('/invoice/'.$storniert->id)->assertOk()->getContent();
+    $html = $this->actingAs($buyer)->get('/invoice/'.$head->id)->assertOk()->getContent();
 
     expect($html)
         ->toContain('RECHNUNG WURDE STORNIERT')
@@ -328,16 +342,22 @@ it('markiert die Rechnung einer stornierten Position als storniert', function ()
         ->toContain('card-body storniert');
 });
 
-it('lässt die Rechnung der anderen Position unberührt', function () {
-    [, $children, $buyer] = invoiceOrder(2);
+it('weist einen Teilstorno auf der Rechnung aus, ohne sie zu entwerten', function () {
+    [$head, $children, $buyer] = invoiceOrder(2);
 
     $children->first()->update(['status' => 3]);
 
-    $offen = $children->last();
+    $html = $this->actingAs($buyer)->get('/invoice/'.$head->id)->assertOk()->getContent();
+    $text = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($html)));
 
-    $html = $this->actingAs($buyer)->get('/invoice/'.$offen->id)->assertOk()->getContent();
+    // Die Rechnung gilt weiter – nur nicht für jeden Artikel.
+    expect($text)
+        ->toContain('1 von 2')
+        ->toContain('Artikeln dieser Bestellung wurden storniert')
+        ->not->toContain('RECHNUNG WURDE STORNIERT');
 
-    expect($html)->not->toContain('RECHNUNG WURDE STORNIERT');
+    // Und man sieht, welcher Artikel betroffen ist.
+    expect($html)->toContain('text-decoration-line-through');
 });
 
 it('markiert die Gutschrift der betroffenen Herstellerin als storniert', function () {

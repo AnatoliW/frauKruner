@@ -7,9 +7,9 @@
     <div class="card-fields-shopping-cart">
         {{-- Eine Karte je Bestellung. Die Artikel stehen als Positionen darin:
              Bezahlt wurde die Bestellung als Ganzes, deshalb steht ihre Nummer
-             im Kopf der Karte. Rechnung, Video, Fotos und die Bewertung gelten
-             dagegen je Artikel, denn der kommt von einer eigenen Herstellerin,
-             die auch einzeln abrechnet. --}}
+             im Kopf der Karte und dort auch die eine Rechnung dazu. Video,
+             Fotos und die Bewertung gelten dagegen je Artikel, denn der kommt
+             von einer eigenen Herstellerin. --}}
         @foreach ($orders as $order)
             @php
                 // Altbestellung ohne Positionen: dann ist sie ihre eigene Position.
@@ -50,6 +50,11 @@
                                 href="{{ route('buyer.pre.payment', $order) }}">Bezahlen</a>
                         @endif
 
+                        {{-- Eine Rechnung für die ganze Bestellung. Die Beleg-Nr. je
+                             Artikel steht darauf in der Positionstabelle. --}}
+                        @if ($istBezahlt)
+                            <a href="{{ route('invoice', $order) }}" class="btn btn-secondary">Rechnung</a>
+                        @endif
                     </div>
                 </div>
 
@@ -110,13 +115,11 @@
                         </div>
 
                         <div class="col-prod-profile-sells-buttons text-center">
-                            {{-- Rechnung, Video, Fotos und Bewertung gelten je Artikel. --}}
+                            {{-- Video, Fotos und Bewertung gelten je Artikel. --}}
 
-                            {{-- Ein Beleg je Artikel, mit eigener Nummer: Die
-                                 Herstellerin rechnet einzeln ab, ihre Gutschrift
-                                 steht auf derselben Nummer. --}}
+                            {{-- Die Beleg-Nr. dieses Artikels, damit sich die Zeile
+                                 auf der Rechnung wiederfinden lässt. --}}
                             @if ($istBezahlt)
-                                <a href="{{ route('invoice', $position) }}" class="btn btn-secondary">Rechnung</a>
                                 <span class="text-grey small d-block">
                                     Beleg-Nr. {{ $position->invoiceNumber() }}
                                 </span>
