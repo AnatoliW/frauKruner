@@ -63,7 +63,7 @@ class NotificationForm
                             ])
                             ->default(0)
                             ->required()
-                            ->helperText('Hinweis: Die Filterung nach Verifizierung ist im Nutzerbereich derzeit nicht aktiv.'),
+                            ->helperText('Filtert die E-Mail-Empfänger einer Gruppennachricht. Die Anzeige im Nutzerbereich berücksichtigt diesen Filter derzeit nicht.'),
                         Select::make('user_id')
                             ->label('Einzelner Nutzer')
                             ->relationship(
@@ -84,7 +84,7 @@ class NotificationForm
                             ->preload()
                             ->nullable()
                             ->placeholder('Kein einzelner Nutzer')
-                            ->helperText('Optional: Nachricht nur an einen bestimmten Nutzer senden.'),
+                            ->helperText('Beim E-Mail-Versand hat dieser Nutzer Vorrang vor Nutzergruppe und Verifizierungsstatus.'),
                     ])
                     ->columns(2),
 
@@ -96,7 +96,7 @@ class NotificationForm
                             ->inline(false)
                             ->default(false)
                             ->onColor('info')
-                            ->helperText('Wird im Frontend derzeit nicht für die Zustellung ausgewertet – nur gespeichert.')
+                            ->helperText('Startet den E-Mail-Versand beim Erstellen. Bearbeiten löst keinen erneuten Versand aus.')
                             ->afterStateHydrated(function (Toggle $component, $state): void {
                                 $component->state((bool) ((int) $state));
                             })
