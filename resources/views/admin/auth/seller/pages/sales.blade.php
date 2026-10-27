@@ -72,6 +72,7 @@
                             <p class="text-grey small">
 
                                 Bestellt am: {{ $order->created_at->format('d.m.Y') }}<br>
+                                Bestellnummer: {{ $order->orderNumber() }}<br>
                                 @foreach ($order->wearing_time as $data)
                                     Tragedauer: {{ $data }}<br>
                                 @endforeach

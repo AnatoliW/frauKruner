@@ -21,6 +21,16 @@ namespace App\Support;
  */
 class OrderNumberSearch
 {
+    /** Verkäuferinnen-ID einer vollständigen Gutschriftnummer, sonst null. */
+    public static function vendorId(?string $search): ?string
+    {
+        if (! preg_match('/FK\d{4}-\d+-(\d+)\s*$/i', trim((string) $search), $matches)) {
+            return null;
+        }
+
+        return static::number($matches[1]);
+    }
+
     /**
      * Die gesuchte Nummer, oder null, wenn die Eingabe keine ist.
      *

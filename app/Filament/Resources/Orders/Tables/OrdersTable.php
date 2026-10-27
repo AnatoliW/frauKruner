@@ -120,19 +120,30 @@ class OrdersTable
                 // Artikel und Verkäuferin hängen an den Positionen: Bei mehreren
                 // Artikeln stehen hier mehrere Zeilen untereinander.
                 //
-                // Unter dem Artikel steht seine Belegnummer: Ein Beleg gilt je
-                // Position, und das ist die Nummer, die auf Rechnung und
-                // Gutschrift steht – nicht die Bestellnummer darüber.
+                // Neue Bestellungen nennen die gemeinsame Gutschrift der Verkäuferin.
+                // Ältere behalten die bisher angezeigte Positions-Belegnummer.
                 TextColumn::make('articles')
                     ->label('Artikel')
                     ->html()
-                    ->state(fn (Order $record): string => static::perPosition(
-                        $record,
-                        fn (Order $position): ?string => e(
-                            $position->product_name ?? $position->product?->name ?? '-'
-                        ).'<br><small style="opacity:.6;">Beleg-Nr. '
-                            .e($position->invoiceNumber()).'</small>'
-                    )),
+                    ->state(function (Order $record): string {
+                        if (! $record->usesBundledSellerCredit()) {
+                            return static::perPosition(
+                                $record,
+                                fn (Order $position): string => e(
+                                    $position->product_name ?? $position->product?->name ?? '-'
+                                ).'<br><small style="opacity:.6;">Beleg-Nr. '
+                                    .e($position->invoiceNumber()).'</small>'
+                            );
+                        }
+
+                        return $record->sellerCreditGroups()->map(function ($positions): string {
+                            return $positions->map(fn (Order $position): string => e(
+                                $position->product_name ?? $position->product?->name ?? '-'
+                            ))->implode('<br>')
+                                .'<br><small style="opacity:.6;">Gutschrift-Nr. '
+                                .e($positions->first()->gutschriftNumber()).'</small>';
+                        })->implode('<br>');
+                    }),
                 TextColumn::make('vendors')
                     ->label('Verkaeuferin')
                     ->html()

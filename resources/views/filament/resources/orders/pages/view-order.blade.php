@@ -187,9 +187,15 @@
                 </table>
                 @if ($positions->count() > 1)
                     <p class="invoice-document__note">
+                        @if ($order->usesBundledSellerCredit())
+                        Die Gutschriften werden je Verkäuferin zusammengefasst.
+                        Bezahlt hat die Kundin den Gesamtbetrag einmal,
+                        unter der Bestellnummer {{ $order->orderNumber() }}.
+                        @else
                         Jede Position kommt von einer anderen Verkäuferin und wird einzeln
                         abgerechnet und versendet. Bezahlt hat die Kundin den Gesamtbetrag
                         einmal, unter der Bestellnummer {{ $order->orderNumber() }}.
+                        @endif
                     </p>
                 @endif
             </div>
@@ -209,8 +215,8 @@
                Nummer vom Kontoauszug – und führt je Artikel dessen Beleg-Nr.
                auf.
 
-             Auf derselben Beleg-Nr. steht in beiden Fällen die Gutschrift der
-             Herstellerin weiter unten, mit ihrer Nutzer-ID am Ende. --}}
+             Neue Gutschriften weiter unten nennen die Hauptbestellnummer mit
+             Herstellerinnen-ID; ältere behalten ihre Positionsnummer. --}}
         @if ($order->usesBundledInvoice())
             <section class="invoice-document__section" id="buyer-print-block">
                 <x-invoice.header
@@ -314,8 +320,13 @@
                     @if ($positions->count() > 1)
                         <p class="invoice-document__note">
                             Alle {{ $positions->count() }} Artikel der Bestellung {{ $order->orderNumber() }} auf
+                            @if ($order->usesBundledSellerCredit())
+                            einem Beleg. Die Artikel tragen je eine eigene Beleg-Nr.;
+                            die Gutschriften werden je Herstellerin zusammengefasst.
+                            @else
                             einem Beleg. Die Artikel kommen von unterschiedlichen Herstellerinnen, werden
                             einzeln versendet und tragen deshalb je eine eigene Beleg-Nr.
+                            @endif
                         </p>
                     @endif
                 </div>
@@ -443,32 +454,37 @@
             @endforeach
         @endif
 
-        {{-- Ab hier je Position die Gutschrift der Herstellerin: Jede rechnet
-             einzeln ab. Der Druckblock trägt die ID der Position, damit jede
-             Gutschrift für sich gedruckt werden kann.
+        {{-- Neue Gutschriften bündeln je Verkäuferin die Positionen einer Bestellung.
+             Ältere Bestellungen behalten unverändert einen Beleg je Position.
 
              Die früheren Abschnitte „Bestelldetails · Position n von m“ sind
              entfallen: Sie wiederholten, was in der Übersicht und auf der
              Gutschrift steht. Die Plattformgebühr, die es nur dort gab, steht
              jetzt in der Übersicht. --}}
-        @foreach ($positions as $index => $position)
+        @foreach ($order->sellerCreditGroups() as $creditPositions)
             @php
-                // Zwei Gutschriften unterscheiden sich durch die Herstellerin – und,
-                // wenn beide Artikel von derselben Frau kommen, nur noch durch den
-                // Artikel. Beides steht deshalb über der Gutschrift, damit die aus
-                // der Auszahlungsliste verlinkte auf Anhieb zu erkennen ist.
+                $position = $creditPositions->first();
+                $creditCancelled = $creditPositions->every(fn ($item) => (int) ($item->status ?? 0) === 3);
+                $creditPartCancelled = ! $creditCancelled && $creditPositions->contains(fn ($item) => (int) ($item->status ?? 0) === 3);
                 $herstellerin = trim(($position->vendor?->name ?? '') . ' ' . ($position->vendor?->last_name ?? ''));
-                $artikel = (string) ($position->product_name ?? $position->product?->name ?? '');
+                $artikel = $creditPositions->count() > 1
+                    ? $creditPositions->count() . ' Artikel'
+                    : (string) ($position->product_name ?? $position->product?->name ?? '');
             @endphp
 
             <section class="invoice-document__section" id="seller-print-block-{{ $position->id }}">
+                @foreach ($creditPositions->skip(1) as $creditPosition)
+                    <span id="seller-print-block-{{ $creditPosition->id }}" aria-hidden="true"></span>
+                @endforeach
                 <x-invoice.header
                     title="Gutschrift der Hersteller*in"
                     :subtitle="'Gutschrift-Nr. ' . $position->gutschriftNumber() . ' · ' . $position->created_at?->format('d.m.Y')"
                 />
 
-                @if ((int) ($position->status ?? 0) === 3)
+                @if ($creditCancelled)
                     <x-invoice.cancelled-banner label="Gutschrift storniert" />
+                @elseif ($creditPartCancelled)
+                    <x-invoice.cancelled-banner scope="teilweise" label="Einzelne Positionen storniert" />
                 @endif
 
                 <div class="invoice-document__section-heading no-print">
@@ -511,6 +527,9 @@
 
                 <div class="invoice-document__table-wrap">
                     <p class="invoice-document__label">Positionen</p>
+                    @if ($position->usesBundledSellerCredit())
+                        <x-invoice.seller-positions :positions="$creditPositions" class="invoice-document__table" />
+                    @else
                     <table class="invoice-document__table">
                         <thead>
                             <tr>
@@ -535,6 +554,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    @endif
                     <p class="invoice-document__note">
                         {{ isset($position->seller_info->is_pay_vat) && (int) $position->seller_info->is_pay_vat === 1 ? 'Alle Preise sind inklusive der gesetzlichen Umsatzsteuer.' : 'Gemäß § 19 UStG enthält der o.g. Rechnungsbetrag keine Umsatzsteuer.' }}
                     </p>
@@ -573,7 +593,8 @@
                         return;
                     }
 
-                    const section = document.getElementById(hash.slice(1));
+                    const target = document.getElementById(hash.slice(1));
+                    const section = target?.closest('.invoice-document__section') || target;
 
                     if (! section) {
                         return;

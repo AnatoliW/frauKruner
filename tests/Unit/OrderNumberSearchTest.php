@@ -46,3 +46,16 @@ it('gibt null zurück, wenn die Eingabe keine Nummer ist', function () {
 it('findet die Nummer auch in einem Satz, der auf sie endet', function () {
     expect(OrderNumberSearch::number('Bestellung FK2026-5131'))->toBe('5131');
 });
+
+it('liest die Verkäuferin nur aus einer vollständigen Gutschriftnummer', function ($search, $vendorId) {
+    expect(OrderNumberSearch::vendorId($search))->toBe($vendorId);
+})->with([
+    ['FK2026-5146-5186', '5186'],
+    ['  fk2024-3552-005186  ', '5186'],
+    ['Gutschrift-Nr. FK2026-5146-5186', '5186'],
+    ['FK2026-5146', null],
+    ['5146', null],
+    ['5146-5186', null],
+    ['FK2026-5146-5186 Text', null],
+    [null, null],
+]);

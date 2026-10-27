@@ -111,22 +111,20 @@ class PayoutsTable
                                 ->orWhere('tracking_Id', 'like', "%{$search}%");
                         });
                     }),
-                // Diese Liste zeigt Positionen: je Verkäuferin eine Auszahlung.
-                // Oben steht deshalb die Belegnummer dieser Position – die
-                // Nummer, die auf ihrer Rechnung und auf der Gutschrift der
-                // Herstellerin steht und unter der der Beleg archiviert ist.
+                // Auszahlungen bleiben je Position. Die angezeigte Nummer gehört
+                // zur zugehörigen Gutschrift, bei neuen Bestellungen je Verkäuferin.
                 //
                 // Darunter die Bestellung, zu der die Position gehört: Das ist
                 // die Nummer, die die Kundin bezahlt hat und die auf dem
                 // Kontoauszug steht. Ohne sie lässt sich eine Auszahlung keinem
                 // Zahlungseingang zuordnen.
                 TextColumn::make('id')
-                    ->label('Beleg-Nr.')
+                    ->label('Gutschrift-Nr.')
                     ->html()
                     ->state(function (Order $record): string {
                         $zeilen = [];
 
-                        $zeilen[] = '<span style="font-weight:600;">'.e($record->invoiceNumber()).'</span>';
+                        $zeilen[] = '<span style="font-weight:600;white-space:nowrap;">'.e($record->gutschriftNumber()).'</span>';
 
                         if ($record->parent_id) {
                             $zeilen[] = '<span style="font-size:11px;opacity:.7;">zur Bestellung: '
@@ -150,10 +148,16 @@ class PayoutsTable
                             return;
                         }
 
+                        $vendorId = OrderNumberSearch::vendorId($search);
+
                         $query->where(function ($q) use ($nummer): void {
                             $q->where('id', $nummer)
                                 ->orWhere('parent_id', $nummer);
                         });
+
+                        if ($vendorId !== null) {
+                            $query->where('vendor_id', $vendorId);
+                        }
                     }),
                 TextColumn::make('shipping_status')
                     ->label('Versandstatus')

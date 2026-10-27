@@ -14,9 +14,8 @@ use Tests\Support\UploadTestHelpers;
  * führt je Artikel dessen Belegnummer auf.
  *
  * Die Belegnummer gilt je Position (`FK2024-3552`), denn jede Herstellerin
- * rechnet einzeln ab; ihre Gutschrift baut darauf auf und hängt nur ihre
- * Nutzer-ID an (`FK2024-3552-5186`). Damit steht auf keinem Blatt eine Zahl,
- * die es nicht vorher schon mit derselben Bedeutung gab.
+ * rechnet einzeln ab. Ab dem eigenen Gutschrift-Stichtag wird je Herstellerin
+ * gebündelt, mit Hauptbestellnummer plus Nutzer-ID. Ältere Gutschriften bleiben erhalten.
  *
  * Die Sammelrechnung gilt erst ab dem Stichtag aus
  * `app.invoice_bundle_cutoff_date`. Davor bekam jeder Artikel ein eigenes
@@ -43,6 +42,7 @@ beforeEach(function () {
     // Den Stichtag festnageln: Sonst entscheidet die .env des Rechners, welche
     // Belegform die Tests sehen.
     config(['app.invoice_bundle_cutoff_date' => '2026-09-30']);
+    config(['app.seller_credit_bundle_cutoff_at' => '2026-10-27T16:23:47+01:00']);
 });
 
 /**
@@ -51,6 +51,7 @@ beforeEach(function () {
 function invoiceOrder(int $positions = 2, array $headAttributes = [], array $positionAttributes = []): array
 {
     $buyer = UploadTestHelpers::buyer();
+    $category = UploadTestHelpers::category();
 
     $head = Order::create(array_merge([
         'user_id' => $buyer->id,
@@ -71,13 +72,14 @@ function invoiceOrder(int $positions = 2, array $headAttributes = [], array $pos
         'updated_at' => '2026-10-05 10:00:00',
     ], $headAttributes));
 
-    $children = collect(range(1, $positions))->map(function (int $i) use ($head, $buyer, $positionAttributes) {
+    $children = collect(range(1, $positions))->map(function (int $i) use ($head, $buyer, $category, $positionAttributes) {
         $vendor = UploadTestHelpers::seller();
 
         $product = \App\Product::create([
             'name' => "Artikel {$i} der Bestellung {$head->id}",
             'slug' => 'artikel-'.$i.'-'.$head->id,
             'user_id' => $vendor->id,
+            'category_id' => $category->id,
             'price' => 40.00,
             'quantity' => 1,
             'status' => 1,
@@ -149,15 +151,43 @@ it('gibt die Belegnummer je Position und nicht die der Bestellung', function () 
     expect($children[0]->invoiceNumber())->not->toBe($children[1]->invoiceNumber());
 });
 
-it('baut die Gutschrift auf der Belegnummer der Rechnung auf', function () {
-    [, $children] = invoiceOrder(1);
+it('baut die Gutschrift auf der Hauptbestellnummer und der Verkäuferinnen-ID auf', function () {
+    [$head, $children] = invoiceOrder(1, [
+        'id' => 5146,
+        'created_at' => '2026-10-27 15:23:47',
+    ], ['id' => 5147, 'vendor_id' => 5186]);
 
     $position = $children->first();
 
-    // Der Anhang der Nutzer-ID ist der Grund, warum sich die beiden Nummern
-    // nicht doppeln, obwohl beide Belege auf derselben Nummer stehen.
+    expect($head->orderNumber())->toBe('FK2026-5146');
     expect($position->gutschriftNumber())
-        ->toBe($position->invoiceNumber().'-'.$position->vendor_id);
+        ->toBe('FK2026-5146-5186')
+        ->not->toBe('FK2026-5147-5186');
+
+    // Die gespeicherte Belegnummer der Position bleibt erhalten.
+    expect($position->fresh()->invoice_no)->toBe('FK2026-5147');
+});
+
+it('nimmt für die Gutschrift auch am Jahreswechsel das Jahr der Hauptbestellung', function () {
+    [$head, $children] = invoiceOrder(1, [
+        'created_at' => '2026-12-31 23:59:59',
+    ], [
+        'created_at' => '2027-01-01 00:00:01',
+    ]);
+
+    $position = $children->first();
+
+    expect($position->gutschriftNumber())
+        ->toBe('FK2026-'.$head->id.'-'.$position->vendor_id);
+});
+
+it('verwendet für eine Gutschrift ohne Hauptbestellung die eigene Bestellnummer', function () {
+    $order = Order::create([
+        'vendor_id' => 5186,
+        'created_at' => '2026-10-05 10:00:00',
+    ]);
+
+    expect($order->gutschriftNumber())->toBe('FK2026-'.$order->id.'-5186');
 });
 
 /*
@@ -239,7 +269,7 @@ it('rechnet den Gutschein auf der Rechnung genau einmal ab', function () {
 });
 
 it('zeigt der Herstellerin ihre Gutschrift und nicht die der anderen', function () {
-    [, $children] = invoiceOrder(2);
+    [$head, $children] = invoiceOrder(2);
 
     $meine = $children->first();
     $andere = $children->last();
@@ -249,7 +279,8 @@ it('zeigt der Herstellerin ihre Gutschrift und nicht die der anderen', function 
 
     $response->assertOk()
         ->assertSee('Gutschrift')
-        ->assertSee($meine->gutschriftNumber())
+        ->assertSee($meine->invoiceNumber().'-'.$meine->vendor_id)
+        ->assertDontSee($head->orderNumber().'-'.$meine->vendor_id)
         ->assertSee($meine->product->name)
         // Die Nachbarposition derselben Bestellung gehört ihr nicht.
         ->assertDontSee($andere->product->name);
@@ -500,7 +531,7 @@ it('lässt die Gutschrift der Herstellerin vom Stichtag unberührt', function ()
     ]);
     [, $neu] = invoiceOrder(1);
 
-    // Dieselbe Regel vor und nach dem Stichtag: Belegnummer plus Nutzer-ID.
+    // Der Käufer-Stichtag verändert ältere Gutschriften nicht.
     foreach ([$alt->first(), $neu->first()] as $position) {
         expect($position->gutschriftNumber())
             ->toBe($position->invoiceNumber().'-'.$position->vendor_id);
@@ -549,4 +580,275 @@ it('gibt einer Bestellung ab dem Stichtag die Sammelrechnung', function () {
         ->assertOk()
         ->assertSee('zur Bestellung')
         ->assertDontSee('Rechnungs-Nr');
+});
+
+/** Drei Positionen: die ersten beiden gehören derselben Verkäuferin. */
+function bundledSellerCreditOrder(string $createdAt = '2026-10-27 15:23:47'): array
+{
+    [$head, $positions, $buyer] = invoiceOrder(3, ['created_at' => $createdAt]);
+    $positions[1]->update(['vendor_id' => $positions[0]->vendor_id]);
+
+    return [$head, $positions, $buyer];
+}
+
+it('wendet neue Gutschriften exakt ab dem festen Zeitpunkt auf die Hauptbestellung an', function ($date, $bundled) {
+    [$head, $positions] = bundledSellerCreditOrder($date);
+
+    foreach ($positions as $position) {
+        expect($position->usesBundledSellerCredit())->toBe($bundled)
+            ->and($position->gutschriftNumber())->toBe(
+                ($bundled ? $head->orderNumber() : $position->invoiceNumber()).'-'.$position->vendor_id
+            );
+    }
+
+    expect($head->sellerCreditGroups())->toHaveCount($bundled ? 2 : 3);
+})->with([
+    'direkt davor' => ['2026-10-27 15:23:46', false],
+    'genau ab Beginn' => ['2026-10-27 15:23:47', true],
+]);
+
+it('bewahrt die bisherigen Gutschriften der Beispielbestellung 5146', function () {
+    [$head, $positions] = invoiceOrder(2, [
+        'id' => 5146,
+        'created_at' => '2026-10-09 09:04:00',
+    ], ['vendor_id' => 5186]);
+
+    expect($positions[0]->gutschriftNumber())->toBe('FK2026-5147-5186')
+        ->and($positions[1]->gutschriftNumber())->toBe('FK2026-5148-5186')
+        ->and($head->sellerCreditGroups())->toHaveCount(2);
+
+    $positions[0]->update(['invoice_no' => 'FK2025-ARCHIV']);
+    expect($positions[0]->fresh()->gutschriftNumber())->toBe('FK2025-ARCHIV-5186');
+});
+
+it('hält alle Positionen einer älteren Bestellung auch nach dem Zeitpunkt im alten Format', function () {
+    [$head, $positions] = invoiceOrder(1, [
+        'created_at' => '2026-10-27 15:23:46',
+    ], ['created_at' => '2026-10-27 15:23:48']);
+
+    expect($head->usesBundledSellerCredit())->toBeFalse()
+        ->and($positions[0]->usesBundledSellerCredit())->toBeFalse()
+        ->and($positions[0]->gutschriftNumber())->toBe($positions[0]->invoiceNumber().'-'.$positions[0]->vendor_id);
+});
+
+it('zeigt über beide Positionslinks dieselbe gemeinsame Gutschrift nur für die eigene Verkäuferin', function () {
+    [$head, $positions] = bundledSellerCreditOrder();
+    $vendor = \App\Models\User::find($positions[0]->vendor_id);
+    $pages = [];
+
+    foreach ([$positions[0], $positions[1]] as $position) {
+        $response = $this->actingAs($vendor)->get('/invoice/'.$position->id)->assertOk()
+            ->assertViewHas('positions', fn ($items) => $items->modelKeys() === [$positions[0]->id, $positions[1]->id])
+            ->assertSee($head->orderNumber().'-'.$vendor->id)
+            ->assertSee($positions[0]->product->name)
+            ->assertSee($positions[1]->product->name)
+            ->assertDontSee($positions[2]->product->name)
+            ->assertSee('Gesamtbetrag');
+
+        $html = $response->getContent();
+        expect($html)->toContain('<strong>68.00 €</strong>');
+        $pages[] = $html;
+    }
+
+    expect($pages[0])->toBe($pages[1]);
+});
+
+it('stellt für eine andere Verkäuferin einen getrennten Beleg aus und verweigert fremde Positionslinks', function () {
+    [$head, $positions] = bundledSellerCreditOrder();
+    $vendor = \App\Models\User::find($positions[2]->vendor_id);
+
+    $this->actingAs($vendor)->get('/invoice/'.$positions[2]->id)->assertOk()
+        ->assertSee($head->orderNumber().'-'.$vendor->id)
+        ->assertSee($positions[2]->product->name)
+        ->assertDontSee($positions[0]->product->name)
+        ->assertDontSee($positions[1]->product->name);
+
+    $this->withoutExceptionHandling();
+    expect(fn () => $this->get('/invoice/'.$positions[0]->id))
+        ->toThrow(Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+});
+
+it('hält Gutschriften derselben Verkäuferin aus unterschiedlichen Bestellungen getrennt', function () {
+    [$first, $positions] = bundledSellerCreditOrder();
+    [$second, $otherPositions] = invoiceOrder(1, [
+        'created_at' => '2026-10-27 15:23:48',
+    ], ['vendor_id' => $positions[0]->vendor_id]);
+
+    expect($positions[0]->sellerCreditPositions()->modelKeys())->toBe([$positions[0]->id, $positions[1]->id])
+        ->and($otherPositions[0]->sellerCreditPositions()->modelKeys())->toBe([$otherPositions[0]->id])
+        ->and($positions[0]->gutschriftNumber())->not->toBe($otherPositions[0]->gutschriftNumber());
+});
+
+it('zeigt eine neue Gutschrift auch ohne übergeordnete Bestellung', function () {
+    [, $positions] = invoiceOrder(1, ['created_at' => '2026-10-27 15:23:47']);
+    $position = $positions[0];
+    $position->update(['parent_id' => null]);
+    $vendor = \App\Models\User::find($position->vendor_id);
+
+    $this->actingAs($vendor)->get('/invoice/'.$position->id)->assertOk()
+        ->assertViewHas('positions', fn ($items) => $items->modelKeys() === [$position->id])
+        ->assertSee('FK2026-'.$position->id.'-'.$vendor->id)
+        ->assertSee('Gesamtbetrag');
+});
+
+it('vergibt ohne zugeordnete Verkäuferin keine doppelten Gutschriftnummern', function () {
+    [$head, $positions] = invoiceOrder(2, ['created_at' => '2026-10-27 15:23:47'], ['vendor_id' => null]);
+
+    expect($head->sellerCreditGroups())->toHaveCount(2)
+        ->and($positions[0]->gutschriftNumber())->not->toBe($positions[1]->gutschriftNumber());
+});
+
+it('summiert Netto und Umsatzsteuer der gemeinsamen Gutschrift aus den gespeicherten Beträgen', function () {
+    [, $positions] = bundledSellerCreditOrder();
+
+    foreach ([$positions[0], $positions[1]] as $position) {
+        $position->update([
+            'vendor_total' => 11.90,
+            'seller_info' => ['is_pay_vat' => 1],
+        ]);
+    }
+
+    $vendor = \App\Models\User::find($positions[0]->vendor_id);
+    $html = $this->actingAs($vendor)->get('/invoice/'.$positions[0]->id)->assertOk()->getContent();
+
+    expect($html)->toContain('MwSt. (19 %)', '<strong>20.00 €</strong>', '<strong>3.80 €</strong>', '<strong>23.80 €</strong>');
+});
+
+it('zieht stornierte Positionen von der gemeinsamen Gutschrift ab, ohne die anderen zu stornieren', function () {
+    [, $positions] = bundledSellerCreditOrder();
+    $positions[0]->update(['status' => 3]);
+    $vendor = \App\Models\User::find($positions[0]->vendor_id);
+
+    $html = $this->actingAs($vendor)->get('/invoice/'.$positions[1]->id)->assertOk()->getContent();
+
+    expect($html)->toContain('Artikeln dieser Bestellung wurden storniert', '<strong>34.00 €</strong>')
+        ->not->toContain('GUTSCHRIFT WURDE STORNIERT');
+
+    $positions[1]->update(['status' => 3]);
+    $html = $this->get('/invoice/'.$positions[1]->id)->assertOk()->getContent();
+    expect($html)->toContain('GUTSCHRIFT WURDE STORNIERT', '<strong>0.00 €</strong>');
+});
+
+it('bündelt Gutschriften im Adminbereich und erhält Positionsanker für Auszahlungslinks', function () {
+    [$head, $positions] = bundledSellerCreditOrder();
+    \App\Models\Role::create(['id' => 1, 'name' => 'admin', 'display_name' => 'Admin']);
+    \Illuminate\Support\Facades\Schema::create('permissions', function ($table) {
+        $table->id();
+        $table->string('key');
+    });
+    \Illuminate\Support\Facades\Schema::create('permission_role', function ($table) {
+        $table->unsignedBigInteger('permission_id');
+        $table->unsignedBigInteger('role_id');
+    });
+
+    try {
+        $this->actingAs(UploadTestHelpers::user(['role_id' => 1]));
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('admin'));
+        $page = \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ViewOrder::class, [
+            'record' => $head->getRouteKey(),
+        ])->assertSuccessful();
+
+        $html = $page->html();
+        expect(substr_count($html, '<section class="invoice-document__section" id="seller-print-block-'))->toBe(2)
+            ->and($html)->toContain('id="seller-print-block-'.$positions[1]->id.'"', '<strong>68.00 €</strong>')
+            ->and(substr_count($html, 'Gutschrift-Nr. '.$positions[0]->gutschriftNumber()))->toBe(1);
+
+        [$legacy, $legacyPositions] = bundledSellerCreditOrder('2026-10-09 09:04:00');
+        $legacyHtml = \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ViewOrder::class, [
+            'record' => $legacy->getRouteKey(),
+        ])->assertSuccessful()->html();
+        expect(substr_count($legacyHtml, '<section class="invoice-document__section" id="seller-print-block-'))->toBe(3);
+
+        foreach ($legacyPositions as $position) {
+            expect($legacyHtml)->toContain($position->invoiceNumber().'-'.$position->vendor_id);
+        }
+
+        $list = \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class)
+            ->assertSuccessful()
+            ->assertCanSeeTableRecords([$head, $legacy]);
+        $articles = $list->instance()->getTable()->getColumn('articles');
+        $newState = $articles->record($head)->getState();
+        expect($newState)->toContain('Gutschrift-Nr. '.$positions[0]->gutschriftNumber())
+            ->not->toContain('Beleg-Nr. '.$positions[0]->invoiceNumber());
+        expect(substr_count($newState, 'Gutschrift-Nr. '.$positions[0]->gutschriftNumber()))->toBe(1);
+        $articles->clearCachedState();
+        expect($articles->record($legacy)->getState())->toContain('Beleg-Nr. '.$legacyPositions[0]->invoiceNumber())
+            ->not->toContain('Gutschrift-Nr.');
+
+        // Die bestehende Namenssuche nutzt MySQLs CONCAT_WS; für SQLite nachbilden.
+        \Illuminate\Support\Facades\DB::connection()->getPdo()->sqliteCreateFunction('CONCAT_WS',
+            fn ($separator, ...$values) => implode($separator, array_filter($values, fn ($value) => $value !== null))
+        );
+
+        $payouts = \Livewire\Livewire::test(\App\Filament\Resources\Payouts\Pages\ListPayouts::class)
+            ->assertSuccessful()
+            ->assertCanSeeTableRecords($positions->merge($legacyPositions));
+        $numberColumn = $payouts->instance()->getTable()->getColumn('id');
+        expect($numberColumn->getLabel())->toBe('Gutschrift-Nr.');
+
+        foreach ($positions->merge($legacyPositions) as $position) {
+            $numberColumn->clearCachedState();
+            expect($numberColumn->record($position)->getState())
+                ->toContain($position->gutschriftNumber(), $position->orderNumber());
+        }
+
+        $unpaid = Order::create(['parent_id' => $head->id, 'vendor_id' => $positions[0]->vendor_id, 'payment_status' => 0, 'status' => 1]);
+        $cancelled = Order::create(['parent_id' => $head->id, 'vendor_id' => $positions[0]->vendor_id, 'payment_status' => 1, 'status' => 3]);
+
+        $payouts->searchTable($positions[0]->gutschriftNumber())
+            ->assertCanSeeTableRecords([$positions[0], $positions[1]])
+            ->assertCanNotSeeTableRecords([$positions[2], $unpaid, $cancelled, ...$legacyPositions]);
+        $payouts->searchTable($legacyPositions[1]->gutschriftNumber())
+            ->assertCanSeeTableRecords([$legacyPositions[1]])
+            ->assertCanNotSeeTableRecords([$legacyPositions[0], $legacyPositions[2], ...$positions]);
+        $payouts->searchTable($head->orderNumber())->assertCanSeeTableRecords($positions);
+
+        // Ein kopierter Suchlink darf nicht zusätzlich vom alten scopeFilter gefiltert werden.
+        \Livewire\Livewire::withQueryParams(['search' => $positions[0]->gutschriftNumber()])
+            ->test(\App\Filament\Resources\Payouts\Pages\ListPayouts::class)
+            ->assertSuccessful()
+            ->assertCanSeeTableRecords([$positions[0], $positions[1]])
+            ->assertCanNotSeeTableRecords([$positions[2], $unpaid, $cancelled, ...$legacyPositions]);
+    } finally {
+        \Illuminate\Support\Facades\Schema::dropIfExists('permission_role');
+        \Illuminate\Support\Facades\Schema::dropIfExists('permissions');
+    }
+});
+
+it('zeigt in Verkäufen und Auszahlungen dieselbe Gutschrift- und Hauptbestellnummer wie auf dem Beleg', function ($date) {
+    [$head, $positions] = bundledSellerCreditOrder($date);
+    $vendor = \App\Models\User::find($positions[0]->vendor_id);
+    $this->actingAs($vendor);
+
+    foreach (['seller.sales', 'seller.payments'] as $route) {
+        $response = $this->get(route($route))->assertOk();
+        $text = preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($response->getContent())));
+
+        foreach ([$positions[0], $positions[1]] as $position) {
+            expect($text)->toContain('Bestellnummer: '.$head->orderNumber(), 'Gutschrift-Nr.: '.$position->gutschriftNumber());
+            $this->get(route('invoice', $position))->assertOk()->assertSee($position->gutschriftNumber());
+        }
+
+        expect($text)->not->toContain($positions[2]->product->name);
+    }
+})->with(['2026-10-09 09:04:00', '2026-10-27 15:23:47']);
+
+it('verwendet für die Versandbestätigung aus dem Dashboard die Hauptbestellnummer', function () {
+    \Illuminate\Support\Facades\Mail::fake();
+    [, $positions] = bundledSellerCreditOrder();
+    $position = $positions[0];
+    $vendor = \App\Models\User::find($position->vendor_id);
+
+    $this->actingAs($vendor)->post(route('seller.order.update', $position), [
+        'shipping_method' => 'DHL',
+        'shipping_date' => '2026-10-28',
+        'tracking_Id' => 'TEST-123',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\UserNotifyEmail::class, function ($mail) use ($position) {
+        expect($mail->data->subject)->toBe('Versandbestätigung '.$position->orderNumberWithPosition())
+            ->and($mail->data->body)->toContain('Bestellnummer '.$position->orderNumberWithPosition());
+
+        return true;
+    });
 });

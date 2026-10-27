@@ -104,6 +104,10 @@ return [
 
     'invoice_bundle_cutoff_date' => env('INVOICE_BUNDLE_CUTOFF_DATE', '2026-09-30'),
 
+    // Ab diesem festen Zeitpunkt: eine Gutschrift je Bestellung und Verkäuferin.
+    // Ältere Bestellungen behalten ihre Positionsbelege und deren Nummern.
+    'seller_credit_bundle_cutoff_at' => '2026-10-27T16:23:47+01:00',
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

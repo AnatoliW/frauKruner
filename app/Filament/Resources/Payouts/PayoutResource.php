@@ -57,7 +57,7 @@ class PayoutResource extends BaseAdminResource
             ->paid()
             ->active()
             ->children()
-            ->filter()
+            // Filament übernimmt die Suche; scopeFilter würde URL-Suchen doppelt einschränken.
             ->with([
                 'parent',
                 'vendor.method',

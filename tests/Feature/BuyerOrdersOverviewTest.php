@@ -194,3 +194,21 @@ it('verlinkt bei einer Bestellung vor dem Stichtag je Artikel eine Rechnung', fu
     // Eine Sammelrechnung gab es für diese Bestellung nie.
     expect($html)->not->toContain('/invoice/'.$head->id);
 });
+
+it('zeigt nach dem Gutschrift-Stichtag die Hauptbestellnummer und die Belegnummern der Käuferrechnung', function () {
+    [$head, $positions, $buyer] = buyerOrder(2, ['created_at' => '2026-10-27 15:23:47']);
+    $positions[1]->update(['vendor_id' => $positions[0]->vendor_id]);
+
+    $dashboard = $this->actingAs($buyer)->get(route('buyer.orders'))->assertOk()->getContent();
+    $invoice = $this->get(route('invoice', $head))->assertOk()->getContent();
+
+    expect($dashboard)->toContain('Bestellung '.$head->orderNumber())
+        ->and($invoice)->toContain($head->orderNumber());
+
+    foreach ($positions as $position) {
+        expect($dashboard)->toContain('Beleg-Nr. '.$position->invoiceNumber())
+            ->and($invoice)->toContain($position->invoiceNumber());
+    }
+
+    expect($dashboard)->not->toContain($positions[0]->gutschriftNumber());
+});

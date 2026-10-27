@@ -25,7 +25,7 @@ class PagesController extends Controller
 
     public function sales()
     {
-        $orders = Order::where('vendor_id', Auth()->id())->paid()->latest()->get();
+        $orders = Order::where('vendor_id', Auth()->id())->with('parent')->paid()->latest()->get();
 
         return view('auth.seller.pages.sales', compact('orders'));
     }
@@ -54,7 +54,7 @@ class PagesController extends Controller
 
     public function payments()
     {
-        $payments = Order::where('vendor_id', Auth()->id())->where('status', 1)->latest()->get();
+        $payments = Order::where('vendor_id', Auth()->id())->with('parent')->where('status', 1)->latest()->get();
 
         return view('auth.seller.pages.payments', compact('payments'));
     }
@@ -94,7 +94,7 @@ class PagesController extends Controller
         ]);
 
         // Build the initial part of your mail body
-        $body = 'deine Bestellung mit der Bestellnummer ' . $order->id . ' wurde/wird am '
+        $body = 'deine Bestellung mit der Bestellnummer ' . $order->orderNumberWithPosition() . ' wurde/wird am '
             . $order->shipping_date->format('d.m.Y')
             . ' versendet.';
 
@@ -115,7 +115,7 @@ class PagesController extends Controller
                   <a href="tel:03096607799">030 96607799</a>.<br><br>';
 
         $mail_data = [
-            'subject' => 'Versandbestätigung ' . $order->id,
+            'subject' => 'Versandbestätigung ' . $order->orderNumberWithPosition(),
             'title' => 'Hi ' . $order->first_name . ',',
             'body' => $body,
             'button_link' => route('shop'),

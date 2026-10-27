@@ -3,8 +3,8 @@
 @php
     // Drei Belege aus einer Vorlage:
     //
-    //  - Die Herstellerin sieht die GUTSCHRIFT fuer ihre Position. Jede
-    //    rechnet einzeln ab, deshalb gilt sie je Position.
+    //  - Die Herstellerin sieht ihre GUTSCHRIFT: ab dem eigenen Stichtag
+    //    gemeinsam für ihre Positionen, davor unverändert je Position.
     //  - Alle anderen (Kundin, Adminbereich) sehen die RECHNUNG, und deren Form
     //    haengt am Stichtag aus app.invoice_bundle_cutoff_date:
     //
@@ -17,13 +17,12 @@
     //      Bezug - die Nummer, die die Kundin bezahlt hat und die auf ihrem
     //      Kontoauszug steht - und fuehrt je Artikel dessen BELEGNUMMER auf.
     //
-    // Die Belegnummer gilt in beiden Faellen je Position, und die Gutschrift
-    // der Herstellerin baut darauf auf (Order::gutschriftNumber()). Sie steht
-    // fest in der Spalte invoice_no, damit eine Formataenderung archivierte
-    // Belege nicht umschreiben kann.
+    // Die Belegnummer gilt je Position und steht fest in invoice_no.
+    // Neue Gutschriften nennen Hauptbestellnummer plus Herstellerinnen-ID,
+    // ältere behalten ihre Nummer (Order::gutschriftNumber()).
     //
     // $positions kommt aus HomeController::invoice(): fuer Gutschrift und
-    // Einzelrechnung die eine Position, fuer die Sammelrechnung alle.
+    // Einzelrechnung die eine Position, für Sammelbelege die zugehörigen Positionen.
     $istGutschrift = (int) (Auth()->user()->role_id ?? 0) === 3;
 
     $positions = $positions ?? collect([$order]);
@@ -202,6 +201,9 @@
                                         <div class="col-sm-12">
                                             <h3 class="panel-title">Details</h3>
                                             @if ($istGutschrift)
+                                                @if ($order->usesBundledSellerCredit())
+                                                    <x-invoice.seller-positions :positions="$positions" class="table table-hover no-footer" />
+                                                @else
                                                 <table class="table table-hover no-footer">
                                                     <thead>
                                                         <tr role="row">
@@ -333,6 +335,7 @@
 
                                                     </tbody>
                                                 </table>
+                                                @endif
                                             @else
                                                 {{-- Eine Rechnung fuer die ganze Bestellung: je Artikel eine Zeile,
                                                      darunter Zwischensumme, Gutschein und Gesamtbetrag. Vorher gab es
@@ -418,9 +421,14 @@
                                                     {{-- Warum mehrere Belegnummern auf einer Rechnung stehen. --}}
                                                     <p class="text-muted">
                                                         Diese Rechnung umfasst alle {{ $positions->count() }} Artikel der
+                                                        @if ($order->usesBundledSellerCredit())
+                                                        Bestellung {{ $order->orderNumber() }}. Die Artikel tragen
+                                                        je eine eigene Beleg-Nr.; die Gutschriften werden je Herstellerin zusammengefasst.
+                                                        @else
                                                         Bestellung {{ $order->orderNumber() }}. Die Artikel kommen von
                                                         unterschiedlichen Herstellerinnen, werden einzeln versendet und
                                                         tragen deshalb je eine eigene Beleg-Nr.
+                                                        @endif
                                                     </p>
                                                 @endif
 

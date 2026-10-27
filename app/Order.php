@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
 class Order extends Model
@@ -561,9 +562,8 @@ class Order extends Model
      * Ein Beleg gilt je Position, denn jede Herstellerin rechnet einzeln ab.
      * Die Nummer ist deshalb an die Position gebunden und nicht an den Kopf der
      * Bestellung: Bei einem Artikel gibt es eine Belegnummer, bei drei Artikeln
-     * drei. Die Gutschrift der Herstellerin baut auf derselben Nummer auf und
-     * hängt nur ihre Nutzer-ID an (siehe gutschriftNumber()) – so gehören
-     * Rechnung und Gutschrift sichtbar zusammen, ohne sich zu doppeln.
+     * drei. Neue Gutschriften nennen die Hauptbestellnummer plus Herstellerinnen-ID;
+     * ältere behalten die Positionsnummer (siehe gutschriftNumber()).
      *
      * Die Nummer, die die Kundin bezahlt hat, ist eine andere: Sie steht auf
      * dem Kontoauszug, gilt für die ganze Bestellung und heißt hier
@@ -629,20 +629,46 @@ class Order extends Model
     }
 
     /**
-     * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-12697-45`.
+     * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-5146-5186`.
      *
-     * Gilt je Position, weil jede Verkäuferin einzeln abrechnet: die
-     * Belegnummer der Position plus ihre Nutzer-ID. Der Anhang ist der Grund,
-     * warum sich die Nummer nicht mit der Rechnung der Kundin doppelt, obwohl
-     * beide Belege auf derselben Nummer stehen.
-     *
-     * Baut bewusst auf invoiceNumber() auf: Sonst laufen die beiden Nummern
-     * auseinander, sobald eine von beiden angefasst wird – genau das war
-     * zwischen dem 30.09.2026 und diesem Rückbau der Fall.
+     * Erst ab dem festen Stichtag gilt Hauptbestellnummer plus Nutzer-ID.
+     * Ältere Gutschriften behalten die gespeicherte Positionsnummer plus Nutzer-ID.
      */
     public function gutschriftNumber(): string
     {
-        return $this->invoiceNumber().'-'.($this->vendor_id ?? $this->vendor?->id);
+        $vendorId = $this->vendor_id ?? $this->vendor?->id;
+        $number = $vendorId && $this->usesBundledSellerCredit() ? $this->orderNumber() : $this->invoiceNumber();
+
+        return $number.'-'.$vendorId;
+    }
+
+    public function usesBundledSellerCredit(): bool
+    {
+        return ($this->mainOrder()->created_at ?? Carbon::now())->gte(
+            Carbon::parse(config('app.seller_credit_bundle_cutoff_at'))
+        );
+    }
+
+    /** @return Collection<int, Collection<int, Order>> */
+    public function sellerCreditGroups(): Collection
+    {
+        $order = $this->mainOrder();
+        $positions = $order->childrens->isNotEmpty() ? $order->childrens : $order->newCollection([$order]);
+        $bundle = $order->usesBundledSellerCredit();
+
+        return $positions->sortBy('id')->groupBy(fn (self $position): string =>
+            $bundle && $position->vendor_id
+                ? 'vendor-'.$position->vendor_id
+                : 'position-'.$position->getKey()
+        )->values();
+    }
+
+    /** @return Collection<int, Order> */
+    public function sellerCreditPositions(): Collection
+    {
+        return $this->sellerCreditGroups()->first(
+            fn (Collection $positions): bool => $positions->contains('id', $this->getKey())
+        ) ?? $this->newCollection([$this]);
     }
 
     /**
