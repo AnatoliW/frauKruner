@@ -43,6 +43,7 @@ beforeEach(function () {
     // Belegform die Tests sehen.
     config(['app.invoice_bundle_cutoff_date' => '2026-09-30']);
     config(['app.seller_credit_bundle_cutoff_at' => '2026-10-27T16:23:47+01:00']);
+    config(['app.seller_credit_position_cutoff_at' => '2026-10-28T12:00:00+01:00']);
 });
 
 /**
@@ -848,6 +849,173 @@ it('verwendet für die Versandbestätigung aus dem Dashboard die Hauptbestellnum
     \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\UserNotifyEmail::class, function ($mail) use ($position) {
         expect($mail->data->subject)->toBe('Versandbestätigung '.$position->orderNumberWithPosition())
             ->and($mail->data->body)->toContain('Bestellnummer '.$position->orderNumberWithPosition());
+
+        return true;
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Ab app.seller_credit_position_cutoff_at: Gutschrift je Artikel mit Pos.
+|--------------------------------------------------------------------------
+*/
+
+const POSITION_CREDIT_DATE = '2026-10-28 11:00:00';
+
+it('stellt Gutschriften exakt ab dem zweiten Zeitpunkt wieder je Artikel aus', function ($date, $neu) {
+    [$head, $positions] = bundledSellerCreditOrder($date);
+    $vendor = $positions[0]->vendor_id;
+
+    expect($head->usesPositionSellerCredit())->toBe($neu)
+        ->and($head->sellerCreditGroups())->toHaveCount($neu ? 3 : 2)
+        ->and(array_map(fn ($p) => $p->gutschriftNumber(), $positions->all()))->toBe([
+            $head->orderNumber().'-'.$vendor.($neu ? '-1' : ''),
+            $head->orderNumber().'-'.$vendor.($neu ? '-2' : ''),
+            $head->orderNumber().'-'.$positions[2]->vendor_id,
+        ]);
+})->with([
+    'direkt davor' => ['2026-10-28 10:59:59', false],
+    'genau ab Beginn' => [POSITION_CREDIT_DATE, true],
+]);
+
+it('nummeriert Gutschriften je Artikel wie im Beispiel FK2026-5149', function () {
+    [$head, $positions] = invoiceOrder(3, ['id' => 5149, 'created_at' => POSITION_CREDIT_DATE]);
+    $andere = $positions[1]->vendor_id;
+
+    // Nur ein Artikel der Verkäuferin: ohne Pos.
+    expect($positions[1]->gutschriftNumber())->toBe('FK2026-5149-'.$andere);
+
+    // Zwei Artikel derselben Verkäuferin auf Pos. 1 und 3: die Pos. der Rechnung,
+    // nicht ihr eigener Zähler.
+    $positions[0]->update(['vendor_id' => 5680]);
+    $positions[2]->update(['vendor_id' => 5680]);
+
+    expect($positions[0]->gutschriftNumber())->toBe('FK2026-5149-5680-1')
+        ->and($positions[1]->gutschriftNumber())->toBe('FK2026-5149-'.$andere)
+        ->and($positions[2]->gutschriftNumber())->toBe('FK2026-5149-5680-3');
+});
+
+it('zeigt der Kundin die Pos. erst ab dem zweiten Zeitpunkt', function ($date, $mitPos) {
+    [$head, $children, $buyer] = invoiceOrder(2, ['created_at' => $date]);
+
+    $response = $this->actingAs($buyer)->get('/invoice/'.$head->id)->assertOk();
+
+    if (! $mitPos) {
+        $response->assertDontSee('<th>Pos.</th>', false);
+
+        return;
+    }
+
+    $response->assertSeeInOrder([
+        '<th>Pos.</th>',
+        '<td>1</td>', $children[0]->product->name,
+        '<td>2</td>', $children[1]->product->name,
+        'colspan="3"', 'Gesamtbetrag',
+    ], false);
+})->with([
+    'davor' => ['2026-10-27 15:23:47', false],
+    'danach' => [POSITION_CREDIT_DATE, true],
+]);
+
+it('stellt derselben Verkäuferin je Artikel eine eigene Gutschrift aus', function () {
+    [$head, $positions] = bundledSellerCreditOrder(POSITION_CREDIT_DATE);
+    $vendor = \App\Models\User::find($positions[0]->vendor_id);
+
+    foreach ([[$positions[0], $positions[1], 1], [$positions[1], $positions[0], 2]] as [$position, $andere, $pos]) {
+        $html = $this->actingAs($vendor)->get('/invoice/'.$position->id)->assertOk()
+            ->assertViewHas('positions', fn ($items) => $items->modelKeys() === [$position->id])
+            ->assertSee('Gutschrift-Nr. '.$head->orderNumber().'-'.$vendor->id.'-'.$pos)
+            ->assertSee($position->product->name)
+            ->assertDontSee($andere->product->name)
+            ->assertDontSee($positions[2]->product->name)
+            ->getContent();
+
+        expect($html)->toContain('<strong>34.00 €</strong>')->not->toContain('68.00 €');
+    }
+});
+
+it('storniert ab dem zweiten Zeitpunkt nur die Gutschrift des stornierten Artikels', function () {
+    [, $positions] = bundledSellerCreditOrder(POSITION_CREDIT_DATE);
+    $positions[0]->update(['status' => 3]);
+    $vendor = \App\Models\User::find($positions[0]->vendor_id);
+
+    $html = $this->actingAs($vendor)->get('/invoice/'.$positions[1]->id)->assertOk()->getContent();
+    expect($html)->toContain('<strong>34.00 €</strong>')->not->toContain('storniert', 'STORNIERT');
+
+    $html = $this->get('/invoice/'.$positions[0]->id)->assertOk()->getContent();
+    expect($html)->toContain('GUTSCHRIFT WURDE STORNIERT', '<strong>0.00 €</strong>');
+});
+
+it('zeigt im Adminbereich ab dem zweiten Zeitpunkt je Artikel eine Gutschrift und findet sie mit Pos.', function () {
+    [$head, $positions] = bundledSellerCreditOrder(POSITION_CREDIT_DATE);
+    \App\Models\Role::create(['id' => 1, 'name' => 'admin', 'display_name' => 'Admin']);
+    \Illuminate\Support\Facades\Schema::create('permissions', function ($table) {
+        $table->id();
+        $table->string('key');
+    });
+    \Illuminate\Support\Facades\Schema::create('permission_role', function ($table) {
+        $table->unsignedBigInteger('permission_id');
+        $table->unsignedBigInteger('role_id');
+    });
+
+    try {
+        $this->actingAs(UploadTestHelpers::user(['role_id' => 1]));
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('admin'));
+        $html = \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ViewOrder::class, [
+            'record' => $head->getRouteKey(),
+        ])->assertSuccessful()->html();
+
+        expect(substr_count($html, '<section class="invoice-document__section" id="seller-print-block-'))->toBe(3)
+            ->and($html)->toContain('<th>Pos.</th>', 'colspan="6"')->not->toContain('68.00 €');
+
+        foreach ($positions as $position) {
+            expect($html)->toContain('<section class="invoice-document__section" id="seller-print-block-'.$position->id.'"')
+                ->and(substr_count($html, 'Gutschrift-Nr. '.$position->gutschriftNumber().' '))->toBe(1);
+        }
+
+        $articles = \Livewire\Livewire::test(\App\Filament\Resources\Orders\Pages\ListOrders::class)
+            ->instance()->getTable()->getColumn('articles');
+        $state = $articles->record($head)->getState();
+
+        foreach ($positions as $position) {
+            expect($state)->toContain('Gutschrift-Nr. '.$position->gutschriftNumber().'<');
+        }
+
+        \Illuminate\Support\Facades\DB::connection()->getPdo()->sqliteCreateFunction('CONCAT_WS',
+            fn ($separator, ...$values) => implode($separator, array_filter($values, fn ($value) => $value !== null))
+        );
+
+        $payouts = \Livewire\Livewire::test(\App\Filament\Resources\Payouts\Pages\ListPayouts::class);
+        $payouts->searchTable($positions[1]->gutschriftNumber())
+            ->assertCanSeeTableRecords([$positions[1]])
+            ->assertCanNotSeeTableRecords([$positions[0], $positions[2]]);
+        // Ohne Pos.: alle Artikel dieser Verkäuferin in der Bestellung.
+        $payouts->searchTable($head->orderNumber().'-'.$positions[0]->vendor_id)
+            ->assertCanSeeTableRecords([$positions[0], $positions[1]])
+            ->assertCanNotSeeTableRecords([$positions[2]]);
+    } finally {
+        \Illuminate\Support\Facades\Schema::dropIfExists('permission_role');
+        \Illuminate\Support\Facades\Schema::dropIfExists('permissions');
+    }
+});
+
+it('nennt in der Versandbestätigung ab dem zweiten Zeitpunkt Artikel und Bestellnummer mit Pos.', function () {
+    \Illuminate\Support\Facades\Mail::fake();
+    [$head, $positions] = bundledSellerCreditOrder(POSITION_CREDIT_DATE);
+    $position = $positions[1];
+    $vendor = \App\Models\User::find($position->vendor_id);
+
+    $this->actingAs($vendor)->post(route('seller.order.update', $position), [
+        'shipping_method' => 'DHL',
+        'shipping_date' => '2026-10-28',
+        'tracking_Id' => 'TEST-123',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\UserNotifyEmail::class, function ($mail) use ($head, $position) {
+        $nummer = 'Bestellung '.$head->orderNumber().' (Position 2 von 3)';
+
+        expect($mail->data->subject)->toBe('Versandbestätigung „'.$position->product->name.'“ – '.$nummer)
+            ->and($mail->data->body)->toContain('dein Artikel „'.e($position->product->name).'“ aus '.$nummer);
 
         return true;
     });

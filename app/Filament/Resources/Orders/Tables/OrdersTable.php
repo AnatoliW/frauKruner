@@ -34,7 +34,8 @@ class OrdersTable
      */
     private static function positions(Order $order)
     {
-        $positions = $order->childrens;
+        // Nach ID: dieselbe Reihenfolge wie die Pos. auf der Rechnung.
+        $positions = $order->childrens->sortBy('id')->values();
 
         return $positions->isNotEmpty() ? $positions : collect([$order]);
     }
@@ -120,7 +121,8 @@ class OrdersTable
                 // Artikel und Verkäuferin hängen an den Positionen: Bei mehreren
                 // Artikeln stehen hier mehrere Zeilen untereinander.
                 //
-                // Neue Bestellungen nennen die gemeinsame Gutschrift der Verkäuferin.
+                // Neue Bestellungen nennen die Gutschrift-Nr. (zwischen den beiden
+                // Stichtagen gemeinsam je Verkäuferin, danach je Artikel).
                 // Ältere behalten die bisher angezeigte Positions-Belegnummer.
                 TextColumn::make('articles')
                     ->label('Artikel')

@@ -55,8 +55,8 @@
                                 href="{{ route('buyer.pre.payment', $order) }}">Bezahlen</a>
                         @endif
 
-                        {{-- Eine Rechnung für die ganze Bestellung. Die Beleg-Nr. je
-                             Artikel steht darauf in der Positionstabelle. --}}
+                        {{-- Eine Rechnung für die ganze Bestellung, mit der
+                             Bestellnummer als einziger Nummer für die Kundin. --}}
                         @if ($istBezahlt && $istSammelrechnung)
                             <a href="{{ route('invoice', $order) }}" class="btn btn-secondary">Rechnung</a>
                         @endif
@@ -123,13 +123,11 @@
                             {{-- Video, Fotos und Bewertung gelten je Artikel. --}}
 
                             {{-- Vor dem Stichtag hat jeder Artikel seine eigene
-                                 Rechnung; danach steht seine Beleg-Nr. als Hinweis
-                                 da, damit sich die Zeile auf der Sammelrechnung
-                                 wiederfinden lässt. --}}
+                                 Rechnung, und deren Nummer ist die Beleg-Nr. Danach
+                                 kennt die Kundin nur die Bestellnummer im Kopf der
+                                 Karte; die Beleg-Nr. der Positionen gehen sie nichts an. --}}
                             @if ($istBezahlt && ! $istSammelrechnung)
                                 <a href="{{ route('invoice', $position) }}" class="btn btn-secondary">Rechnung</a>
-                            @endif
-                            @if ($istBezahlt)
                                 <span class="text-grey small d-block">
                                     Beleg-Nr. {{ $position->invoiceNumber() }}
                                 </span>

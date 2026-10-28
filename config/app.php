@@ -108,6 +108,12 @@ return [
     // Ältere Bestellungen behalten ihre Positionsbelege und deren Nummern.
     'seller_credit_bundle_cutoff_at' => '2026-10-27T16:23:47+01:00',
 
+    // Ab diesem festen Zeitpunkt (Datum der Bestellung): wieder eine Gutschrift
+    // je Artikel. Gutschrift-Nr. bei mehreren Artikeln derselben Verkäuferin
+    // mit Pos. (`FK2026-5149-5680-2`), Pos.-Spalte auf der Rechnung, Artikel
+    // und Rechnungsbezug in der Versandmail. VOR DEM UPLOAD FESTLEGEN.
+    'seller_credit_position_cutoff_at' => '2026-10-28T15:19:18+01:00',
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

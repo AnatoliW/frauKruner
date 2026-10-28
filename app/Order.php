@@ -629,19 +629,51 @@ class Order extends Model
     }
 
     /**
-     * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-5146-5186`.
+     * Nummer der Gutschrift an die Verkäuferin. Drei Zeiträume, je nach Datum
+     * der Hauptbestellung:
      *
-     * Erst ab dem festen Stichtag gilt Hauptbestellnummer plus Nutzer-ID.
-     * Ältere Gutschriften behalten die gespeicherte Positionsnummer plus Nutzer-ID.
+     *  - vor `app.seller_credit_bundle_cutoff_at`: gespeicherte Positionsnummer
+     *    plus Nutzer-ID, eine Gutschrift je Position.
+     *  - ab dort: Hauptbestellnummer plus Nutzer-ID, z. B. `FK2026-5146-5186`,
+     *    eine Gutschrift je Verkäuferin.
+     *  - ab `app.seller_credit_position_cutoff_at`: wieder eine Gutschrift je
+     *    Position, Nummer wie eben. Hat dieselbe Verkäuferin mehrere Artikel,
+     *    hängt die Pos. aus der Rechnung der Kundin dahinter:
+     *    `FK2026-5149-5680-2` ist ihr Artikel auf Pos. 2.
      */
     public function gutschriftNumber(): string
     {
         $vendorId = $this->vendor_id ?? $this->vendor?->id;
-        $number = $vendorId && $this->usesBundledSellerCredit() ? $this->orderNumber() : $this->invoiceNumber();
 
-        return $number.'-'.$vendorId;
+        if (! $vendorId || ! $this->usesBundledSellerCredit()) {
+            return $this->invoiceNumber().'-'.$vendorId;
+        }
+
+        $number = $this->orderNumber().'-'.$vendorId;
+
+        if (! $this->parent_id || ! $this->usesPositionSellerCredit()) {
+            return $number;
+        }
+
+        // Alle Positionen der Bestellung in Rechnungsreihenfolge (nach ID, wie
+        // positionInOrder()) – eine Abfrage für Pos. und Anzahl je Verkäuferin.
+        $vendors = static::query()
+            ->where('parent_id', $this->parent_id)
+            ->orderBy('id')
+            ->pluck('vendor_id', 'id')
+            ->mapWithKeys(fn ($vendor, $id) => [(int) $id => (int) $vendor]);
+
+        if ($vendors->filter(fn (int $vendor) => $vendor === (int) $vendorId)->count() < 2) {
+            return $number;
+        }
+
+        return $number.'-'.($vendors->keys()->search((int) $this->getKey(), true) + 1);
     }
 
+    /**
+     * Gutschrift-Nr. aus Hauptbestellnummer plus Nutzer-ID? Gilt ab
+     * `app.seller_credit_bundle_cutoff_at`, nach Datum der Hauptbestellung.
+     */
     public function usesBundledSellerCredit(): bool
     {
         return ($this->mainOrder()->created_at ?? Carbon::now())->gte(
@@ -649,12 +681,28 @@ class Order extends Model
         );
     }
 
-    /** @return Collection<int, Collection<int, Order>> */
+    /**
+     * Wieder eine Gutschrift je Position, mit Pos. in Gutschrift-Nr., Rechnung
+     * und Versandmail? Gilt ab `app.seller_credit_position_cutoff_at`.
+     */
+    public function usesPositionSellerCredit(): bool
+    {
+        return ($this->mainOrder()->created_at ?? Carbon::now())->gte(
+            Carbon::parse(config('app.seller_credit_position_cutoff_at'))
+        );
+    }
+
+    /**
+     * Die Gutschriften der Bestellung, je Gutschrift ihre Positionen. Gebündelt
+     * je Verkäuferin wird nur zwischen den beiden Stichtagen.
+     *
+     * @return Collection<int, Collection<int, Order>>
+     */
     public function sellerCreditGroups(): Collection
     {
         $order = $this->mainOrder();
         $positions = $order->childrens->isNotEmpty() ? $order->childrens : $order->newCollection([$order]);
-        $bundle = $order->usesBundledSellerCredit();
+        $bundle = $order->usesBundledSellerCredit() && ! $order->usesPositionSellerCredit();
 
         return $positions->sortBy('id')->groupBy(fn (self $position): string =>
             $bundle && $position->vendor_id

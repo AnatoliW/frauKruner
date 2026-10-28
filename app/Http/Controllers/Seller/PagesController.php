@@ -93,10 +93,16 @@ class PagesController extends Controller
             'shipping_date' => $request->shipping_date,
         ]);
 
-        // Build the initial part of your mail body
-        $body = 'deine Bestellung mit der Bestellnummer ' . $order->orderNumberWithPosition() . ' wurde/wird am '
-            . $order->shipping_date->format('d.m.Y')
-            . ' versendet.';
+        // Ab app.seller_credit_position_cutoff_at: der Artikel und die Nummer,
+        // die die Kundin von ihrer Rechnung kennt (Bestellnummer mit Pos.),
+        // damit bei mehreren Sendungen klar ist, welche gemeint ist.
+        $artikel = $order->usesPositionSellerCredit() ? ($order->product_name ?? $order->product?->name) : null;
+        $nummer = 'Bestellung ' . $order->orderNumberWithPosition();
+
+        $body = (filled($artikel)
+                ? 'dein Artikel „' . e($artikel) . '“ aus ' . $nummer
+                : 'deine Bestellung mit der Bestellnummer ' . $order->orderNumberWithPosition())
+            . ' wurde/wird am ' . $order->shipping_date->format('d.m.Y') . ' versendet.';
 
         // Conditionally add shipping method
         if (!empty($request->shipping_method)) {
@@ -115,7 +121,7 @@ class PagesController extends Controller
                   <a href="tel:03096607799">030 96607799</a>.<br><br>';
 
         $mail_data = [
-            'subject' => 'Versandbestätigung ' . $order->orderNumberWithPosition(),
+            'subject' => 'Versandbestätigung ' . (filled($artikel) ? '„' . $artikel . '“ – ' . $nummer : $order->orderNumberWithPosition()),
             'title' => 'Hi ' . $order->first_name . ',',
             'body' => $body,
             'button_link' => route('shop'),

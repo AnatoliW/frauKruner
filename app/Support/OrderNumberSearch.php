@@ -12,6 +12,7 @@ namespace App\Support;
  *   `5131`               die nackte Nummer
  *   `FK2026-5131`        so steht sie auf dem Beleg und auf dem Kontoauszug
  *   `FK2026-5131-12034`  die Gutschrift-Nr. der Herstellerin
+ *   `FK2026-5131-12034-2` dieselbe, bei mehreren Artikeln mit Pos. aus der Rechnung
  *   ` 5131 `             mit Leerzeichen aus der Zwischenablage
  *
  * Welche Spalten dann verglichen werden, entscheidet jede Liste selbst – die
@@ -24,11 +25,21 @@ class OrderNumberSearch
     /** Verkäuferinnen-ID einer vollständigen Gutschriftnummer, sonst null. */
     public static function vendorId(?string $search): ?string
     {
-        if (! preg_match('/FK\d{4}-\d+-(\d+)\s*$/i', trim((string) $search), $matches)) {
+        if (! preg_match('/FK\d{4}-\d+-(\d+)(?:-\d+)?\s*$/i', trim((string) $search), $matches)) {
             return null;
         }
 
         return static::number($matches[1]);
+    }
+
+    /** Pos. am Ende einer Gutschriftnummer (`FK2026-5149-5680-2` => 2), sonst null. */
+    public static function position(?string $search): ?int
+    {
+        if (! preg_match('/FK\d{4}-\d+-\d+-(\d+)\s*$/i', trim((string) $search), $matches)) {
+            return null;
+        }
+
+        return max(1, (int) $matches[1]);
     }
 
     /**
@@ -52,7 +63,7 @@ class OrderNumberSearch
             return null;
         }
 
-        if (preg_match('/FK\d{4}-(\d+)(?:-\d+)?\s*$/i', $search, $matches)) {
+        if (preg_match('/FK\d{4}-(\d+)(?:-\d+){0,2}\s*$/i', $search, $matches)) {
             $search = $matches[1];
         } elseif (preg_match('/(\d+)\s*$/', $search, $matches)) {
             $search = $matches[1];

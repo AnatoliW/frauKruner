@@ -30,6 +30,10 @@
     // Vom Controller gesetzt; der Rueckfall deckt Aufrufe ohne das Flag ab.
     $istSammelrechnung = $istSammelrechnung ?? (! $istGutschrift && $order->usesBundledInvoice());
 
+    // Ab app.seller_credit_position_cutoff_at: Pos. je Artikel. Sie steht auch
+    // am Ende der Gutschrift-Nr., wenn eine Herstellerin mehrere Artikel hat.
+    $mitPos = $istSammelrechnung && $order->usesPositionSellerCredit();
+
     // Spalten nur zeigen, wenn irgendeine Position etwas darin hat.
     $hatVeredelungen = $positions->contains(fn ($p) => !empty($p->finishings));
     $hatZusatzoptionen = $positions->contains(fn ($p) => !empty($p->addition));
@@ -343,6 +347,9 @@
                                                 <table class="table table-hover no-footer">
                                                     <thead>
                                                         <tr>
+                                                            @if ($mitPos)
+                                                                <th>Pos.</th>
+                                                            @endif
                                                             <th>Produktname</th>
                                                             @if ($istSammelrechnung)
                                                                 {{-- Die Belegnummer des Artikels: Darauf steht auch die
@@ -366,6 +373,9 @@
                                                         @foreach ($positions as $position)
                                                             @php $positionStorniert = (int) ($position->status ?? 0) === 3; @endphp
                                                             <tr @class(['text-decoration-line-through' => $positionStorniert])>
+                                                                @if ($mitPos)
+                                                                    <td>{{ $loop->iteration }}</td>
+                                                                @endif
                                                                 <td>
                                                                     {{ $position->product_name ?? $position->product->name }}
                                                                     @if ($positionStorniert)
@@ -391,8 +401,9 @@
                                                     <tfoot>
                                                         @php
                                                             // Spalten links vom Betrag, damit die Summen rechts ausgerichtet
-                                                            // bleiben: Produktname und Beleg-Nr. plus die wahlweisen.
+                                                            // bleiben: Pos., Produktname und Beleg-Nr. plus die wahlweisen.
                                                             $leereSpalten = 1
+                                                                + ($mitPos ? 1 : 0)
                                                                 + ($istSammelrechnung ? 1 : 0)
                                                                 + ($hatVeredelungen ? 1 : 0)
                                                                 + ($hatZusatzoptionen ? 1 : 0)
@@ -421,7 +432,10 @@
                                                     {{-- Warum mehrere Belegnummern auf einer Rechnung stehen. --}}
                                                     <p class="text-muted">
                                                         Diese Rechnung umfasst alle {{ $positions->count() }} Artikel der
-                                                        @if ($order->usesBundledSellerCredit())
+                                                        @if ($order->usesPositionSellerCredit())
+                                                        Bestellung {{ $order->orderNumber() }}. Die Artikel werden einzeln
+                                                        versendet und tragen deshalb je eine eigene Beleg-Nr.
+                                                        @elseif ($order->usesBundledSellerCredit())
                                                         Bestellung {{ $order->orderNumber() }}. Die Artikel tragen
                                                         je eine eigene Beleg-Nr.; die Gutschriften werden je Herstellerin zusammengefasst.
                                                         @else

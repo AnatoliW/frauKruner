@@ -51,11 +51,28 @@ it('liest die Verkäuferin nur aus einer vollständigen Gutschriftnummer', funct
     expect(OrderNumberSearch::vendorId($search))->toBe($vendorId);
 })->with([
     ['FK2026-5146-5186', '5186'],
+    ['FK2026-5149-5680-2', '5680'],
     ['  fk2024-3552-005186  ', '5186'],
     ['Gutschrift-Nr. FK2026-5146-5186', '5186'],
     ['FK2026-5146', null],
     ['5146', null],
     ['5146-5186', null],
     ['FK2026-5146-5186 Text', null],
+    [null, null],
+]);
+
+it('liest die Bestellung aus einer Gutschriftnummer mit Pos.', function () {
+    // Nicht die 2 am Ende: Die träfe die unbeteiligte Bestellung mit der ID 2.
+    expect(OrderNumberSearch::number('FK2026-5149-5680-2'))->toBe('5149');
+});
+
+it('liest die Pos. nur aus einer Gutschriftnummer mit Pos.', function ($search, $pos) {
+    expect(OrderNumberSearch::position($search))->toBe($pos);
+})->with([
+    ['FK2026-5149-5680-2', 2],
+    [' Gutschrift-Nr. fk2026-5149-5680-12 ', 12],
+    ['FK2026-5149-5680', null],
+    ['FK2026-5149', null],
+    ['5149-5680-2', null],
     [null, null],
 ]);

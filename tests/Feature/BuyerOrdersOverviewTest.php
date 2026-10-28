@@ -13,8 +13,9 @@ use Tests\Support\UploadTestHelpers;
  * die Artikel hängen als Positionen darin.
  *
  * Die Rechnung gilt für die ganze Bestellung und hängt deshalb im Kopf der
- * Karte. Die Belegnummer steht an jedem Artikel: Sie gilt je Position, weil
- * jede Herstellerin einzeln abrechnet, und sie steht so auch auf der Rechnung.
+ * Karte. Die Belegnummern der Positionen gehen die Kundin nichts an und stehen
+ * nicht in der Übersicht; nur vor dem Stichtag, als jeder Artikel eine eigene
+ * Rechnung mit dieser Nummer bekam.
  */
 uses(UsesUploadSchema::class);
 
@@ -97,7 +98,7 @@ it('zeigt eine Bestellung mit zwei Artikeln nur einmal', function () {
     }
 });
 
-it('verlinkt eine Rechnung je Bestellung und nennt je Artikel die Belegnummer', function () {
+it('verlinkt eine Rechnung je Bestellung und zeigt keine Belegnummern der Positionen', function () {
     [$head, $children, $buyer] = buyerOrder(2);
 
     $html = $this->actingAs($buyer)->get('/buyer/dashboard/orders')->getContent();
@@ -109,9 +110,8 @@ it('verlinkt eine Rechnung je Bestellung und nennt je Artikel die Belegnummer', 
     foreach ($children as $child) {
         expect($html)->not->toContain('/invoice/'.$child->id);
 
-        // Die Belegnummer steht trotzdem an jedem Artikel – damit sich die
-        // Zeile auf der Rechnung wiederfinden lässt.
-        expect($html)->toContain('Beleg-Nr. '.$child->invoiceNumber());
+        // Die Kundin kennt nur die Bestellnummer.
+        expect($html)->not->toContain($child->invoiceNumber());
     }
 });
 
@@ -193,9 +193,14 @@ it('verlinkt bei einer Bestellung vor dem Stichtag je Artikel eine Rechnung', fu
 
     // Eine Sammelrechnung gab es für diese Bestellung nie.
     expect($html)->not->toContain('/invoice/'.$head->id);
+
+    // Die Beleg-Nr. war damals die Rechnungsnummer der Kundin.
+    foreach ($children as $child) {
+        expect($html)->toContain('Beleg-Nr. '.$child->invoiceNumber());
+    }
 });
 
-it('zeigt nach dem Gutschrift-Stichtag die Hauptbestellnummer und die Belegnummern der Käuferrechnung', function () {
+it('zeigt nach dem Gutschrift-Stichtag in der Übersicht nur die Hauptbestellnummer', function () {
     [$head, $positions, $buyer] = buyerOrder(2, ['created_at' => '2026-10-27 15:23:47']);
     $positions[1]->update(['vendor_id' => $positions[0]->vendor_id]);
 
@@ -206,7 +211,7 @@ it('zeigt nach dem Gutschrift-Stichtag die Hauptbestellnummer und die Belegnumme
         ->and($invoice)->toContain($head->orderNumber());
 
     foreach ($positions as $position) {
-        expect($dashboard)->toContain('Beleg-Nr. '.$position->invoiceNumber())
+        expect($dashboard)->not->toContain($position->invoiceNumber())
             ->and($invoice)->toContain($position->invoiceNumber());
     }
 

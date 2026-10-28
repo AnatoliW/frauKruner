@@ -94,8 +94,8 @@ class HomeController extends Controller
      *
      * Dieselbe Adresse bedient zwei Belege, weil beide dieselbe Vorlage nutzen:
      *
-     *  - Die Herstellerin sieht ihre **Gutschrift**. Neue Bestellungen bündeln
-     *    ihre Positionen, ältere behalten die einzelnen Positionsbelege.
+     *  - Die Herstellerin sieht ihre **Gutschrift**. Zwischen den beiden
+     *    Gutschrift-Stichtagen gebündelt je Verkäuferin, sonst je Position.
      *  - Der Käufer sieht die **Rechnung**, und deren Form hängt am Stichtag
      *    aus `app.invoice_bundle_cutoff_date` (Order::usesBundledInvoice()).
      *
@@ -184,7 +184,9 @@ class HomeController extends Controller
 
         // Eine Bestellung ohne Positionen (Altdatensatz) ist ihre eigene einzige
         // Position; die Rechnung sieht dann aus wie bisher.
-        $positions = $invoice->childrens->isNotEmpty() ? $invoice->childrens : collect([$invoice]);
+        // Nach ID sortiert: Die Pos. auf der Rechnung ist die Pos. am Ende der
+        // Gutschrift-Nr. (Order::gutschriftNumber()).
+        $positions = $invoice->childrens->isNotEmpty() ? $invoice->childrens->sortBy('id')->values() : collect([$invoice]);
 
         return view('auth.invoice', [
             'order' => $invoice,

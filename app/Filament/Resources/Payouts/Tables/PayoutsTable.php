@@ -112,7 +112,7 @@ class PayoutsTable
                         });
                     }),
                 // Auszahlungen bleiben je Position. Die angezeigte Nummer gehört
-                // zur zugehörigen Gutschrift, bei neuen Bestellungen je Verkäuferin.
+                // zur zugehörigen Gutschrift (Order::gutschriftNumber()).
                 //
                 // Darunter die Bestellung, zu der die Position gehört: Das ist
                 // die Nummer, die die Kundin bezahlt hat und die auf dem
@@ -149,6 +149,7 @@ class PayoutsTable
                         }
 
                         $vendorId = OrderNumberSearch::vendorId($search);
+                        $pos = OrderNumberSearch::position($search);
 
                         $query->where(function ($q) use ($nummer): void {
                             $q->where('id', $nummer)
@@ -157,6 +158,14 @@ class PayoutsTable
 
                         if ($vendorId !== null) {
                             $query->where('vendor_id', $vendorId);
+                        }
+
+                        // `FK2026-5149-5680-2`: genau die Position auf Pos. 2 der Rechnung.
+                        if ($pos !== null) {
+                            $query->whereKey(
+                                Order::query()->where('parent_id', $nummer)->orderBy('id')
+                                    ->skip($pos - 1)->value('id')
+                            );
                         }
                     }),
                 TextColumn::make('shipping_status')

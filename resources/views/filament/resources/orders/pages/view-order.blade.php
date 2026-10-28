@@ -11,7 +11,11 @@
         // Position; dann sieht die Seite aus wie vorher.
         $order = $this->getRecord()->mainOrder();
 
-        $positions = $order->childrens->isNotEmpty() ? $order->childrens : collect([$order]);
+        // Nach ID sortiert: So zählen Pos. auf der Rechnung und in der Gutschrift-Nr.
+        $positions = $order->childrens->isNotEmpty() ? $order->childrens->sortBy('id')->values() : collect([$order]);
+
+        // Ab app.seller_credit_position_cutoff_at: Pos.-Spalte auf der Rechnung.
+        $mitPos = $order->usesPositionSellerCredit();
 
         $fmt = static function ($value): string {
             return sprintf('%.2f €', (float) ($value ?? 0));
@@ -187,7 +191,10 @@
                 </table>
                 @if ($positions->count() > 1)
                     <p class="invoice-document__note">
-                        @if ($order->usesBundledSellerCredit())
+                        @if ($mitPos)
+                        Jede Position wird einzeln abgerechnet und versendet. Bezahlt hat die
+                        Kundin den Gesamtbetrag einmal, unter der Bestellnummer {{ $order->orderNumber() }}.
+                        @elseif ($order->usesBundledSellerCredit())
                         Die Gutschriften werden je Verkäuferin zusammengefasst.
                         Bezahlt hat die Kundin den Gesamtbetrag einmal,
                         unter der Bestellnummer {{ $order->orderNumber() }}.
@@ -272,6 +279,9 @@
                     <table class="invoice-document__table">
                         <thead>
                             <tr>
+                                @if ($mitPos)
+                                    <th>Pos.</th>
+                                @endif
                                 <th>Produktname</th>
                                 <th>Beleg-Nr.</th>
                                 <th>Veredelungen</th>
@@ -283,6 +293,9 @@
                         <tbody>
                             @foreach ($positions as $position)
                                 <tr class="{{ (int) ($position->status ?? 0) === 3 ? 'is-cancelled' : '' }}">
+                                    @if ($mitPos)
+                                        <td>{{ $loop->iteration }}</td>
+                                    @endif
                                     <td>
                                         {{ $position->product_name ?? $position->product?->name ?? '-' }}
                                         @if ((int) ($position->status ?? 0) === 3)
@@ -300,18 +313,18 @@
                         <tfoot>
                             @if ((float) $order->discount > 0)
                                 <tr>
-                                    <td colspan="5" style="text-align:right">Zwischensumme</td>
+                                    <td colspan="{{ $mitPos ? 6 : 5 }}" style="text-align:right">Zwischensumme</td>
                                     <td>{{ $fmt($positions->sum('total')) }}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="5" style="text-align:right">
+                                    <td colspan="{{ $mitPos ? 6 : 5 }}" style="text-align:right">
                                         Gutschein{{ filled($order->discount_code) ? ' ' . $order->discount_code : '' }}
                                     </td>
                                     <td>−{{ $fmt($order->discount) }}</td>
                                 </tr>
                             @endif
                             <tr>
-                                <td colspan="5" style="text-align:right"><strong>Gesamtbetrag</strong></td>
+                                <td colspan="{{ $mitPos ? 6 : 5 }}" style="text-align:right"><strong>Gesamtbetrag</strong></td>
                                 <td><strong>{{ $fmt($buyerTotal) }}</strong></td>
                             </tr>
                         </tfoot>
@@ -320,7 +333,10 @@
                     @if ($positions->count() > 1)
                         <p class="invoice-document__note">
                             Alle {{ $positions->count() }} Artikel der Bestellung {{ $order->orderNumber() }} auf
-                            @if ($order->usesBundledSellerCredit())
+                            @if ($mitPos)
+                            einem Beleg. Die Artikel werden einzeln versendet und tragen deshalb
+                            je eine eigene Beleg-Nr.
+                            @elseif ($order->usesBundledSellerCredit())
                             einem Beleg. Die Artikel tragen je eine eigene Beleg-Nr.;
                             die Gutschriften werden je Herstellerin zusammengefasst.
                             @else
@@ -454,8 +470,9 @@
             @endforeach
         @endif
 
-        {{-- Neue Gutschriften bündeln je Verkäuferin die Positionen einer Bestellung.
-             Ältere Bestellungen behalten unverändert einen Beleg je Position.
+        {{-- Gutschriften zwischen den beiden Stichtagen bündeln je Verkäuferin die
+             Positionen einer Bestellung (Order::sellerCreditGroups()). Davor und
+             danach gibt es einen Beleg je Position.
 
              Die früheren Abschnitte „Bestelldetails · Position n von m“ sind
              entfallen: Sie wiederholten, was in der Übersicht und auf der
