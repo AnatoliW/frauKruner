@@ -220,7 +220,8 @@
                Der Käufer hat einmal bezahlt und bekommt einen Beleg. Sie trägt
                keine eigene Nummer, sondern verweist auf die Bestellnummer – die
                Nummer vom Kontoauszug – und führt je Artikel dessen Beleg-Nr.
-               auf.
+               auf. Ab app.seller_credit_position_cutoff_at stattdessen nur Pos.;
+               dann gibt es für den Käufer nur die Bestellnummer.
 
              Neue Gutschriften weiter unten nennen die Hauptbestellnummer mit
              Herstellerinnen-ID; ältere behalten ihre Positionsnummer. --}}
@@ -283,7 +284,9 @@
                                     <th>Pos.</th>
                                 @endif
                                 <th>Produktname</th>
-                                <th>Beleg-Nr.</th>
+                                @unless ($mitPos)
+                                    <th>Beleg-Nr.</th>
+                                @endunless
                                 <th>Veredelungen</th>
                                 <th>Zusatzoptionen</th>
                                 <th>Tragedauer</th>
@@ -302,7 +305,9 @@
                                             <br><small>storniert</small>
                                         @endif
                                     </td>
-                                    <td>{{ $position->invoiceNumber() }}</td>
+                                    @unless ($mitPos)
+                                        <td>{{ $position->invoiceNumber() }}</td>
+                                    @endunless
                                     <td>{{ $listText($position->finishings) }}</td>
                                     <td>{{ $listText($position->addition) }}</td>
                                     <td>{{ $listText($position->wearing_time) }}</td>
@@ -313,18 +318,18 @@
                         <tfoot>
                             @if ((float) $order->discount > 0)
                                 <tr>
-                                    <td colspan="{{ $mitPos ? 6 : 5 }}" style="text-align:right">Zwischensumme</td>
+                                    <td colspan="5" style="text-align:right">Zwischensumme</td>
                                     <td>{{ $fmt($positions->sum('total')) }}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="{{ $mitPos ? 6 : 5 }}" style="text-align:right">
+                                    <td colspan="5" style="text-align:right">
                                         Gutschein{{ filled($order->discount_code) ? ' ' . $order->discount_code : '' }}
                                     </td>
                                     <td>−{{ $fmt($order->discount) }}</td>
                                 </tr>
                             @endif
                             <tr>
-                                <td colspan="{{ $mitPos ? 6 : 5 }}" style="text-align:right"><strong>Gesamtbetrag</strong></td>
+                                <td colspan="5" style="text-align:right"><strong>Gesamtbetrag</strong></td>
                                 <td><strong>{{ $fmt($buyerTotal) }}</strong></td>
                             </tr>
                         </tfoot>
@@ -334,8 +339,7 @@
                         <p class="invoice-document__note">
                             Alle {{ $positions->count() }} Artikel der Bestellung {{ $order->orderNumber() }} auf
                             @if ($mitPos)
-                            einem Beleg. Die Artikel werden einzeln versendet und tragen deshalb
-                            je eine eigene Beleg-Nr.
+                            einem Beleg. Die Artikel werden einzeln versendet.
                             @elseif ($order->usesBundledSellerCredit())
                             einem Beleg. Die Artikel tragen je eine eigene Beleg-Nr.;
                             die Gutschriften werden je Herstellerin zusammengefasst.

@@ -112,7 +112,7 @@ return [
     // je Artikel. Gutschrift-Nr. bei mehreren Artikeln derselben Verkäuferin
     // mit Pos. (`FK2026-5149-5680-2`), Pos.-Spalte auf der Rechnung, Artikel
     // und Rechnungsbezug in der Versandmail. VOR DEM UPLOAD FESTLEGEN.
-    'seller_credit_position_cutoff_at' => '2026-10-28T15:19:18+01:00',
+    'seller_credit_position_cutoff_at' => '2026-11-03T11:00:00+01:00',
 
     /*
     |--------------------------------------------------------------------------

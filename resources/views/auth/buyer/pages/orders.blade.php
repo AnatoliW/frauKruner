@@ -123,11 +123,14 @@
                             {{-- Video, Fotos und Bewertung gelten je Artikel. --}}
 
                             {{-- Vor dem Stichtag hat jeder Artikel seine eigene
-                                 Rechnung, und deren Nummer ist die Beleg-Nr. Danach
-                                 kennt die Kundin nur die Bestellnummer im Kopf der
-                                 Karte; die Beleg-Nr. der Positionen gehen sie nichts an. --}}
+                                 Rechnung, und deren Nummer ist die Beleg-Nr. Auf
+                                 Sammelrechnungen stand sie je Artikel, bis
+                                 app.seller_credit_position_cutoff_at. Danach kennt die
+                                 Kundin nur die Bestellnummer im Kopf der Karte. --}}
                             @if ($istBezahlt && ! $istSammelrechnung)
                                 <a href="{{ route('invoice', $position) }}" class="btn btn-secondary">Rechnung</a>
+                            @endif
+                            @if ($istBezahlt && ! $order->usesPositionSellerCredit())
                                 <span class="text-grey small d-block">
                                     Beleg-Nr. {{ $position->invoiceNumber() }}
                                 </span>

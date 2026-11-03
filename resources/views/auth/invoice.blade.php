@@ -34,6 +34,10 @@
     // am Ende der Gutschrift-Nr., wenn eine Herstellerin mehrere Artikel hat.
     $mitPos = $istSammelrechnung && $order->usesPositionSellerCredit();
 
+    // Beleg-Nr. je Artikel nur auf Sammelrechnungen vor diesem Zeitpunkt, so
+    // wie sie ausgestellt wurden. Danach kennt die Kundin nur die Bestellnummer.
+    $mitBelegNr = $istSammelrechnung && ! $mitPos;
+
     // Spalten nur zeigen, wenn irgendeine Position etwas darin hat.
     $hatVeredelungen = $positions->contains(fn ($p) => !empty($p->finishings));
     $hatZusatzoptionen = $positions->contains(fn ($p) => !empty($p->addition));
@@ -351,7 +355,7 @@
                                                                 <th>Pos.</th>
                                                             @endif
                                                             <th>Produktname</th>
-                                                            @if ($istSammelrechnung)
+                                                            @if ($mitBelegNr)
                                                                 {{-- Die Belegnummer des Artikels: Darauf steht auch die
                                                                      Gutschrift seiner Herstellerin. Bei der
                                                                      Einzelrechnung steht sie schon in der Kopfzeile. --}}
@@ -382,7 +386,7 @@
                                                                         <br><small style="color:red">storniert</small>
                                                                     @endif
                                                                 </td>
-                                                                @if ($istSammelrechnung)
+                                                                @if ($mitBelegNr)
                                                                     <td>{{ $position->invoiceNumber() }}</td>
                                                                 @endif
                                                                 @if ($hatVeredelungen)
@@ -404,7 +408,7 @@
                                                             // bleiben: Pos., Produktname und Beleg-Nr. plus die wahlweisen.
                                                             $leereSpalten = 1
                                                                 + ($mitPos ? 1 : 0)
-                                                                + ($istSammelrechnung ? 1 : 0)
+                                                                + ($mitBelegNr ? 1 : 0)
                                                                 + ($hatVeredelungen ? 1 : 0)
                                                                 + ($hatZusatzoptionen ? 1 : 0)
                                                                 + ($hatTragedauer ? 1 : 0);
@@ -433,8 +437,7 @@
                                                     <p class="text-muted">
                                                         Diese Rechnung umfasst alle {{ $positions->count() }} Artikel der
                                                         @if ($order->usesPositionSellerCredit())
-                                                        Bestellung {{ $order->orderNumber() }}. Die Artikel werden einzeln
-                                                        versendet und tragen deshalb je eine eigene Beleg-Nr.
+                                                        Bestellung {{ $order->orderNumber() }}. Die Artikel werden einzeln versendet.
                                                         @elseif ($order->usesBundledSellerCredit())
                                                         Bestellung {{ $order->orderNumber() }}. Die Artikel tragen
                                                         je eine eigene Beleg-Nr.; die Gutschriften werden je Herstellerin zusammengefasst.

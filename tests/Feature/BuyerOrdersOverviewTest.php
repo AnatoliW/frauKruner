@@ -27,6 +27,7 @@ beforeEach(function () {
     // Den Stichtag festnageln: Sonst entscheidet die .env des Rechners, ob die
     // Karte einen Rechnungsknopf oder einen je Artikel zeigt.
     config(['app.invoice_bundle_cutoff_date' => '2026-09-30']);
+    config(['app.seller_credit_position_cutoff_at' => '2026-11-03T11:00:00+01:00']);
 });
 
 /**
@@ -98,8 +99,8 @@ it('zeigt eine Bestellung mit zwei Artikeln nur einmal', function () {
     }
 });
 
-it('verlinkt eine Rechnung je Bestellung und zeigt keine Belegnummern der Positionen', function () {
-    [$head, $children, $buyer] = buyerOrder(2);
+it('verlinkt eine Rechnung je Bestellung und zeigt Belegnummern nur vor dem zweiten Zeitpunkt', function ($date, $mitBelegNr) {
+    [$head, $children, $buyer] = buyerOrder(2, ['created_at' => $date]);
 
     $html = $this->actingAs($buyer)->get('/buyer/dashboard/orders')->getContent();
 
@@ -110,10 +111,13 @@ it('verlinkt eine Rechnung je Bestellung und zeigt keine Belegnummern der Positi
     foreach ($children as $child) {
         expect($html)->not->toContain('/invoice/'.$child->id);
 
-        // Die Kundin kennt nur die Bestellnummer.
-        expect($html)->not->toContain($child->invoiceNumber());
+        // Danach kennt die Kundin nur die Bestellnummer.
+        expect(str_contains($html, 'Beleg-Nr. '.$child->invoiceNumber()))->toBe($mitBelegNr);
     }
-});
+})->with([
+    'davor' => ['2026-10-05 10:00:00', true],
+    'danach' => ['2026-11-03 10:00:00', false],
+]);
 
 it('zieht den Gutschein im Gesamtbetrag nur einmal ab', function () {
     // Im Kopf der Bestellung ist der Rabatt bereits abgezogen.
@@ -200,8 +204,8 @@ it('verlinkt bei einer Bestellung vor dem Stichtag je Artikel eine Rechnung', fu
     }
 });
 
-it('zeigt nach dem Gutschrift-Stichtag in der Übersicht nur die Hauptbestellnummer', function () {
-    [$head, $positions, $buyer] = buyerOrder(2, ['created_at' => '2026-10-27 15:23:47']);
+it('zeigt ab dem zweiten Zeitpunkt in Übersicht und Rechnung nur die Hauptbestellnummer', function () {
+    [$head, $positions, $buyer] = buyerOrder(2, ['created_at' => '2026-11-03 10:00:00']);
     $positions[1]->update(['vendor_id' => $positions[0]->vendor_id]);
 
     $dashboard = $this->actingAs($buyer)->get(route('buyer.orders'))->assertOk()->getContent();
@@ -212,7 +216,7 @@ it('zeigt nach dem Gutschrift-Stichtag in der Übersicht nur die Hauptbestellnum
 
     foreach ($positions as $position) {
         expect($dashboard)->not->toContain($position->invoiceNumber())
-            ->and($invoice)->toContain($position->invoiceNumber());
+            ->and($invoice)->not->toContain($position->invoiceNumber());
     }
 
     expect($dashboard)->not->toContain($positions[0]->gutschriftNumber());

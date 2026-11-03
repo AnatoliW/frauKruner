@@ -43,7 +43,7 @@ beforeEach(function () {
     // Belegform die Tests sehen.
     config(['app.invoice_bundle_cutoff_date' => '2026-09-30']);
     config(['app.seller_credit_bundle_cutoff_at' => '2026-10-27T16:23:47+01:00']);
-    config(['app.seller_credit_position_cutoff_at' => '2026-10-28T12:00:00+01:00']);
+    config(['app.seller_credit_position_cutoff_at' => '2026-11-03T11:00:00+01:00']);
 });
 
 /**
@@ -860,7 +860,7 @@ it('verwendet für die Versandbestätigung aus dem Dashboard die Hauptbestellnum
 |--------------------------------------------------------------------------
 */
 
-const POSITION_CREDIT_DATE = '2026-10-28 11:00:00';
+const POSITION_CREDIT_DATE = '2026-11-03 10:00:00';
 
 it('stellt Gutschriften exakt ab dem zweiten Zeitpunkt wieder je Artikel aus', function ($date, $neu) {
     [$head, $positions] = bundledSellerCreditOrder($date);
@@ -874,7 +874,7 @@ it('stellt Gutschriften exakt ab dem zweiten Zeitpunkt wieder je Artikel aus', f
             $head->orderNumber().'-'.$positions[2]->vendor_id,
         ]);
 })->with([
-    'direkt davor' => ['2026-10-28 10:59:59', false],
+    'direkt davor' => ['2026-11-03 09:59:59', false],
     'genau ab Beginn' => [POSITION_CREDIT_DATE, true],
 ]);
 
@@ -895,23 +895,29 @@ it('nummeriert Gutschriften je Artikel wie im Beispiel FK2026-5149', function ()
         ->and($positions[2]->gutschriftNumber())->toBe('FK2026-5149-5680-3');
 });
 
-it('zeigt der Kundin die Pos. erst ab dem zweiten Zeitpunkt', function ($date, $mitPos) {
+it('zeigt der Kundin ab dem zweiten Zeitpunkt Pos. statt Beleg-Nr.', function ($date, $mitPos) {
     [$head, $children, $buyer] = invoiceOrder(2, ['created_at' => $date]);
 
     $response = $this->actingAs($buyer)->get('/invoice/'.$head->id)->assertOk();
 
     if (! $mitPos) {
-        $response->assertDontSee('<th>Pos.</th>', false);
+        // Sammelrechnungen davor bleiben, wie sie ausgestellt wurden.
+        $response->assertDontSee('<th>Pos.</th>', false)
+            ->assertSee('Beleg-Nr.')
+            ->assertSee($children[0]->invoiceNumber());
 
         return;
     }
 
-    $response->assertSeeInOrder([
-        '<th>Pos.</th>',
-        '<td>1</td>', $children[0]->product->name,
-        '<td>2</td>', $children[1]->product->name,
-        'colspan="3"', 'Gesamtbetrag',
-    ], false);
+    $response->assertDontSee('Beleg-Nr.')
+        ->assertDontSee($children[0]->invoiceNumber())
+        ->assertDontSee($children[1]->invoiceNumber())
+        ->assertSeeInOrder([
+            '<th>Pos.</th>',
+            '<td>1</td>', $children[0]->product->name,
+            '<td>2</td>', $children[1]->product->name,
+            'colspan="2"', 'Gesamtbetrag',
+        ], false);
 })->with([
     'davor' => ['2026-10-27 15:23:47', false],
     'danach' => [POSITION_CREDIT_DATE, true],
@@ -966,7 +972,7 @@ it('zeigt im Adminbereich ab dem zweiten Zeitpunkt je Artikel eine Gutschrift un
         ])->assertSuccessful()->html();
 
         expect(substr_count($html, '<section class="invoice-document__section" id="seller-print-block-'))->toBe(3)
-            ->and($html)->toContain('<th>Pos.</th>', 'colspan="6"')->not->toContain('68.00 €');
+            ->and($html)->toContain('<th>Pos.</th>', 'colspan="5"')->not->toContain('68.00 €');
 
         foreach ($positions as $position) {
             expect($html)->toContain('<section class="invoice-document__section" id="seller-print-block-'.$position->id.'"')
