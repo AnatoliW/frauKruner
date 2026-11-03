@@ -104,9 +104,11 @@ return [
 
     'invoice_bundle_cutoff_date' => env('INVOICE_BUNDLE_CUTOFF_DATE', '2026-09-30'),
 
-    // Ab diesem festen Zeitpunkt: eine Gutschrift je Bestellung und Verkäuferin.
-    // Ältere Bestellungen behalten ihre Positionsbelege und deren Nummern.
-    'seller_credit_bundle_cutoff_at' => '2026-10-27T16:23:47+01:00',
+    // Ab diesem festen Zeitpunkt: Gutschrift-Nr. aus Hauptbestellnummer plus
+    // Verkäuferinnen-ID. Ältere Bestellungen behalten ihre Positionsbelege und
+    // deren Nummern. Gleich wie seller_credit_position_cutoff_at: Die Bündelung
+    // je Verkäuferin dazwischen war nie live und darf alte Belege nicht ändern.
+    'seller_credit_bundle_cutoff_at' => '2026-11-03T11:00:00+01:00',
 
     // Ab diesem festen Zeitpunkt (Datum der Bestellung): wieder eine Gutschrift
     // je Artikel. Gutschrift-Nr. bei mehreren Artikeln derselben Verkäuferin
