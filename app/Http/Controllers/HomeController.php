@@ -94,8 +94,8 @@ class HomeController extends Controller
      *
      * Dieselbe Adresse bedient zwei Belege, weil beide dieselbe Vorlage nutzen:
      *
-     *  - Die Herstellerin sieht die **Gutschrift** für ihre Position. Sie gilt
-     *    je Position, denn jede Herstellerin rechnet einzeln ab.
+     *  - Die Herstellerin sieht ihre **Gutschrift**. Zwischen den beiden
+     *    Gutschrift-Stichtagen gebündelt je Verkäuferin, sonst je Position.
      *  - Der Käufer sieht die **Rechnung**, und deren Form hängt am Stichtag
      *    aus `app.invoice_bundle_cutoff_date` (Order::usesBundledInvoice()).
      *
@@ -112,8 +112,9 @@ class HomeController extends Controller
      * Position trägt; ältere Links tragen sie noch.
      *
      * Die Belegnummern selbst hängen nicht am Stichtag: Sie gelten immer je
-     * Position (Order::invoiceNumber()), die Gutschrift der Herstellerin baut
-     * darauf auf, und sie stehen fest in der Spalte `invoice_no`.
+     * Position (Order::invoiceNumber()) und stehen fest in `invoice_no`.
+     * Neue Gutschriften nennen Hauptbestellnummer plus Herstellerinnen-ID;
+     * ältere Gutschriften behalten ihre bisherigen Nummern.
      *
      * Die Zugriffsprüfung: Die Adresse war einmal nur durch `auth` geschützt.
      * Wer angemeldet war, konnte über eine geratene Nummer Name, Adresse und
@@ -128,12 +129,14 @@ class HomeController extends Controller
             // Nachbarposition in derselben Bestellung.
             abort_unless((int) $order->vendor_id === (int) $user->id, 404);
 
-            $order->load(['product', 'vendor.address', 'vendor.verification', 'products']);
+            $positions = $order->sellerCreditPositions();
+            $positions->load(['product', 'vendor.address', 'vendor.verification', 'products']);
+            $order = $positions->first();
 
             return view('auth.invoice', [
                 'order' => $order,
                 'products' => $order->products,
-                'positions' => collect([$order]),
+                'positions' => $positions,
             ]);
         }
 
@@ -181,7 +184,9 @@ class HomeController extends Controller
 
         // Eine Bestellung ohne Positionen (Altdatensatz) ist ihre eigene einzige
         // Position; die Rechnung sieht dann aus wie bisher.
-        $positions = $invoice->childrens->isNotEmpty() ? $invoice->childrens : collect([$invoice]);
+        // Nach ID sortiert: Die Pos. auf der Rechnung ist die Pos. am Ende der
+        // Gutschrift-Nr. (Order::gutschriftNumber()).
+        $positions = $invoice->childrens->isNotEmpty() ? $invoice->childrens->sortBy('id')->values() : collect([$invoice]);
 
         return view('auth.invoice', [
             'order' => $invoice,

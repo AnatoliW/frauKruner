@@ -11,7 +11,11 @@
         // Position; dann sieht die Seite aus wie vorher.
         $order = $this->getRecord()->mainOrder();
 
-        $positions = $order->childrens->isNotEmpty() ? $order->childrens : collect([$order]);
+        // Nach ID sortiert: So zählen Pos. auf der Rechnung und in der Gutschrift-Nr.
+        $positions = $order->childrens->isNotEmpty() ? $order->childrens->sortBy('id')->values() : collect([$order]);
+
+        // Ab app.seller_credit_position_cutoff_at: Pos.-Spalte auf der Rechnung.
+        $mitPos = $order->usesPositionSellerCredit();
 
         $fmt = static function ($value): string {
             return sprintf('%.2f €', (float) ($value ?? 0));
@@ -187,9 +191,18 @@
                 </table>
                 @if ($positions->count() > 1)
                     <p class="invoice-document__note">
+                        @if ($mitPos)
+                        Jede Position wird einzeln abgerechnet und versendet. Bezahlt hat die
+                        Kundin den Gesamtbetrag einmal, unter der Bestellnummer {{ $order->orderNumber() }}.
+                        @elseif ($order->usesBundledSellerCredit())
+                        Die Gutschriften werden je Verkäuferin zusammengefasst.
+                        Bezahlt hat die Kundin den Gesamtbetrag einmal,
+                        unter der Bestellnummer {{ $order->orderNumber() }}.
+                        @else
                         Jede Position kommt von einer anderen Verkäuferin und wird einzeln
                         abgerechnet und versendet. Bezahlt hat die Kundin den Gesamtbetrag
                         einmal, unter der Bestellnummer {{ $order->orderNumber() }}.
+                        @endif
                     </p>
                 @endif
             </div>
@@ -207,10 +220,11 @@
                Der Käufer hat einmal bezahlt und bekommt einen Beleg. Sie trägt
                keine eigene Nummer, sondern verweist auf die Bestellnummer – die
                Nummer vom Kontoauszug – und führt je Artikel dessen Beleg-Nr.
-               auf.
+               auf. Ab app.seller_credit_position_cutoff_at stattdessen nur Pos.;
+               dann gibt es für den Käufer nur die Bestellnummer.
 
-             Auf derselben Beleg-Nr. steht in beiden Fällen die Gutschrift der
-             Herstellerin weiter unten, mit ihrer Nutzer-ID am Ende. --}}
+             Neue Gutschriften weiter unten nennen die Hauptbestellnummer mit
+             Herstellerinnen-ID; ältere behalten ihre Positionsnummer. --}}
         @if ($order->usesBundledInvoice())
             <section class="invoice-document__section" id="buyer-print-block">
                 <x-invoice.header
@@ -266,8 +280,13 @@
                     <table class="invoice-document__table">
                         <thead>
                             <tr>
+                                @if ($mitPos)
+                                    <th>Pos.</th>
+                                @endif
                                 <th>Produktname</th>
-                                <th>Beleg-Nr.</th>
+                                @unless ($mitPos)
+                                    <th>Beleg-Nr.</th>
+                                @endunless
                                 <th>Veredelungen</th>
                                 <th>Zusatzoptionen</th>
                                 <th>Tragedauer</th>
@@ -277,13 +296,18 @@
                         <tbody>
                             @foreach ($positions as $position)
                                 <tr class="{{ (int) ($position->status ?? 0) === 3 ? 'is-cancelled' : '' }}">
+                                    @if ($mitPos)
+                                        <td>{{ $loop->iteration }}</td>
+                                    @endif
                                     <td>
                                         {{ $position->product_name ?? $position->product?->name ?? '-' }}
                                         @if ((int) ($position->status ?? 0) === 3)
                                             <br><small>storniert</small>
                                         @endif
                                     </td>
-                                    <td>{{ $position->invoiceNumber() }}</td>
+                                    @unless ($mitPos)
+                                        <td>{{ $position->invoiceNumber() }}</td>
+                                    @endunless
                                     <td>{{ $listText($position->finishings) }}</td>
                                     <td>{{ $listText($position->addition) }}</td>
                                     <td>{{ $listText($position->wearing_time) }}</td>
@@ -314,8 +338,15 @@
                     @if ($positions->count() > 1)
                         <p class="invoice-document__note">
                             Alle {{ $positions->count() }} Artikel der Bestellung {{ $order->orderNumber() }} auf
+                            @if ($mitPos)
+                            einem Beleg. Die Artikel werden einzeln versendet.
+                            @elseif ($order->usesBundledSellerCredit())
+                            einem Beleg. Die Artikel tragen je eine eigene Beleg-Nr.;
+                            die Gutschriften werden je Herstellerin zusammengefasst.
+                            @else
                             einem Beleg. Die Artikel kommen von unterschiedlichen Herstellerinnen, werden
                             einzeln versendet und tragen deshalb je eine eigene Beleg-Nr.
+                            @endif
                         </p>
                     @endif
                 </div>
@@ -443,32 +474,38 @@
             @endforeach
         @endif
 
-        {{-- Ab hier je Position die Gutschrift der Herstellerin: Jede rechnet
-             einzeln ab. Der Druckblock trägt die ID der Position, damit jede
-             Gutschrift für sich gedruckt werden kann.
+        {{-- Gutschriften zwischen den beiden Stichtagen bündeln je Verkäuferin die
+             Positionen einer Bestellung (Order::sellerCreditGroups()). Davor und
+             danach gibt es einen Beleg je Position.
 
              Die früheren Abschnitte „Bestelldetails · Position n von m“ sind
              entfallen: Sie wiederholten, was in der Übersicht und auf der
              Gutschrift steht. Die Plattformgebühr, die es nur dort gab, steht
              jetzt in der Übersicht. --}}
-        @foreach ($positions as $index => $position)
+        @foreach ($order->sellerCreditGroups() as $creditPositions)
             @php
-                // Zwei Gutschriften unterscheiden sich durch die Herstellerin – und,
-                // wenn beide Artikel von derselben Frau kommen, nur noch durch den
-                // Artikel. Beides steht deshalb über der Gutschrift, damit die aus
-                // der Auszahlungsliste verlinkte auf Anhieb zu erkennen ist.
+                $position = $creditPositions->first();
+                $creditCancelled = $creditPositions->every(fn ($item) => (int) ($item->status ?? 0) === 3);
+                $creditPartCancelled = ! $creditCancelled && $creditPositions->contains(fn ($item) => (int) ($item->status ?? 0) === 3);
                 $herstellerin = trim(($position->vendor?->name ?? '') . ' ' . ($position->vendor?->last_name ?? ''));
-                $artikel = (string) ($position->product_name ?? $position->product?->name ?? '');
+                $artikel = $creditPositions->count() > 1
+                    ? $creditPositions->count() . ' Artikel'
+                    : (string) ($position->product_name ?? $position->product?->name ?? '');
             @endphp
 
             <section class="invoice-document__section" id="seller-print-block-{{ $position->id }}">
+                @foreach ($creditPositions->skip(1) as $creditPosition)
+                    <span id="seller-print-block-{{ $creditPosition->id }}" aria-hidden="true"></span>
+                @endforeach
                 <x-invoice.header
                     title="Gutschrift der Hersteller*in"
                     :subtitle="'Gutschrift-Nr. ' . $position->gutschriftNumber() . ' · ' . $position->created_at?->format('d.m.Y')"
                 />
 
-                @if ((int) ($position->status ?? 0) === 3)
+                @if ($creditCancelled)
                     <x-invoice.cancelled-banner label="Gutschrift storniert" />
+                @elseif ($creditPartCancelled)
+                    <x-invoice.cancelled-banner scope="teilweise" label="Einzelne Positionen storniert" />
                 @endif
 
                 <div class="invoice-document__section-heading no-print">
@@ -511,6 +548,9 @@
 
                 <div class="invoice-document__table-wrap">
                     <p class="invoice-document__label">Positionen</p>
+                    @if ($position->usesBundledSellerCredit())
+                        <x-invoice.seller-positions :positions="$creditPositions" class="invoice-document__table" />
+                    @else
                     <table class="invoice-document__table">
                         <thead>
                             <tr>
@@ -535,6 +575,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    @endif
                     <p class="invoice-document__note">
                         {{ isset($position->seller_info->is_pay_vat) && (int) $position->seller_info->is_pay_vat === 1 ? 'Alle Preise sind inklusive der gesetzlichen Umsatzsteuer.' : 'Gemäß § 19 UStG enthält der o.g. Rechnungsbetrag keine Umsatzsteuer.' }}
                     </p>
@@ -573,7 +614,8 @@
                         return;
                     }
 
-                    const section = document.getElementById(hash.slice(1));
+                    const target = document.getElementById(hash.slice(1));
+                    const section = target?.closest('.invoice-document__section') || target;
 
                     if (! section) {
                         return;

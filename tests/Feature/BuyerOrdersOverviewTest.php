@@ -13,8 +13,9 @@ use Tests\Support\UploadTestHelpers;
  * die Artikel hängen als Positionen darin.
  *
  * Die Rechnung gilt für die ganze Bestellung und hängt deshalb im Kopf der
- * Karte. Die Belegnummer steht an jedem Artikel: Sie gilt je Position, weil
- * jede Herstellerin einzeln abrechnet, und sie steht so auch auf der Rechnung.
+ * Karte. Die Belegnummern der Positionen gehen die Kundin nichts an und stehen
+ * nicht in der Übersicht; nur vor dem Stichtag, als jeder Artikel eine eigene
+ * Rechnung mit dieser Nummer bekam.
  */
 uses(UsesUploadSchema::class);
 
@@ -26,6 +27,7 @@ beforeEach(function () {
     // Den Stichtag festnageln: Sonst entscheidet die .env des Rechners, ob die
     // Karte einen Rechnungsknopf oder einen je Artikel zeigt.
     config(['app.invoice_bundle_cutoff_date' => '2026-09-30']);
+    config(['app.seller_credit_position_cutoff_at' => '2026-11-03T11:00:00+01:00']);
 });
 
 /**
@@ -97,8 +99,8 @@ it('zeigt eine Bestellung mit zwei Artikeln nur einmal', function () {
     }
 });
 
-it('verlinkt eine Rechnung je Bestellung und nennt je Artikel die Belegnummer', function () {
-    [$head, $children, $buyer] = buyerOrder(2);
+it('verlinkt eine Rechnung je Bestellung und zeigt Belegnummern nur vor dem zweiten Zeitpunkt', function ($date, $mitBelegNr) {
+    [$head, $children, $buyer] = buyerOrder(2, ['created_at' => $date]);
 
     $html = $this->actingAs($buyer)->get('/buyer/dashboard/orders')->getContent();
 
@@ -109,11 +111,13 @@ it('verlinkt eine Rechnung je Bestellung und nennt je Artikel die Belegnummer', 
     foreach ($children as $child) {
         expect($html)->not->toContain('/invoice/'.$child->id);
 
-        // Die Belegnummer steht trotzdem an jedem Artikel – damit sich die
-        // Zeile auf der Rechnung wiederfinden lässt.
-        expect($html)->toContain('Beleg-Nr. '.$child->invoiceNumber());
+        // Danach kennt die Kundin nur die Bestellnummer.
+        expect(str_contains($html, 'Beleg-Nr. '.$child->invoiceNumber()))->toBe($mitBelegNr);
     }
-});
+})->with([
+    'davor' => ['2026-10-05 10:00:00', true],
+    'danach' => ['2026-11-03 10:00:00', false],
+]);
 
 it('zieht den Gutschein im Gesamtbetrag nur einmal ab', function () {
     // Im Kopf der Bestellung ist der Rabatt bereits abgezogen.
@@ -193,4 +197,27 @@ it('verlinkt bei einer Bestellung vor dem Stichtag je Artikel eine Rechnung', fu
 
     // Eine Sammelrechnung gab es für diese Bestellung nie.
     expect($html)->not->toContain('/invoice/'.$head->id);
+
+    // Die Beleg-Nr. war damals die Rechnungsnummer der Kundin.
+    foreach ($children as $child) {
+        expect($html)->toContain('Beleg-Nr. '.$child->invoiceNumber());
+    }
+});
+
+it('zeigt ab dem zweiten Zeitpunkt in Übersicht und Rechnung nur die Hauptbestellnummer', function () {
+    [$head, $positions, $buyer] = buyerOrder(2, ['created_at' => '2026-11-03 10:00:00']);
+    $positions[1]->update(['vendor_id' => $positions[0]->vendor_id]);
+
+    $dashboard = $this->actingAs($buyer)->get(route('buyer.orders'))->assertOk()->getContent();
+    $invoice = $this->get(route('invoice', $head))->assertOk()->getContent();
+
+    expect($dashboard)->toContain('Bestellung '.$head->orderNumber())
+        ->and($invoice)->toContain($head->orderNumber());
+
+    foreach ($positions as $position) {
+        expect($dashboard)->not->toContain($position->invoiceNumber())
+            ->and($invoice)->not->toContain($position->invoiceNumber());
+    }
+
+    expect($dashboard)->not->toContain($positions[0]->gutschriftNumber());
 });

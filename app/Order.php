@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
 class Order extends Model
@@ -561,9 +562,8 @@ class Order extends Model
      * Ein Beleg gilt je Position, denn jede Herstellerin rechnet einzeln ab.
      * Die Nummer ist deshalb an die Position gebunden und nicht an den Kopf der
      * Bestellung: Bei einem Artikel gibt es eine Belegnummer, bei drei Artikeln
-     * drei. Die Gutschrift der Herstellerin baut auf derselben Nummer auf und
-     * hängt nur ihre Nutzer-ID an (siehe gutschriftNumber()) – so gehören
-     * Rechnung und Gutschrift sichtbar zusammen, ohne sich zu doppeln.
+     * drei. Neue Gutschriften nennen die Hauptbestellnummer plus Herstellerinnen-ID;
+     * ältere behalten die Positionsnummer (siehe gutschriftNumber()).
      *
      * Die Nummer, die die Kundin bezahlt hat, ist eine andere: Sie steht auf
      * dem Kontoauszug, gilt für die ganze Bestellung und heißt hier
@@ -629,20 +629,94 @@ class Order extends Model
     }
 
     /**
-     * Nummer der Gutschrift an die Verkäuferin, z. B. `FK2026-12697-45`.
+     * Nummer der Gutschrift an die Verkäuferin. Drei Zeiträume, je nach Datum
+     * der Hauptbestellung:
      *
-     * Gilt je Position, weil jede Verkäuferin einzeln abrechnet: die
-     * Belegnummer der Position plus ihre Nutzer-ID. Der Anhang ist der Grund,
-     * warum sich die Nummer nicht mit der Rechnung der Kundin doppelt, obwohl
-     * beide Belege auf derselben Nummer stehen.
-     *
-     * Baut bewusst auf invoiceNumber() auf: Sonst laufen die beiden Nummern
-     * auseinander, sobald eine von beiden angefasst wird – genau das war
-     * zwischen dem 30.09.2026 und diesem Rückbau der Fall.
+     *  - vor `app.seller_credit_bundle_cutoff_at`: gespeicherte Positionsnummer
+     *    plus Nutzer-ID, eine Gutschrift je Position.
+     *  - ab dort: Hauptbestellnummer plus Nutzer-ID, z. B. `FK2026-5146-5186`,
+     *    eine Gutschrift je Verkäuferin.
+     *  - ab `app.seller_credit_position_cutoff_at`: wieder eine Gutschrift je
+     *    Position, Nummer wie eben. Hat dieselbe Verkäuferin mehrere Artikel,
+     *    hängt die Pos. aus der Rechnung der Kundin dahinter:
+     *    `FK2026-5149-5680-2` ist ihr Artikel auf Pos. 2.
      */
     public function gutschriftNumber(): string
     {
-        return $this->invoiceNumber().'-'.($this->vendor_id ?? $this->vendor?->id);
+        $vendorId = $this->vendor_id ?? $this->vendor?->id;
+
+        if (! $vendorId || ! $this->usesBundledSellerCredit()) {
+            return $this->invoiceNumber().'-'.$vendorId;
+        }
+
+        $number = $this->orderNumber().'-'.$vendorId;
+
+        if (! $this->parent_id || ! $this->usesPositionSellerCredit()) {
+            return $number;
+        }
+
+        // Alle Positionen der Bestellung in Rechnungsreihenfolge (nach ID, wie
+        // positionInOrder()) – eine Abfrage für Pos. und Anzahl je Verkäuferin.
+        $vendors = static::query()
+            ->where('parent_id', $this->parent_id)
+            ->orderBy('id')
+            ->pluck('vendor_id', 'id')
+            ->mapWithKeys(fn ($vendor, $id) => [(int) $id => (int) $vendor]);
+
+        if ($vendors->filter(fn (int $vendor) => $vendor === (int) $vendorId)->count() < 2) {
+            return $number;
+        }
+
+        return $number.'-'.($vendors->keys()->search((int) $this->getKey(), true) + 1);
+    }
+
+    /**
+     * Gutschrift-Nr. aus Hauptbestellnummer plus Nutzer-ID? Gilt ab
+     * `app.seller_credit_bundle_cutoff_at`, nach Datum der Hauptbestellung.
+     */
+    public function usesBundledSellerCredit(): bool
+    {
+        return ($this->mainOrder()->created_at ?? Carbon::now())->gte(
+            Carbon::parse(config('app.seller_credit_bundle_cutoff_at'))
+        );
+    }
+
+    /**
+     * Wieder eine Gutschrift je Position, mit Pos. in Gutschrift-Nr., Rechnung
+     * und Versandmail? Gilt ab `app.seller_credit_position_cutoff_at`.
+     */
+    public function usesPositionSellerCredit(): bool
+    {
+        return ($this->mainOrder()->created_at ?? Carbon::now())->gte(
+            Carbon::parse(config('app.seller_credit_position_cutoff_at'))
+        );
+    }
+
+    /**
+     * Die Gutschriften der Bestellung, je Gutschrift ihre Positionen. Gebündelt
+     * je Verkäuferin wird nur zwischen den beiden Stichtagen.
+     *
+     * @return Collection<int, Collection<int, Order>>
+     */
+    public function sellerCreditGroups(): Collection
+    {
+        $order = $this->mainOrder();
+        $positions = $order->childrens->isNotEmpty() ? $order->childrens : $order->newCollection([$order]);
+        $bundle = $order->usesBundledSellerCredit() && ! $order->usesPositionSellerCredit();
+
+        return $positions->sortBy('id')->groupBy(fn (self $position): string =>
+            $bundle && $position->vendor_id
+                ? 'vendor-'.$position->vendor_id
+                : 'position-'.$position->getKey()
+        )->values();
+    }
+
+    /** @return Collection<int, Order> */
+    public function sellerCreditPositions(): Collection
+    {
+        return $this->sellerCreditGroups()->first(
+            fn (Collection $positions): bool => $positions->contains('id', $this->getKey())
+        ) ?? $this->newCollection([$this]);
     }
 
     /**
