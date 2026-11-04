@@ -206,30 +206,28 @@ it('zieht den Kopf nach, wenn die Positionen schon bezahlt waren', function () {
  * Mail::fake() rendert das Template nicht. Diese Tests bauen die Nachricht
  * deshalb selbst und schauen hinein.
  */
-it('listet in der Bestätigung alle Positionen mit Betrag auf', function () {
+it('nennt in der Bestätigung Nummer und Gesamtbetrag, aber keine Artikel', function () {
     [$head, $children] = prepaidOrder(2);
 
     $html = (new UserOrderEmail($head))->render();
     $text = html_entity_decode(strip_tags($html));
 
-    // Die bezahlte Nummer, einmal – nicht die IDs der Positionen.
-    expect($text)->toContain($head->orderNumber());
+    // Die bezahlte Nummer – nicht die IDs der Positionen.
+    expect($text)
+        ->toContain('Deine Bestellung '.$head->orderNumber().' ist bestätigt')
+        ->toContain('Gesamtbetrag: 100,00 €');
 
-    // Jede Position mit Artikel und Betrag.
+    // Keine Artikelliste: weder Artikel noch Herstellerin noch Einzelbetrag.
     foreach ($children as $child) {
-        expect($text)->toContain($child->product->name);
+        expect($text)->not->toContain($child->product->name);
     }
+    expect($text)->not->toContain('Herstellerin ');
 
     // Genau EIN Rechnungslink, und der zeigt auf die Bestellung.
     expect($html)->toContain('/invoice/'.$head->id);
     foreach ($children as $child) {
         expect($html)->not->toContain('/invoice/'.$child->id);
     }
-
-    expect($text)
-        ->toContain('2 Artikel')
-        ->toContain('Gesamtbetrag')
-        ->toContain('100,00 €');
 });
 
 it('kündigt eine Rechnung für die ganze Bestellung an', function () {
@@ -247,26 +245,10 @@ it('spricht bei einem einzigen Artikel nicht von mehreren Paketen', function () 
 
     $text = html_entity_decode(strip_tags((new UserOrderEmail($head))->render()));
 
-    expect($text)
-        ->toContain('einen Artikel')
-        ->not->toContain('mehrere');
+    expect($text)->not->toContain('mehrere');
 });
 
-it('nennt die Herstellerinnen in der Mail nur mit Vornamen', function () {
-    [$head, $children] = prepaidOrder(2);
-
-    // Die Verkäuferinnen aus prepaidOrder() tragen name='Test', last_name='User'.
-    $vendor = $children->first()->vendor;
-    $vendor->update(['name' => 'Jennifer', 'last_name' => 'Lanzo']);
-
-    $text = html_entity_decode(strip_tags((new UserOrderEmail($head->fresh()))->render()));
-
-    expect($text)
-        ->toContain('Jennifer')
-        ->not->toContain('Lanzo');
-});
-
-it('weist den Gutschein in der Bestätigung aus, ohne doppelt abzuziehen', function () {
+it('nennt bei Gutschein den schon rabattierten Gesamtbetrag', function () {
     // Kopf einer rabattierten Bestellung: total ist bereits subtotal − discount.
     [$head] = prepaidOrder(2, [
         'subtotal' => 100.00,
@@ -278,10 +260,8 @@ it('weist den Gutschein in der Bestätigung aus, ohne doppelt abzuziehen', funct
     $text = html_entity_decode(strip_tags((new UserOrderEmail($head))->render()));
 
     expect($text)
-        ->toContain('SOMMER')
-        ->toContain('15,00 €')
         // Der Gesamtbetrag ist der schon rabattierte Wert, nicht 70,00 €.
-        ->toContain('85,00 €')
+        ->toContain('Gesamtbetrag: 85,00 €')
         ->not->toContain('70,00 €');
 });
 

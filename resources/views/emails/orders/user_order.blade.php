@@ -1,8 +1,8 @@
 @php
     // Eine Bestätigung und eine Rechnung für die ganze Bestellung. $order ist der
-    // Kopf der Bestellung; die Artikel hängen als Positionen daran, je einer pro
-    // Herstellerin. Ältere Bestellungen haben keine Positionen – dann ist die
-    // Bestellung selbst die einzige Position.
+    // Kopf der Bestellung. Die Mail nennt nur Nummer und Gesamtbetrag, die
+    // Positionen stehen in der Rechnung. Gezählt werden sie nur für den Hinweis
+    // auf mehrere Pakete; ältere Bestellungen haben keine Positionen.
     $positions = $order->childrens->isNotEmpty() ? $order->childrens : collect([$order]);
 
     $anrede = \App\Order::firstFilled(
@@ -12,44 +12,16 @@
     );
 
     $euro = fn ($value) => number_format((float) $value, 2, ',', '.') . ' €';
-
-    // Herstellerinnen werden in der Mail nur mit Vornamen genannt.
-    $vorname = fn ($vendor) => \App\Order::firstFilled($vendor?->first_name, $vendor?->name) ?? '–';
 @endphp
 
 @component('mail::message')
-<h1 class="title">Bestellung {{ $order->orderNumber() }}</h1>
 <div class="body-section">
-Herzlichen Glückwunsch{{ $anrede ? ' ' . $anrede : '' }} zum Kauf.
+Herzlichen Glückwunsch{{ $anrede ? ', ' . $anrede . ',' : '' }} zum Kauf.
 <br><br>
 
-Deine Bestellung <strong>{{ $order->orderNumber() }}</strong> umfasst
-{{ $positions->count() === 1 ? 'einen Artikel' : $positions->count() . ' Artikel' }}:
+Deine Bestellung <strong>{{ $order->orderNumber() }}</strong> ist bestätigt.
 <br><br>
 
-<table>
-    <thead>
-        <tr>
-            <th align="left">Artikel</th>
-            <th align="left">Herstellerin</th>
-            <th align="right">Betrag</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($positions as $position)
-            <tr>
-                <td align="left">{{ $position->product_name ?? $position->product->name }}</td>
-                <td align="left">{{ $vorname($position->vendor) }}</td>
-                <td align="right">{{ $euro($position->total) }}</td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
-
-@if (filled($order->discount_code) && (float) $order->discount > 0)
-Zwischensumme: {{ $euro($positions->sum('total')) }}<br>
-Gutschein {{ $order->discount_code }}: −{{ $euro($order->discount) }}<br>
-@endif
 <strong>Gesamtbetrag: {{ $euro($order->total) }}</strong>
 <br><br>
 
