@@ -324,15 +324,14 @@ class HomeController extends Controller
         // passte bei einer älteren Bestellung mit mehreren Artikeln zu nichts.
         $bestellnummer = $order->orderNumber();
 
-        // Storniert wird eine Position. Bei mehreren Artikeln muss die Kundin
-        // erkennen, welcher davon betroffen ist.
-        $artikel = $order->product_name ?? $order->product?->name;
-
+        // Storniert wird eine Position. Bei mehreren Artikeln erkennt die Kundin
+        // an der Pos. von ihrer Rechnung, welcher betroffen ist. Den Artikelnamen
+        // nennen Kundenmails nie – er kann den Namen der Herstellerin enthalten.
         $mail_data = [
             'subject' => 'Storno Bestellung ' . $bestellnummer,
             'title' => 'Storno Bestellung ' . $bestellnummer,
-            'body' => "Hey du,<br><br>leider musste ich "
-                . (filled($artikel) ? 'den Artikel „' . e($artikel) . '“ aus deiner Bestellung ' . $bestellnummer : 'deinen Einkauf')
+            'body' => "Hey du,<br><br>leider musste ich deine Bestellung "
+                . $order->orderNumberWithPosition()
                 . " stornieren. Für die Unannehmlichkeit entschuldige ich mich.<br><br>Weitere Informationen erhälst du per E-Mail.",
             'button_link' => route('shop'),
             'button_text' => 'ein anderes Produkt bestellen',

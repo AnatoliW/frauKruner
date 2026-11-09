@@ -93,15 +93,12 @@ class PagesController extends Controller
             'shipping_date' => $request->shipping_date,
         ]);
 
-        // Ab app.seller_credit_position_cutoff_at: der Artikel und die Nummer,
-        // die die Kundin von ihrer Rechnung kennt (Bestellnummer mit Pos.),
-        // damit bei mehreren Sendungen klar ist, welche gemeint ist.
-        $artikel = $order->usesPositionSellerCredit() ? ($order->product_name ?? $order->product?->name) : null;
-        $nummer = 'Bestellung ' . $order->orderNumberWithPosition();
+        // Kundenmails nennen nie den Artikelnamen – er kann den Namen der
+        // Herstellerin enthalten. Welche Sendung gemeint ist, zeigt die Nummer
+        // von der Rechnung (Bestellnummer mit Pos.).
+        $nummer = $order->orderNumberWithPosition();
 
-        $body = (filled($artikel)
-                ? 'dein Artikel „' . e($artikel) . '“ aus ' . $nummer
-                : 'deine Bestellung mit der Bestellnummer ' . $order->orderNumberWithPosition())
+        $body = 'deine Bestellung mit der Bestellnummer ' . $nummer
             . ' wurde/wird am ' . $order->shipping_date->format('d.m.Y') . ' versendet.';
 
         // Conditionally add shipping method
@@ -121,7 +118,7 @@ class PagesController extends Controller
                   <a href="tel:03096607799">030 96607799</a>.<br><br>';
 
         $mail_data = [
-            'subject' => 'Versandbestätigung ' . (filled($artikel) ? '„' . $artikel . '“ – ' . $nummer : $order->orderNumberWithPosition()),
+            'subject' => 'Versandbestätigung ' . $nummer,
             'title' => 'Hi ' . $order->first_name . ',',
             'body' => $body,
             'button_link' => route('shop'),

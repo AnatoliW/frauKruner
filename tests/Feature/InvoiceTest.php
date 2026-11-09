@@ -1005,7 +1005,7 @@ it('zeigt im Adminbereich ab dem zweiten Zeitpunkt je Artikel eine Gutschrift un
     }
 });
 
-it('nennt in der Versandbestätigung ab dem zweiten Zeitpunkt Artikel und Bestellnummer mit Pos.', function () {
+it('nennt in der Versandbestätigung die Bestellnummer mit Pos., aber nie den Artikelnamen', function () {
     \Illuminate\Support\Facades\Mail::fake();
     [$head, $positions] = bundledSellerCreditOrder(POSITION_CREDIT_DATE);
     $position = $positions[1];
@@ -1018,10 +1018,13 @@ it('nennt in der Versandbestätigung ab dem zweiten Zeitpunkt Artikel und Bestel
     ])->assertRedirect()->assertSessionHasNoErrors();
 
     \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\UserNotifyEmail::class, function ($mail) use ($head, $position) {
-        $nummer = 'Bestellung '.$head->orderNumber().' (Position 2 von 3)';
+        $nummer = $head->orderNumber().' (Position 2 von 3)';
 
-        expect($mail->data->subject)->toBe('Versandbestätigung „'.$position->product->name.'“ – '.$nummer)
-            ->and($mail->data->body)->toContain('dein Artikel „'.e($position->product->name).'“ aus '.$nummer);
+        // Der Artikelname kann den Namen der Herstellerin enthalten.
+        expect($mail->data->subject)->toBe('Versandbestätigung '.$nummer)
+            ->and($mail->data->body)->toContain('Bestellnummer '.$nummer)
+            ->and($mail->data->subject)->not->toContain($position->product->name)
+            ->and($mail->data->body)->not->toContain($position->product->name);
 
         return true;
     });

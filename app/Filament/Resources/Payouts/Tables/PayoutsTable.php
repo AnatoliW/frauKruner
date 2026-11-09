@@ -356,13 +356,14 @@ class PayoutsTable
                         // Die Bestellnummer, die die Kundin kennt – nicht die ID
                         // dieser Position und nicht das laufende Jahr.
                         $bestellnummer = $record->orderNumber();
-                        $artikel = $record->product_name ?? $record->product?->name;
 
                         Mail::to($record->email)->send(new UserNotifyEmail([
                             'subject' => 'Storno Bestellung ' . $bestellnummer,
                             'title' => 'Storno Bestellung ' . $bestellnummer,
-                            'body' => 'Hey du,<br><br>leider musste ich '
-                                . (filled($artikel) ? 'den Artikel „' . e($artikel) . '“ aus deiner Bestellung ' . $bestellnummer : 'deinen Einkauf')
+                            // Nie den Artikelnamen: Er kann den Namen der
+                            // Herstellerin enthalten. Die Pos. zeigt, welcher.
+                            'body' => 'Hey du,<br><br>leider musste ich deine Bestellung '
+                                . $record->orderNumberWithPosition()
                                 . ' stornieren. Für die Unannehmlichkeit entschuldige ich mich.<br><br>Weitere Informationen erhälst du per E-Mail.',
                             'button_link' => route('shop'),
                             'button_text' => 'ein anderes Produkt bestellen',
