@@ -100,9 +100,14 @@ class Order extends Model
     {
         return $this->belongsToMany('App\Product')->withPivot('quantity', 'price', 'variation');
     }
+    /**
+     * Auch gelöschte Produkte: Ein Verkauf bleibt ein Verkauf. Verkäuferin und
+     * Käuferin müssen Titel, Bild und Kategorie weiter sehen, wenn das Produkt
+     * später aus dem Shop gelöscht wurde.
+     */
     public function product()
     {
-        return $this->belongsTo(Product::class)->withDefault();
+        return $this->belongsTo(Product::class)->withTrashed()->withDefault();
     }
 
 

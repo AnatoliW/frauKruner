@@ -10,6 +10,7 @@ use App\Addition;
 use App\Models\Image;
 use App\Package;
 use App\WearingTime;
+use App\Order;
 use App\Product;
 use App\Services\ExifMetadataService;
 use App\Tag;
@@ -302,6 +303,17 @@ class ProductsController extends Controller
 
     public function delete(Product $product)
     {
+        if ((int) $product->user_id !== (int) Auth::id()) {
+            abort(403);
+        }
+
+        // Wurde das Produkt schon verkauft, bleiben die Bilder liegen: Verkäufe,
+        // Käufe und Gutschriften zeigen es weiter an.
+        if (Order::where('product_id', $product->id)->exists()) {
+            $product->delete();
+
+            return redirect()->route('seller.products')->with('success', 'Produkt erfolgreich gelöscht');
+        }
 
         if (filled($product->image) && Storage::exists($product->image)) {
             Storage::delete($product->image);

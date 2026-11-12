@@ -93,14 +93,20 @@ class PrepaymentsTable
                     ->state(function (Order $record): string {
                         $links = $record->childrens
                             ->map(function (Order $position): ?string {
-                                if (! $position->product || ! $position->product->slug) {
+                                $name = (string) ($position->product_name ?? $position->product?->name ?? '');
+
+                                if ($name === '') {
                                     return null;
+                                }
+
+                                // Gelöschte Produkte haben keine Shopseite mehr: Name ohne Link.
+                                if (! $position->product?->slug || $position->product->trashed()) {
+                                    return e($name);
                                 }
 
                                 $url = route('product', $position->product->slug);
 
-                                return '<a href="'.e($url).'" target="_blank">'
-                                    .e((string) $position->product->name).'</a>';
+                                return '<a href="'.e($url).'" target="_blank">'.e($name).'</a>';
                             })
                             ->filter();
 

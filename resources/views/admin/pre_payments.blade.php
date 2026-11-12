@@ -97,9 +97,11 @@
                                                 {{ $data->vendor->user_name }}
                                             </td>
                                             <td>
-                                                @if ($data->product && $data->product->slug)
+                                                @if ($data->product && $data->product->slug && ! $data->product->trashed())
                                                     <a href="{{ route('product', $data->product->slug) }}" target="_blank">
-                                                        {{ $data->product->name }} </a>
+                                                        {{ $data->product_name ?? $data->product->name }} </a>
+                                                @else
+                                                    {{ $data->product_name ?? $data->product?->name }}
                                                 @endif
                                             </td>
                                             <td class="middle">

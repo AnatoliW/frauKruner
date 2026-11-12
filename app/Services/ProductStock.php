@@ -62,6 +62,8 @@ class ProductStock
     {
         $product = $order->product;
 
-        return $product && $product->exists ? $product : null;
+        // Gelöschte Produkte nicht mehr anfassen, sonst würde ein Storno sie
+        // wieder auf aktiv setzen.
+        return $product && $product->exists && ! $product->trashed() ? $product : null;
     }
 }

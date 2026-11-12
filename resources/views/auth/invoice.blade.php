@@ -277,7 +277,7 @@
                                                         <tr class="even" role="row">
 
                                                             <td>
-                                                                <div> {{ $order->product->name }}</div>
+                                                                <div> {{ $order->product_name ?? $order->product->name }}</div>
                                                             </td>
                                                             <!-- <td><div> {{ $order->category ? $order->category->name : '' }}</div></td> -->
                                                             <td>

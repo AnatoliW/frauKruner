@@ -63,7 +63,7 @@ class PayoutsTable
                         $zipCity = trim((string) ($record->zip ?? '') . ' ' . (string) ($record->federal_state ?? ''));
                         $email = (string) ($record->email ?? '');
                         $poBox = (string) ($record->po_box ?? '');
-                        $productName = (string) ($record->product?->name ?: 'Produktname nicht vorhanden');
+                        $productName = (string) (($record->product_name ?: $record->product?->name) ?: 'Produktname nicht vorhanden');
                         $categoryName = (string) ($record->product?->category?->name ?: 'Kategorie nicht vorhanden');
 
                         $html = '<div style="font-weight:700;">' . e($buyer !== '' ? $buyer : 'Käufer unbekannt') . '</div>';

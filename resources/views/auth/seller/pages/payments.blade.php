@@ -16,7 +16,7 @@
                 <div class="col-prod-text">
                     <div class="col-prod-text__prod-summary">
                         <h6 class="text-primary">{{$payment->product? $payment->product->category->name : $payment->title }}</h6>
-                        <p>{{$payment->product->name}}</p>
+                        <p>{{ $payment->product_name ?? $payment->product->name }}</p>
                         <p class="text-grey small">
                             Bestellnummer: {{ $payment->orderNumber() }}<br>
                             Gutschrift-Nr.: {{ $payment->gutschriftNumber() }}

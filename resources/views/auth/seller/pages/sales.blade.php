@@ -61,14 +61,14 @@
                         <a href="#" class="lightbox-public"
                             data-image-url="{{ $order->product->image ? media_url($order->product->image) : asset('assets/img/user.png') }}">
                             <img src="{{ $order->product->image ? media_url($order->product->image) : asset('assets/img/user.png') }}"
-                                alt="{{ $order->product->name }}">
+                                alt="{{ $order->product_name ?? $order->product->name }}">
                         </a>
                     </div>
 
                     <div class="col-prod-profile-sells-text">
                         <div class="col-prod-profile-sells-text__prod-summary">
                             <h6 class="text-primary">{{ $order->product->category->name }}</h6>
-                            <p>{{ $order->product->name }}</p>
+                            <p>{{ $order->product_name ?? $order->product->name }}</p>
                             <p class="text-grey small">
 
                                 Bestellt am: {{ $order->created_at->format('d.m.Y') }}<br>

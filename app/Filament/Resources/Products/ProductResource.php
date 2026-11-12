@@ -16,7 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 
 class ProductResource extends BaseAdminResource
 {
@@ -66,12 +66,29 @@ class ProductResource extends BaseAdminResource
         ];
     }
 
-    public static function getRecordRouteBindingEloquentQuery(): Builder
+    /*
+     * Gelöschte Produkte bleiben in der Datenbank, weil Verkäufe, Käufe und
+     * Rechnungen sie weiter anzeigen. Im Admin sind sie deshalb unsichtbar und
+     * lassen sich weder endgültig löschen noch wiederherstellen.
+     */
+    public static function canForceDelete(Model $record): bool
     {
-        return parent::getRecordRouteBindingEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
+        return false;
+    }
+
+    public static function canForceDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canRestore(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canRestoreAny(): bool
+    {
+        return false;
     }
 }
 
