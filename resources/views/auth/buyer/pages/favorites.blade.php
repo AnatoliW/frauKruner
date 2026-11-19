@@ -83,7 +83,6 @@
                         @foreach ($profile_favorites as $favorite)
                             @php
                                 $vendor = $favorite->favoritable;
-                                $avg_rating = round($vendor->ratings()->avg('rating'));
                             @endphp
                             @if($vendor)
                             <div

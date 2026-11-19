@@ -37,8 +37,14 @@ class FavoriteController extends Controller
 
     public function index()
     {
-        $product_favorites = auth()->user()->favorites->where('favoritable_type', Product::class);
-        $profile_favorites = auth()->user()->favorites->where('favoritable_type', User::class);
+        $product_favorites = auth()->user()->favorites()
+            ->where('favoritable_type', Product::class)
+            ->with('favoritable.user', 'favoritable.category')
+            ->get();
+        $profile_favorites = auth()->user()->favorites()
+            ->where('favoritable_type', User::class)
+            ->with('favoritable.profile')
+            ->get();
 
         return view('auth.buyer.pages.favorites', compact('product_favorites', 'profile_favorites'));
     }
